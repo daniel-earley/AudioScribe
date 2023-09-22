@@ -3,7 +3,7 @@
 
 Group members (3-5) (no Student IDs, only names and github usernames):
 
-1. Deval Panchal (100744653)
+1. Devel Panchal (DevalPanchal)
 
 2. Samuel Bazinet (samuel-bazinet)
 
