@@ -7,7 +7,7 @@ Group members (3-5) (no Student IDs, only names and github usernames):
 
 2. Samuel Bazinet (samuel-bazinet)
 
-3. 
+3. Daniel Earley (daniel-earley)
 
 4. 
 
