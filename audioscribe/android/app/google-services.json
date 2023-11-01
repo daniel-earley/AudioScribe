@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "243906736454",
+    "project_id": "audioscribe-project",
+    "storage_bucket": "audioscribe-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243906736454:android:99f96ae516c2280c7ef547",
+        "android_client_info": {
+          "package_name": "com.example.audioscribe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCc23Fw5jgTD8gUpxK9dc45sbfotJn_J30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
