@@ -43,4 +43,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/test/test_file_outputs/*
+/test/test_resources/test_file_outputs/*
