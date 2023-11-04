@@ -1,9 +1,7 @@
 import 'package:audioscribe/pages/auth_page.dart';
 import 'package:flutter/material.dart';
-import "pages/login_page.dart";
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:audioscribe/utils/file_ops/file_to_txt_converter.dart';
 
 void main() async {
 

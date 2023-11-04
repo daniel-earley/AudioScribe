@@ -32,7 +32,7 @@ class DbUtils {
             'id INTEGER PRIMARY KEY, '
             'userId INTEGER NOT NULL, '
             'bookId INTEGER NOT NULL, '
-            'FOREIGN KEY (userId) REFERENCES $userDb(id) ON DELETE CASCADE'
+            'FOREIGN KEY (userId) REFERENCES $userDb(id) ON DELETE CASCADE '
             'FOREIGN KEY (bookId) REFERENCES $bookDb(id) ON DELETE CASCADE'
           ')'
         );

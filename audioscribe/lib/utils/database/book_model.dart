@@ -30,9 +30,9 @@ class BookModel {
     final db = await DbUtils.init();
     final List<Book> books = [];
     final List bookMap = await db.rawQuery(
-        'SELECT ${DbUtils.bookDb}.id, ${DbUtils.bookDb}.title, ${DbUtils.bookDb}.author, ${DbUtils.bookDb}.textFileLocation, ${DbUtils.bookDb}.audioFileLocation'
-            'FROM ${DbUtils.bookDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.bookDb}.id=${DbUtils.userBookDb}.bookId'
-            'WHERE userId = ${user.userId}');
+        'SELECT ${DbUtils.bookDb}.id, ${DbUtils.bookDb}.title, ${DbUtils.bookDb}.author, ${DbUtils.bookDb}.textFileLocation, ${DbUtils.bookDb}.audioFileLocation '
+        'FROM ${DbUtils.bookDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.bookDb}.id=${DbUtils.userBookDb}.bookId '
+        'WHERE userId = ${user.userId}');
     for (Map map in bookMap) {
       books.add(Book.fromMap(map));
     }
@@ -42,10 +42,6 @@ class BookModel {
   /// Delete a book from the database
   Future<int> deleteBookWithId(int id) async {
     final db = await DbUtils.init();
-    return db.delete(
-        DbUtils.bookDb,
-        where: 'id = ?',
-        whereArgs: [id]
-    );
+    return db.delete(DbUtils.bookDb, where: 'id = ?', whereArgs: [id]);
   }
 }

@@ -40,8 +40,8 @@ class UserModel {
     final db = await DbUtils.init();
     final List<User> users = [];
     final List userMap = await db.rawQuery(
-        'SELECT ${DbUtils.userDb}.id, ${DbUtils.userDb}.username'
-            'FROM ${DbUtils.userDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.userDb}.id=${DbUtils.userBookDb}.userId'
+        'SELECT ${DbUtils.userDb}.id, ${DbUtils.userDb}.username '
+            'FROM ${DbUtils.userDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.userDb}.id=${DbUtils.userBookDb}.userId '
             'WHERE bookId = ${book.bookId}');
     for (Map map in userMap) {
       users.add(User.fromMap(map));
