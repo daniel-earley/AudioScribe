@@ -8,10 +8,10 @@ class DbUtils {
   static const String bookDb = 'book';
   static const String userBookDb = 'userBook';
 
-  static Future init() async {
+  static Future<Database> init() async {
     var database = openDatabase(
       path.join(await getDatabasesPath(), 'audioscribe_database.db'),
-      onCreate: (db, version) {
+      onCreate: (Database db, version) {
         db.execute(
           'CREATE TABLE $userDb('
             'id INTEGER PRIMARY KEY,'
