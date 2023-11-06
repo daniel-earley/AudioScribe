@@ -37,6 +37,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core: ^2.21.0
   firebase_auth: ^4.12.1
+  aspose_words_cloud: ^23.10.0
+  test: ^1.24.3
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  sqflite_common_ffi: any
+
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +73,7 @@ flutter:
     - lib/images/dummy_book_1.jpg
     - lib/images/dummy_book_2.jpg
     - lib/images/dummy_book_3.jpg
+    - lib/configs/api_keys.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
