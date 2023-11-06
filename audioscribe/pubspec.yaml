@@ -73,6 +73,7 @@ flutter:
     - lib/images/dummy_book_1.jpg
     - lib/images/dummy_book_2.jpg
     - lib/images/dummy_book_3.jpg
+    - lib/images/dummy_book_4.jpg
     - lib/configs/api_keys.json
   #   - images/a_dot_ham.jpeg
 
