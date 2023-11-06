@@ -2,6 +2,8 @@ import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/data_classes/user.dart';
 import 'package:test/test.dart';
 
+import 'dart:math';
+
 import 'package:audioscribe/utils/database/user_model.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -14,13 +16,13 @@ void main() {
 
     final BookModel bookModel = BookModel();
     final UserModel userModel = UserModel();
-    User userA = User(userId: 1234, username: "George1212", bookLibrary: []);
-    User userB = User(userId: 1235, username: "Alex2121", bookLibrary: []);
+    User userA = User(userId: Random().nextInt(1000000), username: "George1212", bookLibrary: []);
+    User userB = User(userId: Random().nextInt(1000000), username: "Alex2121", bookLibrary: []);
 
-    Book bookA = Book(bookId: 1, title: "How to use a db", author: 'Anon1');
-    Book bookB = Book(bookId: 3, title: "How to Not use a db", author: 'Anon2');
+    Book bookA = Book(bookId: Random().nextInt(1000000), title: "How to use a db", author: 'Anon1');
+    Book bookB = Book(bookId: Random().nextInt(1000000), title: "How to Not use a db", author: 'Anon2');
     Book bookC =
-        Book(bookId: 2, title: "How to Really use a db", author: 'Anon3');
+        Book(bookId: Random().nextInt(1000000), title: "How to Really use a db", author: 'Anon3');
 
     userModel.insertUser(userA);
     userModel.insertUser(userB);
