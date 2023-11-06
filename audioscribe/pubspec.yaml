@@ -64,6 +64,9 @@ flutter:
   assets:
     - lib/images/background_1.jpg
     - lib/images/google.png
+    - lib/images/dummy_book_1.jpg
+    - lib/images/dummy_book_2.jpg
+    - lib/images/dummy_book_3.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

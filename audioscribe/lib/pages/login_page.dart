@@ -1,6 +1,8 @@
 import 'package:audioscribe/components/text_field_auth_page.dart';
+import 'package:audioscribe/components/toggle_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../app_constants.dart';
 
 class LoginPage extends StatefulWidget {
 	const LoginPage({Key? key}) : super(key: key);
@@ -12,6 +14,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
 	bool isLoginMode = true; // default to login
+	AuthMode currentAuthMode = AuthMode.LOGIN;
 	var selectedColor = const Color(0xFF524178);
 	var unselectedColor = const Color(0xFF383838);
 
@@ -159,47 +162,32 @@ class _LoginPageState extends State<LoginPage> {
 											child: Row(
 												mainAxisAlignment: MainAxisAlignment.center,
 												children: [
-													GestureDetector(
+													// Login Capsule
+													ToggleLoginButton(
+														// isLoginMode: isLoginMode,
+														authMode: currentAuthMode,
+														// authMode: "LOGIN",
 														onTap: () {
-															// if the user is in sign in mode (isLoginMode = false)
-															if (!isLoginMode) {
-															  	setState(() {
-															  		isLoginMode = true;
-																});
-															}
+															setState(() {
+																currentAuthMode = AuthMode.LOGIN;
+																// isLoginMode = true;
+															});
 														},
-														child: Container(
-															padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-															decoration: BoxDecoration(
-																color: isLoginMode ? selectedColor : unselectedColor,
-																borderRadius: const BorderRadius.all(Radius.circular(50.0)),
-															),
-															child: const Text(
-																"Login",
-																style: TextStyle(color: Colors.white, fontSize: 18.0)
-															)
-														)
+														buttonText: "Login"
 													),
 
-													GestureDetector(
+													// Signup capsule
+													ToggleLoginButton(
+														// isLoginMode: !isLoginMode,
+														authMode: currentAuthMode,
+														// authMode: "SIGNUP",
 														onTap: () {
-															if (isLoginMode) {
-																setState(() {
-																  isLoginMode = !isLoginMode;
-																});
-															}
+															setState(() {
+																currentAuthMode = AuthMode.SIGNUP;
+																// isLoginMode = !isLoginMode;
+															});
 														},
-														child: Container(
-															padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-															decoration: BoxDecoration(
-																color: !isLoginMode ? selectedColor : unselectedColor,
-																borderRadius: const BorderRadius.all(Radius.circular(50.0)),
-															),
-															child: const Text(
-																"Signup",
-																style: TextStyle(color: Colors.white, fontSize: 18.0)
-															)
-														)
+														buttonText: "Signup"
 													),
 												],
 											)
@@ -219,7 +207,8 @@ class _LoginPageState extends State<LoginPage> {
 									const SizedBox(height: 15.0),
 
 									// confirm password
-									!isLoginMode ?
+									// !isLoginMode
+									currentAuthMode == AuthMode.SIGNUP ?
 										TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true)
 										: Container(),
 
@@ -234,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
 												borderRadius: BorderRadius.all(Radius.circular(50.0)),
 											),
 											child: GestureDetector(
-												onTap: isLoginMode ? signin : signup,
+												onTap: currentAuthMode == AuthMode.LOGIN ? signin : signup,
 												child: Container(
 													padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
 													decoration: const BoxDecoration(
@@ -243,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
 													),
 													alignment: Alignment.center,
 													child:  Text(
-														isLoginMode ? "Login" : "Sign up",
+														currentAuthMode == AuthMode.LOGIN ? "Login" : "Sign up",
 														style: const TextStyle(color: Colors.white, fontSize: 18.0)
 													)
 												)
@@ -279,7 +268,7 @@ class _LoginPageState extends State<LoginPage> {
 														Image.asset('lib/images/google.png', width: 24.0, height: 24.0),
 														const SizedBox(width: 5.0),
 														Text(
-															isLoginMode ? "Continue with Google" : "Sign up with Google",
+															currentAuthMode == AuthMode.LOGIN ? "Continue with Google" : "Sign up with Google",
 															style: const TextStyle(color: Colors.white, fontSize: 15.0)
 														)
 													],
@@ -291,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
 									const SizedBox(height: 10.0),
 
 									// forgot password
-									isLoginMode
+									currentAuthMode == AuthMode.LOGIN
 										? GestureDetector(
 										onTap: () {
 											print("forgetting password");
