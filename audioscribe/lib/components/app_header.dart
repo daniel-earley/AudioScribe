@@ -2,58 +2,63 @@ import 'package:flutter/material.dart';
 
 class AppHeader extends StatelessWidget {
 	final String headerText;
-	final VoidCallback signout;
+	final VoidCallback onTap;
+	final bool isSwitched;
+	final ValueChanged<bool> onToggle;
+	final int currentScreen;
 
 
 	const AppHeader({
 		super.key,
 		required this.headerText,
-		required this.signout
+		required this.onTap,
+		required this.onToggle,
+		required this.isSwitched,
+		required this.currentScreen,
 	});
-
-	Future _showAccountDialog(BuildContext context) {
-		return showDialog(
-			context: context,
-			builder: (BuildContext context) {
-				return AlertDialog(
-					title: const Text('Profile'),
-					content: Stack(
-						children: [
-							const Text("Profile information"),
-							IconButton(
-								icon: Icon(Icons.logout),
-								onPressed: signout,
-							)
-						]
-					),
-					actions: [
-						TextButton(
-							onPressed: () {
-								Navigator.of(context).pop();
-							},
-							child: Text('Close')),
-					],
-				);
-			}
-		);
-	}
 
 	@override
 	Widget build(BuildContext context) {
 		return Padding(
-			padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+			padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
 			child: Row(
 				mainAxisAlignment: MainAxisAlignment.spaceBetween,
 				crossAxisAlignment: CrossAxisAlignment.center,
 				children: [
 					Text(
 						headerText,
-						style: TextStyle(color: Colors.white, fontSize: 25.0),
+						style: const TextStyle(color: Colors.white, fontSize: 25.0),
 					),
+
+					currentScreen != 2 ?
 					IconButton(
 						icon: const Icon(Icons.account_circle, size: 45.0, color: Colors.white),
-						onPressed: () => _showAccountDialog(context),
-					),
+						onPressed: onTap,
+					)
+						:
+					Switch(
+						value: isSwitched,
+						overlayColor: MaterialStateProperty.resolveWith(
+								(states) {
+									if (states.contains(MaterialState.selected)) {
+										return Colors.amber.withOpacity(0.54);
+									}
+									if (states.contains(MaterialState.disabled)) {
+										return Colors.grey.shade400;
+									}
+									return null;
+								}),
+						trackColor: MaterialStateProperty.resolveWith(
+								(states) {
+									if (states.contains(MaterialState.selected)) {
+										return Colors.amber;
+									}
+									return null;
+								}
+						),
+						thumbColor: const MaterialStatePropertyAll(Colors.black),
+						onChanged: onToggle,
+					)
 				],
 			),
 		);

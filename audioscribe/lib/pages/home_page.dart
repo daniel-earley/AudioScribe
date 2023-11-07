@@ -4,7 +4,6 @@ import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/pages/collection_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,8 +18,6 @@ class _HomePageState extends State<HomePage> {
 	// current page
 	AppPage _currentPage = AppPage.HOME;
 
-	// create user var
-	final user = FirebaseAuth.instance.currentUser!;
 
 	// list of users book
 	final List<Map<String, String>> userBooks = [
@@ -50,11 +47,6 @@ class _HomePageState extends State<HomePage> {
 		},
 	];
 
-	// signs user out
-	void signOut() async {
-		FirebaseAuth.instance.signOut();
-	}
-
 	@override
 	Widget build(BuildContext context) {
 		return Scaffold(
@@ -74,14 +66,6 @@ class _HomePageState extends State<HomePage> {
 				SafeArea(
 					child: Column(
 						children: [
-							// Header (title + account circle)
-							AppHeader(
-								headerText: "AudioScribe",
-								signout: () {
-									signOut();
-									Navigator.pop(context);
-								}),
-
 							// Search bar
 							const AppSearchBar(hintText: "search for your favourite books"),
 

@@ -66,25 +66,44 @@ class _LoginPageState extends State<LoginPage> {
 
 	// sign user method
 	void signin() async {
+		bool isDialogShowing = true;
+
 		// show loading circle
-		showDialog(context: context, builder: (context) {
-			return const Center(
-				child: CircularProgressIndicator(),
-			);
+		showDialog(
+			context: context,
+			barrierDismissible: false,
+			builder: (context) {
+				return WillPopScope(
+					child: const Center(
+						child: CircularProgressIndicator(),
+					),
+					onWillPop: () async {
+						isDialogShowing = false;
+						return true;
+					}
+				);
 		});
 
 		// sign in
 		try {
-			await FirebaseAuth.instance.signInWithEmailAndPassword(
+			UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
 				email: emailController.text,
 				password: passwordController.text
 			);
 
+			// retreive the UID of the signed-in user
+			String uid = userCredential.user?.uid ?? "";
+			print('User UID: $uid');
+
 			// close loading circle [pop circle]
-			Navigator.pop(context);
+			if (isDialogShowing) {
+				Navigator.pop(context);
+			}
 		} on FirebaseAuthException catch(e) {
 			// close loading circle [pop circle]
-			Navigator.pop(context);
+			if (isDialogShowing) {
+				Navigator.pop(context);
+			}
 
 			// show error message dialog
 			authErrorMessage(e.code);
