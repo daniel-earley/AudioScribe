@@ -35,6 +35,24 @@ class UserModel {
     return users;
   }
 
+  /// Retrieves user information with ID
+  Future<User?> getUserByID(String id) async {
+    final db = await DbUtils.init();
+
+    // Query the database for a user with the given ID
+    List<Map> maps = await db.query(
+      DbUtils.userDb,
+      where: 'id = ?',
+      whereArgs: [id]
+    );
+
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
   /// Retrieves all the books that are in a user's library from the database
   Future<List<User>> getAllUsersWithBook(Book book) async {
     final db = await DbUtils.init();

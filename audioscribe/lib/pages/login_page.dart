@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_constants.dart';
 import '../data_classes/user.dart' as userClient;
+import '../utils/database/user_model.dart' as userModel;
+
 
 class LoginPage extends StatefulWidget {
 	const LoginPage({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 	AuthMode currentAuthMode = AuthMode.LOGIN;
 	var selectedColor = const Color(0xFF524178);
 	var unselectedColor = const Color(0xFF383838);
+	final userModel.UserModel _userModel = userModel.UserModel();
 
 	TextEditingController emailController = TextEditingController();
 	TextEditingController passwordController = TextEditingController();
@@ -68,7 +71,10 @@ class _LoginPageState extends State<LoginPage> {
 				String username = userCredential.user?.email ?? "";
 				print('User Information: $uid | $username');
 
-				// final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
+				// new user object
+				final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
+
+				await clientQueryInsertUser(newUser);
 
 				if(isDialogShowing) {
 					Navigator.pop(context);
@@ -88,6 +94,15 @@ class _LoginPageState extends State<LoginPage> {
 
 			// debug any different error codes that may pop up
 			print('ERROR: ${e.code}');
+		}
+	}
+
+	Future<void> clientQueryInsertUser(userClient.User user) async {
+		try {
+			await _userModel.insertUser(user);
+			print('Inserted new user ${user.toString()} to database');
+		} catch (e) {
+			print('Error inserting user: $e');
 		}
 	}
 

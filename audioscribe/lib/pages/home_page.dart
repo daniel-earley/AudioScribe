@@ -64,24 +64,27 @@ class _HomePageState extends State<HomePage> {
 		return Stack(
 			children: [
 				SafeArea(
-					child: Column(
-						children: [
-							// Search bar
-							const AppSearchBar(hintText: "search for your favourite books"),
+					// prevent overflow
+					child: SingleChildScrollView(
+						child: Column(
+							children: [
+								// Search bar
+								const AppSearchBar(hintText: "search for your favourite books"),
 
-							// Separator
-							const Separator(text: "Currently listening to..."),
+								// Separator
+								const Separator(text: "Currently listening to..."),
 
-							// Book Row 1
-							BookRow(books: userBooks),
+								// Book Row 1
+								BookRow(books: userBooks),
 
-							// Separator
-							const Separator(text: "Recommendations"),
+								// Separator
+								const Separator(text: "Recommendations"),
 
-							// Book Row 2
-							BookRow(books: recommendationBooks),
-						],
-					),
+								// Book Row 2
+								BookRow(books: recommendationBooks),
+							],
+						),
+					)
 				),
 			],
 		);

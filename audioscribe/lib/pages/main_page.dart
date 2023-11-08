@@ -1,4 +1,5 @@
 import 'package:audioscribe/components/app_header.dart';
+import 'package:audioscribe/components/popup_circular_button.dart';
 import 'package:audioscribe/pages/collection_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/settings_page.dart';
@@ -26,7 +27,8 @@ class _MainPageState extends State<MainPage> {
 		const CollectionPage(),
 		const SettingsPage()
 	];
-
+	
+	/// Used to navigate to different screens/pages
 	void _onItemTapped(int index) {
 		setState(() {
 		  	_selectedIndex = index;
@@ -49,6 +51,49 @@ class _MainPageState extends State<MainPage> {
 			default:
 				return 'AudioScribe';
 		}
+	}
+
+	Future showModalOptions() {
+		return showModalBottomSheet(
+			context: context,
+			backgroundColor: Colors.transparent,
+			builder: (BuildContext context) {
+				return Container(
+					decoration: const BoxDecoration(
+						color: Color(0xFF242424),
+						borderRadius: BorderRadius.only(
+							topLeft: Radius.circular(15.0),
+							topRight: Radius.circular(15.0),
+						)
+					),
+					child: SizedBox(
+						height: 200,
+						child: Row(
+							mainAxisAlignment: MainAxisAlignment.center,
+							mainAxisSize: MainAxisSize.min,
+							children: [
+								// upload button
+								PopUpCircularButton(
+									buttonIcon: Icon(Icons.file_upload, color: Colors.white, size: 35.0),
+									onTap: () {},
+									label: 'Upload'
+								),
+
+								// horizontal spacing
+								const SizedBox(width: 60.0),
+
+								// camera button
+								PopUpCircularButton(
+									buttonIcon: Icon(Icons.camera, color: Colors.white, size: 35.0),
+									onTap: () {},
+									label: 'Camera'
+								),
+							]
+						)
+					),
+				);
+			}
+		);
 	}
 
 	@override
@@ -86,7 +131,7 @@ class _MainPageState extends State<MainPage> {
 	Widget _buildBottomActionButton(BuildContext context) {
 		return FloatingActionButton(
 			backgroundColor: const Color(0xFF524178),
-			onPressed: () {},
+			onPressed: showModalOptions,
 			child: const Icon(Icons.add, size: 35.0),
 		);
 	}

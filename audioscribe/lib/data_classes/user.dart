@@ -19,4 +19,10 @@ class User {
     username = map['username'];
     bookLibrary = [];
   }
+
+  @override
+  String toString() {
+    return 'User{userId: $userId, username: $username, bookLibrary: $bookLibrary}';
+  }
+
 }

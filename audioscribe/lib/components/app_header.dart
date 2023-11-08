@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AppHeader extends StatelessWidget {
@@ -17,6 +18,10 @@ class AppHeader extends StatelessWidget {
 		required this.currentScreen,
 	});
 
+	void signOut() async {
+		FirebaseAuth.instance.signOut();
+	}
+
 	@override
 	Widget build(BuildContext context) {
 		return Padding(
@@ -31,9 +36,39 @@ class AppHeader extends StatelessWidget {
 					),
 
 					currentScreen != 2 ?
-					IconButton(
+					PopupMenuButton<String>(
+						onSelected: (String value) {
+							if (value == 'logout') {
+								// perform logout
+								signOut();
+							} else if (value == 'setting') {
+								// navigate to settings page
+								onTap();
+							}
+						},
+						itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+							const PopupMenuItem<String>(
+								value: 'setting',
+								child: Row(
+									children: [
+										Icon(Icons.settings, color: Colors.white),
+										SizedBox(width: 10.0),
+										Text('Settings', style: TextStyle(color: Colors.white))
+									]
+								)
+							),
+							const PopupMenuItem<String>(
+								value: 'logout',
+								child: Row(
+									children: [
+										Icon(Icons.logout, color: Colors.white),
+										SizedBox(width: 10.0),
+										Text('Logout', style: TextStyle(color: Colors.white))
+									]
+								)
+							),
+						],
 						icon: const Icon(Icons.account_circle, size: 45.0, color: Colors.white),
-						onPressed: onTap,
 					)
 						:
 					Switch(
