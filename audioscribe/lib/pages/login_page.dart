@@ -3,6 +3,7 @@ import 'package:audioscribe/components/toggle_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_constants.dart';
+import '../data_classes/user.dart' as userClient;
 
 class LoginPage extends StatefulWidget {
 	const LoginPage({Key? key}) : super(key: key);
@@ -30,26 +31,52 @@ class _LoginPageState extends State<LoginPage> {
 		);
 	}
 
+
+
 	// try creating new user
 	void signup() async {
-		// show loading circle
-		showDialog(context: context, builder: (context) {
-			return const Center(
-				child: CircularProgressIndicator(),
-			);
-		});
+		bool isDialogShowing = true;
 
-		// sign in
+		// show loading circle
+		showDialog(
+			context: context,
+			barrierDismissible: false,
+			builder: (context) {
+				return WillPopScope(
+					child: const Center(
+						child: CircularProgressIndicator(),
+					),
+					onWillPop: () async {
+						isDialogShowing = false;
+						return true;
+					}
+				);
+			}
+		);
+
+		// sign up
 		try {
 			// check if password and confirm password are the same
 			if (passwordController.text == confirmPasswordController.text) {
-				await FirebaseAuth.instance.createUserWithEmailAndPassword(
+				UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
 					email: emailController.text,
 					password: passwordController.text
 				);
-				Navigator.pop(context);
+
+				// retrieve the UID of the signed-in user
+				String uid = userCredential.user?.uid ?? "";
+				String username = userCredential.user?.email ?? "";
+				print('User Information: $uid | $username');
+
+				// final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
+
+				if(isDialogShowing) {
+					Navigator.pop(context);
+				}
 			} else {
-				Navigator.pop(context);
+				if(isDialogShowing) {
+					Navigator.pop(context);
+				}
 				authErrorMessage("Passwords don't match!");
 			}
 		} on FirebaseAuthException catch(e) {
@@ -82,7 +109,8 @@ class _LoginPageState extends State<LoginPage> {
 						return true;
 					}
 				);
-		});
+			}
+		);
 
 		// sign in
 		try {
@@ -93,7 +121,8 @@ class _LoginPageState extends State<LoginPage> {
 
 			// retreive the UID of the signed-in user
 			String uid = userCredential.user?.uid ?? "";
-			print('User UID: $uid');
+			String username = userCredential.user?.email ?? "";
+			print('User Information: $uid | $username');
 
 			// close loading circle [pop circle]
 			if (isDialogShowing) {
@@ -144,6 +173,7 @@ class _LoginPageState extends State<LoginPage> {
 						),
 					),
 				),
+
 
 				// Rectangle at the bottom
 				Positioned(
