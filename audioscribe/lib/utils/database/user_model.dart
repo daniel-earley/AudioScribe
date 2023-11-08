@@ -66,7 +66,7 @@ class UserModel {
   }
 
   /// Delete an user from the database
-  Future<int> deleteUserWithId(int id) async {
+  Future<int> deleteUserWithId(String id) async {
     final db = await DbUtils.init();
     return db.delete(
       DbUtils.userDb,
