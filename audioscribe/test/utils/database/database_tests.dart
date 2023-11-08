@@ -16,8 +16,8 @@ void main() {
 
     final BookModel bookModel = BookModel();
     final UserModel userModel = UserModel();
-    User userA = User(userId: Random().nextInt(1000000), username: "George1212", bookLibrary: []);
-    User userB = User(userId: Random().nextInt(1000000), username: "Alex2121", bookLibrary: []);
+    User userA = User(userId: Random().nextInt(1000000).toString(), username: "George1212", bookLibrary: []);
+    User userB = User(userId: Random().nextInt(1000000).toString(), username: "Alex2121", bookLibrary: []);
 
     Book bookA = Book(bookId: Random().nextInt(1000000), title: "How to use a db", author: 'Anon1');
     Book bookB = Book(bookId: Random().nextInt(1000000), title: "How to Not use a db", author: 'Anon2');

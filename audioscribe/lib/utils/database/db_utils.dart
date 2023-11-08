@@ -14,7 +14,7 @@ class DbUtils {
       onCreate: (Database db, version) {
         db.execute(
           'CREATE TABLE $userDb('
-            'id INTEGER PRIMARY KEY,'
+            'id TEXT PRIMARY KEY,'
             'username TEXT'
           ')'
         );
@@ -30,7 +30,7 @@ class DbUtils {
         db.execute(
           'CREATE TABLE $userBookDb('
             'id INTEGER PRIMARY KEY, '
-            'userId INTEGER NOT NULL, '
+            'userId TEXT NOT NULL, '
             'bookId INTEGER NOT NULL, '
             'FOREIGN KEY (userId) REFERENCES $userDb(id) ON DELETE CASCADE '
             'FOREIGN KEY (bookId) REFERENCES $bookDb(id) ON DELETE CASCADE'

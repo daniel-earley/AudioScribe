@@ -1,7 +1,7 @@
 import 'book.dart';
 
 class User {
-  late int userId;
+  late String userId;
   late String username;
   late List<Book> bookLibrary;
 
