@@ -13,18 +13,25 @@ class BookRow extends StatefulWidget {
 }
 
 class _BookRow extends State<BookRow> {
+
 	@override
 	Widget build(BuildContext context) {
+		// use media query to get width of screen (used for responsive height)
+		var screenWidth = MediaQuery.of(context).size.width;
+
+		var bookWidth = screenWidth / 3;
+		var bookHeight = bookWidth / 0.8;
+
 		return Container(
-			padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-			height: 200,
+			padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+			height: bookHeight + 50,//200,
 			child: ListView.builder(
 				scrollDirection: Axis.horizontal,
 				itemCount: widget.books.length,
 				itemBuilder: (context, index) {
 					return Container(
 						width: 120,
-						padding: EdgeInsets.all(8.0),
+						padding: const EdgeInsets.all(8.0),
 						child: Column(
 							crossAxisAlignment: CrossAxisAlignment.start,
 							children: [
@@ -38,7 +45,7 @@ class _BookRow extends State<BookRow> {
 												BoxShadow(
 													color: Colors.black.withOpacity(0.2),
 													blurRadius: 3,
-													offset: Offset(0, 2),
+													offset: const Offset(0, 2),
 												),
 											],
 											image: DecorationImage(
@@ -48,12 +55,12 @@ class _BookRow extends State<BookRow> {
 										),
 									),
 								),
-								SizedBox(height: 8),
+								const SizedBox(height: 8),
 
 								Text(
 									widget.books[index]['title']!,
 									textAlign: TextAlign.center,
-									style: TextStyle(
+									style: const TextStyle(
 										color: Colors.white,
 										fontSize: 10,
 										fontWeight: FontWeight.w500
