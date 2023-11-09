@@ -12,7 +12,7 @@ FlutterTts flutterTts = FlutterTts();
 Future createAudioBook(String text, String name) async {
   // Setup flutter tts
   await flutterTts.setLanguage("en-US");
-  await flutterTts.setSpeechRate(1.0);
+  await flutterTts.setSpeechRate(0.55);
   await flutterTts.setVolume(1.0);
   await flutterTts.setPitch(1.0);
   await flutterTts.setVoice(
