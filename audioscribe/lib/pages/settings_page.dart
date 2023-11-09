@@ -1,6 +1,7 @@
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/settings_text_field.dart';
 import 'package:audioscribe/data_classes/user.dart' as userClient;
+import 'package:audioscribe/services/gutenberg_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../utils/database/user_model.dart' as userInfo;
 import 'package:flutter/material.dart';
@@ -151,16 +152,18 @@ class _SettingsPageState extends State<SettingsPage> {
 										),
 									),
 
-									// ElevatedButton(
-									// 	onPressed: clientQueryCurrentUser,
-									// 	child: const Text('Get users'),
-									// 	style: ElevatedButton.styleFrom(
-									// 		foregroundColor: Colors.white,
-									// 		backgroundColor: Colors.deepPurple,
-									// 		minimumSize: const Size(125, 40),
-									// 		padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-									// 	),
-									// ),
+									ElevatedButton(
+										onPressed: () {
+											getBookInformation();
+										},
+										child: const Text('Get users'),
+										style: ElevatedButton.styleFrom(
+											foregroundColor: Colors.white,
+											backgroundColor: Colors.deepPurple,
+											minimumSize: const Size(125, 40),
+											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+										),
+									),
 								],
 							),
 						)

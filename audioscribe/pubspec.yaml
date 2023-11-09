@@ -42,6 +42,10 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.8.3
   sqflite_common_ffi: any
+  http: ^0.13.6
+  flutter_dotenv: ^5.1.0
+  google_sign_in: ^6.1.6
+
 
 
 dev_dependencies:
@@ -75,6 +79,7 @@ flutter:
     - lib/images/dummy_book_3.jpg
     - lib/images/dummy_book_4.jpg
     - lib/configs/api_keys.json
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

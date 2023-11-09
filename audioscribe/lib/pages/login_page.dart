@@ -1,5 +1,6 @@
 import 'package:audioscribe/components/text_field_auth_page.dart';
 import 'package:audioscribe/components/toggle_button.dart';
+import 'package:audioscribe/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_constants.dart';
@@ -123,11 +124,26 @@ class _LoginPageState extends State<LoginPage> {
 
 	/// error message on sign in
 	void authErrorMessage(String errorMessage) {
-		showDialog(context: context, builder: (context) {
-			return AlertDialog(
-				title: Text(errorMessage, style: TextStyle(fontSize: 15.0, color: Colors.red)),
-			);
-		});
+		if (FocusScope.of(context).hasFocus) {
+			FocusScope.of(context).unfocus();
+		}
+
+		ScaffoldMessenger.of(context).showSnackBar(
+			SnackBar(
+				content: Text(
+					errorMessage,
+					style: const TextStyle(fontSize: 15.0, color: Colors.red),
+				),
+				backgroundColor: const Color(0xFF161515),
+				action: SnackBarAction(
+					label: 'Close',
+					onPressed: () {
+						ScaffoldMessenger.of(context).hideCurrentSnackBar();
+					},
+				),
+				duration: const Duration(seconds: 5),
+			)
+		);
 	}
 
 	/// Shows the circular loading indicator when signin the user in
@@ -383,6 +399,7 @@ class _LoginPageState extends State<LoginPage> {
 											child: GestureDetector(
 												onTap: () {
 													print("Logging in with google");
+													AuthService().signInWithGoogle();
 												},
 												child: Row(
 													mainAxisAlignment: MainAxisAlignment.center,
