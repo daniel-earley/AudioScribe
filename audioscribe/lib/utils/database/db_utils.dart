@@ -23,8 +23,9 @@ class DbUtils {
             'id INTEGER PRIMARY KEY, '
             'title TEXT,'
             'author TEXT,'
-            'textFileLocation TEXT,'
-            'audioFileLocation TEXT'
+            'textFileLocation TEXT, '
+            'audioFileLocation TEXT, '
+            'imageFileLocation TEXT'
           ')'
         );
         db.execute(

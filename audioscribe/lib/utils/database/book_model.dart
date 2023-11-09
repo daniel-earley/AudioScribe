@@ -26,11 +26,12 @@ class BookModel {
     return books;
   }
 
+  /// Retrieves all the books that is linked to a user
   Future<List<Book>> getAllBooksWithUser(User user) async {
     final db = await DbUtils.init();
     final List<Book> books = [];
     final List bookMap = await db.rawQuery(
-        'SELECT ${DbUtils.bookDb}.id, ${DbUtils.bookDb}.title, ${DbUtils.bookDb}.author, ${DbUtils.bookDb}.textFileLocation, ${DbUtils.bookDb}.audioFileLocation '
+        'SELECT ${DbUtils.bookDb}.id, ${DbUtils.bookDb}.title, ${DbUtils.bookDb}.author, ${DbUtils.bookDb}.textFileLocation, ${DbUtils.bookDb}.audioFileLocation, ${DbUtils.bookDb}.imageFileLocation '
         'FROM ${DbUtils.bookDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.bookDb}.id=${DbUtils.userBookDb}.bookId '
         'WHERE userId = ${user.userId}');
     for (Map map in bookMap) {
