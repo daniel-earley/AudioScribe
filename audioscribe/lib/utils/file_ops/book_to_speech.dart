@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 // Need to properly credit this dude: https://stackoverflow.com/a/69879595
 FlutterTts flutterTts = FlutterTts();
 
-Future createAudioBook(String text, String filePath, String name) async {
+Future createAudioBook(String text, String name) async {
   // Setup flutter tts
   await flutterTts.setLanguage("en-US");
   await flutterTts.setSpeechRate(1.0);
@@ -19,35 +19,37 @@ Future createAudioBook(String text, String filePath, String name) async {
     {"name": "en-us-x-tpf-local", "locale": "en-US"},
   );
 
-  // Request Perms
-  if (Platform.isAndroid) {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-    }
+  // Request Perms - don't need yet
+  // if (Platform.isAndroid) {
+  //   var status = await Permission.storage.status;
+  //   if (!status.isGranted) {
+  //     await Permission.storage.request();
+  //   }
+  // }
+
+  // Get the external storage directory
+  Directory? externalDirectory = await getExternalStorageDirectory();
+  String? externalPath = externalDirectory?.path;
+
+  // Create a directory called "AudioScribeAudioBooks" inside the external directory
+  String audioBookDirectoryPath = "$externalPath/AudioScribeAudioBooks";
+  Directory audioBookDirectory = Directory(audioBookDirectoryPath);
+
+  if (!await audioBookDirectory.exists()) {
+    await audioBookDirectory.create(recursive: true); // This will create the directory if it doesn't exist
   }
 
-  // Determine the directory to save the file
-  Directory directory = await getApplicationDocumentsDirectory();
-  String dirPath = directory.path;
-  if (filePath.isNotEmpty) {
-    dirPath = filePath;
-  }
-
-  // Create filename
-  var fileExt = Platform.isAndroid ? ".wav": ".caf";
-  String fileName = "$dirPath/$name$fileExt";
+  // Create filename with full path
+  String fileExtension = Platform.isAndroid ? ".wav" : ".caf";
+  String fileNameWithPath = "$audioBookDirectoryPath/$name$fileExtension";
 
   // Save tts to file
-  await flutterTts.synthesizeToFile(text, fileName).then((value) async {
-    if (value == 1) {
-      print("File created: $fileName");
-      return fileName;
-    } else {
-      print("Error: File not created.");
-      throw "Error: File not created.";
-    }
-  });
-
-
+  int result = await flutterTts.synthesizeToFile(text, fileNameWithPath);
+  if (result == 1) {
+    print("File created: $fileNameWithPath");
+    return fileNameWithPath;
+  } else {
+    print("Error: File not created.");
+    return null;
+  }
 }
