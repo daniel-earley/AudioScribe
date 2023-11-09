@@ -7,3 +7,14 @@ Future<Map> readJsonFile(String filePath) async {
   var map = jsonDecode(input);
   return map;
 }
+
+Future<String> readTextFile(String filePath) async {
+  try {
+    final file = await File(filePath).readAsString();
+
+    return file;
+  } catch (e) {
+    // If encountering an error, return 0
+    return "File Not Found";
+  }
+}
