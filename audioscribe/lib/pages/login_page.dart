@@ -16,12 +16,16 @@ class LoginPage extends StatefulWidget {
 
 
 class _LoginPageState extends State<LoginPage> {
-	bool isLoginMode = true; // default to login
+	// Global vars
+	final GlobalKey<State> _dialogKey = GlobalKey<State>();
+
+	// Local vars
 	AuthMode currentAuthMode = AuthMode.LOGIN;
 	var selectedColor = const Color(0xFF524178);
 	var unselectedColor = const Color(0xFF383838);
 	final userModel.UserModel _userModel = userModel.UserModel();
 
+	// Controllers
 	TextEditingController emailController = TextEditingController();
 	TextEditingController passwordController = TextEditingController();
 	TextEditingController confirmPasswordController = TextEditingController();
@@ -34,28 +38,9 @@ class _LoginPageState extends State<LoginPage> {
 		);
 	}
 
-
-
-	// try creating new user
+	/// Creates new user using firebase authentication system and stores relevant information SQLite DB
 	void signup() async {
-		bool isDialogShowing = true;
-
-		// show loading circle
-		showDialog(
-			context: context,
-			barrierDismissible: false,
-			builder: (context) {
-				return WillPopScope(
-					child: const Center(
-						child: CircularProgressIndicator(),
-					),
-					onWillPop: () async {
-						isDialogShowing = false;
-						return true;
-					}
-				);
-			}
-		);
+		showLoadingDialog();
 
 		// sign up
 		try {
@@ -74,29 +59,25 @@ class _LoginPageState extends State<LoginPage> {
 				// new user object
 				final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
 
+				// insert user into db
 				await clientQueryInsertUser(newUser);
 
-				if(isDialogShowing) {
-					Navigator.pop(context);
-				}
 			} else {
-				if(isDialogShowing) {
-					Navigator.pop(context);
-				}
 				authErrorMessage("Passwords don't match!");
 			}
 		} on FirebaseAuthException catch(e) {
-			// close loading circle [pop circle]
-			Navigator.pop(context);
-
 			// show error message dialog
 			authErrorMessage(e.code);
 
 			// debug any different error codes that may pop up
 			print('ERROR: ${e.code}');
+			dismissLoadingDialog();
+		} finally {
+			dismissLoadingDialog();
 		}
 	}
 
+	/// Invokes the insert user method to insert user into SQLite DB
 	Future<void> clientQueryInsertUser(userClient.User user) async {
 		try {
 			await _userModel.insertUser(user);
@@ -106,26 +87,9 @@ class _LoginPageState extends State<LoginPage> {
 		}
 	}
 
-	// sign user method
+	/// signs user in using firebase authentication system
 	void signin() async {
-		bool isDialogShowing = true;
-
-		// show loading circle
-		showDialog(
-			context: context,
-			barrierDismissible: false,
-			builder: (context) {
-				return WillPopScope(
-					child: const Center(
-						child: CircularProgressIndicator(),
-					),
-					onWillPop: () async {
-						isDialogShowing = false;
-						return true;
-					}
-				);
-			}
-		);
+		showLoadingDialog();
 
 		// sign in
 		try {
@@ -139,31 +103,47 @@ class _LoginPageState extends State<LoginPage> {
 			String username = userCredential.user?.email ?? "";
 			print('User Information: $uid | $username');
 
-			// close loading circle [pop circle]
-			if (isDialogShowing) {
-				Navigator.pop(context);
-			}
 		} on FirebaseAuthException catch(e) {
-			// close loading circle [pop circle]
-			if (isDialogShowing) {
-				Navigator.pop(context);
-			}
-
 			// show error message dialog
 			authErrorMessage(e.code);
 
 			// debug any different error codes that may pop up
 			print('ERROR: ${e.code}');
+			dismissLoadingDialog();
+		} finally {
+			dismissLoadingDialog();
 		}
 	}
 
-	// error message on sign in
+	/// error message on sign in
 	void authErrorMessage(String errorMessage) {
 		showDialog(context: context, builder: (context) {
 			return AlertDialog(
 				title: Text(errorMessage),
 			);
 		});
+	}
+
+	/// Shows the circular loading indicator when signin the user in
+	void showLoadingDialog() {
+		showDialog(
+			context: context,
+			builder: (BuildContext context) {
+				return WillPopScope(
+					onWillPop: () async => false,
+					child: Center(
+						child: CircularProgressIndicator(key: _dialogKey),
+					)
+				);
+			}
+		);
+	}
+
+	/// Dismisses the circular loading indicator when user has signed in using global key to get context
+	void dismissLoadingDialog() {
+		if(_dialogKey.currentContext != null) {
+			Navigator.of(_dialogKey.currentContext!, rootNavigator: true).pop();
+		}
 	}
 
 	Widget _buildLoginPage(BuildContext context) {
@@ -228,7 +208,6 @@ class _LoginPageState extends State<LoginPage> {
 												children: [
 													// Login Capsule
 													ToggleLoginButton(
-														// isLoginMode: isLoginMode,
 														authMode: currentAuthMode,
 														// authMode: "LOGIN",
 														onTap: () {
@@ -242,13 +221,11 @@ class _LoginPageState extends State<LoginPage> {
 
 													// Signup capsule
 													ToggleLoginButton(
-														// isLoginMode: !isLoginMode,
 														authMode: currentAuthMode,
 														// authMode: "SIGNUP",
 														onTap: () {
 															setState(() {
 																currentAuthMode = AuthMode.SIGNUP;
-																// isLoginMode = !isLoginMode;
 															});
 														},
 														buttonText: "Signup"
@@ -271,7 +248,6 @@ class _LoginPageState extends State<LoginPage> {
 									const SizedBox(height: 15.0),
 
 									// confirm password
-									// !isLoginMode
 									currentAuthMode == AuthMode.SIGNUP ?
 										TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true)
 										: Container(),
@@ -367,5 +343,4 @@ class _LoginPageState extends State<LoginPage> {
 			],
 		);
 	}
-
 }

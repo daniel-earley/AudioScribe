@@ -43,21 +43,29 @@ class _SettingsPageState extends State<SettingsPage> {
 			String userId = getCurrentUserId();
 
 			print('Fetching user information...');
-			userClient.User? users = await _userModel.getUserByID(userId);
+			userClient.User? user = await _userModel.getUserByID(userId);
 
 			// only set state when the page is mounted in lifecycle
-			if (mounted) {
-				setState(() {
-					_user = users;
-					_username = users?.username.split('@')[0] ?? 'loading...';
-				});
+			if (user != null) {
+				if (mounted) {
+					setState(() {
+						_user = user;
+						_username = user?.username.split('@')[0] ?? 'loading...';
+					});
+				}
+			} else {
+				print('User not found in SQLite. Fetching from Firebase');
+				fetchUserFromFirebase(userId);
 			}
+
 
 			print('current user from DB: $_user');
 
 			print('Fetched user information.');
 		} catch (e) {
 			print('Error fetching users: $e');
+			String userId = getCurrentUserId();
+			fetchUserFromFirebase(userId);
 		}
 
 	}
@@ -71,6 +79,34 @@ class _SettingsPageState extends State<SettingsPage> {
 		} else {
 			return 'No user is currently signed in';
 		}
+	}
+
+	/// fallback function to retrieve user info from firebase
+	void fetchUserFromFirebase(String userId) async {
+		User? firebaseUser = FirebaseAuth.instance.currentUser;
+		userInfo.UserModel _userModel = userInfo.UserModel();
+
+		if (firebaseUser != null) {
+			// Create a new user object from Firebase user
+			userClient.User user = userClient.User(
+				userId: firebaseUser.uid,
+				username: firebaseUser.email ?? '',
+				bookLibrary: []
+			);
+
+			// insert user in SQLite
+			await _userModel.insertUser(user);
+
+			// update state with firebase user
+			if (mounted) {
+				setState(() {
+					_user = user;
+					_username = user.username.split('@')[0];
+				});
+			}
+		}
+
+
 	}
 
 	Widget _buildSettingsPage(BuildContext context) {
