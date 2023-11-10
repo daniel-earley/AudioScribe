@@ -15,7 +15,8 @@ class DbUtils {
         db.execute(
           'CREATE TABLE $userDb('
             'id TEXT PRIMARY KEY,'
-            'username TEXT'
+            'username TEXT, '
+            'loggedIn INTEGER'
           ')'
         );
         db.execute(
