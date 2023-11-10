@@ -1,5 +1,6 @@
 import 'package:audioscribe/components/text_field_auth_page.dart';
 import 'package:audioscribe/components/toggle_button.dart';
+import 'package:audioscribe/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_constants.dart';
@@ -16,12 +17,17 @@ class LoginPage extends StatefulWidget {
 
 
 class _LoginPageState extends State<LoginPage> {
-	bool isLoginMode = true; // default to login
+	// Global vars
+	final GlobalKey<State> _dialogKey = GlobalKey<State>();
+
+	// Local vars
 	AuthMode currentAuthMode = AuthMode.LOGIN;
 	var selectedColor = const Color(0xFF524178);
 	var unselectedColor = const Color(0xFF383838);
 	final userModel.UserModel _userModel = userModel.UserModel();
+	bool passwordsMatch = true;
 
+	// Controllers
 	TextEditingController emailController = TextEditingController();
 	TextEditingController passwordController = TextEditingController();
 	TextEditingController confirmPasswordController = TextEditingController();
@@ -34,28 +40,9 @@ class _LoginPageState extends State<LoginPage> {
 		);
 	}
 
-
-
-	// try creating new user
+	/// Creates new user using firebase authentication system and stores relevant information SQLite DB
 	void signup() async {
-		bool isDialogShowing = true;
-
-		// show loading circle
-		showDialog(
-			context: context,
-			barrierDismissible: false,
-			builder: (context) {
-				return WillPopScope(
-					child: const Center(
-						child: CircularProgressIndicator(),
-					),
-					onWillPop: () async {
-						isDialogShowing = false;
-						return true;
-					}
-				);
-			}
-		);
+		showLoadingDialog();
 
 		// sign up
 		try {
@@ -74,29 +61,28 @@ class _LoginPageState extends State<LoginPage> {
 				// new user object
 				final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
 
+				// insert user into db
 				await clientQueryInsertUser(newUser);
 
-				if(isDialogShowing) {
-					Navigator.pop(context);
-				}
 			} else {
-				if(isDialogShowing) {
-					Navigator.pop(context);
-				}
 				authErrorMessage("Passwords don't match!");
 			}
-		} on FirebaseAuthException catch(e) {
-			// close loading circle [pop circle]
-			Navigator.pop(context);
 
-			// show error message dialog
-			authErrorMessage(e.code);
+			// dismiss loading circle
+			dismissLoadingDialog();
+		} on FirebaseAuthException catch(e) {
+			// dismiss loading circle
+			dismissLoadingDialog();
 
 			// debug any different error codes that may pop up
 			print('ERROR: ${e.code}');
+
+			// show error message dialog
+			authErrorMessage(e.code);
 		}
 	}
 
+	/// Invokes the insert user method to insert user into SQLite DB
 	Future<void> clientQueryInsertUser(userClient.User user) async {
 		try {
 			await _userModel.insertUser(user);
@@ -106,26 +92,9 @@ class _LoginPageState extends State<LoginPage> {
 		}
 	}
 
-	// sign user method
+	/// signs user in using firebase authentication system
 	void signin() async {
-		bool isDialogShowing = true;
-
-		// show loading circle
-		showDialog(
-			context: context,
-			barrierDismissible: false,
-			builder: (context) {
-				return WillPopScope(
-					child: const Center(
-						child: CircularProgressIndicator(),
-					),
-					onWillPop: () async {
-						isDialogShowing = false;
-						return true;
-					}
-				);
-			}
-		);
+		showLoadingDialog();
 
 		// sign in
 		try {
@@ -139,33 +108,131 @@ class _LoginPageState extends State<LoginPage> {
 			String username = userCredential.user?.email ?? "";
 			print('User Information: $uid | $username');
 
-			// close loading circle [pop circle]
-			if (isDialogShowing) {
-				Navigator.pop(context);
-			}
+			// dismiss loading
+			dismissLoadingDialog();
 		} on FirebaseAuthException catch(e) {
-			// close loading circle [pop circle]
-			if (isDialogShowing) {
-				Navigator.pop(context);
-			}
-
-			// show error message dialog
-			authErrorMessage(e.code);
+			// dismiss loading
+			dismissLoadingDialog();
 
 			// debug any different error codes that may pop up
 			print('ERROR: ${e.code}');
+
+			// show error message dialog
+			authErrorMessage(e.code);
 		}
 	}
 
-	// error message on sign in
+	/// error message on sign in
 	void authErrorMessage(String errorMessage) {
-		showDialog(context: context, builder: (context) {
-			return AlertDialog(
-				title: Text(errorMessage),
-			);
+		if (FocusScope.of(context).hasFocus) {
+			FocusScope.of(context).unfocus();
+		}
+
+		ScaffoldMessenger.of(context).showSnackBar(
+			SnackBar(
+				content: Text(
+					errorMessage,
+					style: const TextStyle(fontSize: 15.0, color: Colors.red),
+				),
+				backgroundColor: const Color(0xFF161515),
+				action: SnackBarAction(
+					label: 'Close',
+					onPressed: () {
+						ScaffoldMessenger.of(context).hideCurrentSnackBar();
+					},
+				),
+				duration: const Duration(seconds: 5),
+			)
+		);
+	}
+
+	/// Shows the circular loading indicator when signin the user in
+	void showLoadingDialog() {
+		showDialog(
+			context: context,
+			builder: (BuildContext context) {
+				return WillPopScope(
+					onWillPop: () async => false,
+					child: Center(
+						child: CircularProgressIndicator(key: _dialogKey),
+					)
+				);
+			}
+		);
+	}
+
+	/// Dismisses the circular loading indicator when user has signed in using global key to get context
+	void dismissLoadingDialog() {
+		if(_dialogKey.currentContext != null) {
+			Navigator.of(_dialogKey.currentContext!, rootNavigator: true).pop();
+		}
+	}
+
+	/// function to reset textfields on current auth mode change
+	void resetTextFields() {
+		emailController.clear();
+		passwordController.clear();
+		confirmPasswordController.clear();
+	}
+
+	/// password state change
+	void _onPasswordChanged(String password) {
+		setState(() {
+			passwordsMatch = password == passwordController.text;
 		});
 	}
 
+	/// confirm password state change
+	void _onConfirmPasswordChanged(String confirmPassword) {
+		setState(() {
+		  	passwordsMatch = confirmPassword == confirmPasswordController.text;
+		});
+	}
+
+	/// reset password feature
+	Future<void> sendPasswordResetEmail(String email) async {
+		try {
+			await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+		} on FirebaseAuthException catch (e) {
+			authErrorMessage(e.message.toString());
+		}
+	}
+
+	Future<void> showForgotPasswordDialog(BuildContext context) async {
+		TextEditingController resetEmailController = TextEditingController();
+
+		return showDialog(
+			context: context,
+			barrierDismissible: false,
+			builder: (BuildContext context) {
+				return AlertDialog(
+					title: const Text('Reset Password'),
+					content: TextField(
+						controller: resetEmailController,
+						decoration: InputDecoration(hintText: 'Enter your email'),
+					),
+					actions: [
+						TextButton(
+							child: const Text('Cancel'),
+							onPressed: () {
+								Navigator.of(context).pop();
+							},
+						),
+						TextButton(
+							child: const Text('Send reset link'),
+							onPressed: () {
+								sendPasswordResetEmail(resetEmailController.text).then((_) {
+									Navigator.of(context).pop();
+								});
+							}
+						)
+					]
+				);
+			}
+		);
+	}
+
+	/// builds entire login page
 	Widget _buildLoginPage(BuildContext context) {
 		return Stack(
 			children: [
@@ -228,13 +295,11 @@ class _LoginPageState extends State<LoginPage> {
 												children: [
 													// Login Capsule
 													ToggleLoginButton(
-														// isLoginMode: isLoginMode,
 														authMode: currentAuthMode,
-														// authMode: "LOGIN",
 														onTap: () {
 															setState(() {
 																currentAuthMode = AuthMode.LOGIN;
-																// isLoginMode = true;
+																resetTextFields();
 															});
 														},
 														buttonText: "Login"
@@ -242,13 +307,11 @@ class _LoginPageState extends State<LoginPage> {
 
 													// Signup capsule
 													ToggleLoginButton(
-														// isLoginMode: !isLoginMode,
 														authMode: currentAuthMode,
-														// authMode: "SIGNUP",
 														onTap: () {
 															setState(() {
 																currentAuthMode = AuthMode.SIGNUP;
-																// isLoginMode = !isLoginMode;
+																resetTextFields();
 															});
 														},
 														buttonText: "Signup"
@@ -261,20 +324,31 @@ class _LoginPageState extends State<LoginPage> {
 									const SizedBox(height: 15.0),
 
 									// enter email or username
-									TextFieldAuthPage(controller: emailController, type: TextInputType.emailAddress, hintText: "Enter email or username", obscureText: false),
+									TextFieldAuthPage(controller: emailController, type: TextInputType.emailAddress, hintText: "Enter email or username", obscureText: false, onChanged: (value){} ),
 
 									const SizedBox(height: 15.0),
 
 									// enter password
-									TextFieldAuthPage(controller: passwordController, type: TextInputType.visiblePassword, hintText: "Enter password", obscureText: true),
+									TextFieldAuthPage(controller: passwordController, type: TextInputType.visiblePassword, hintText: "Enter password", obscureText: true, onChanged: _onPasswordChanged),
 
 									const SizedBox(height: 15.0),
 
 									// confirm password
-									// !isLoginMode
 									currentAuthMode == AuthMode.SIGNUP ?
-										TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true)
+										TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true, onChanged: _onConfirmPasswordChanged)
 										: Container(),
+
+									currentAuthMode == AuthMode.SIGNUP && passwordController.text.isNotEmpty && confirmPasswordController.text.isNotEmpty ?
+										Padding(
+											padding: const EdgeInsets.symmetric(vertical: 10.0),
+											child: Text(
+												passwordController.text == confirmPasswordController.text ? 'passwords are matching' : 'passwords are not matching' ,
+												style: TextStyle(
+													color: passwordController.text == confirmPasswordController.text ? Colors.green : Colors.red,
+												),
+											)
+										)
+									: Container(),
 
 									const SizedBox(height: 30.0),
 
@@ -325,6 +399,7 @@ class _LoginPageState extends State<LoginPage> {
 											child: GestureDetector(
 												onTap: () {
 													print("Logging in with google");
+													AuthService().signInWithGoogle();
 												},
 												child: Row(
 													mainAxisAlignment: MainAxisAlignment.center,
@@ -347,7 +422,7 @@ class _LoginPageState extends State<LoginPage> {
 									currentAuthMode == AuthMode.LOGIN
 										? GestureDetector(
 										onTap: () {
-											print("forgetting password");
+											showForgotPasswordDialog(context);
 										},
 										child: Container(
 											padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
@@ -367,5 +442,4 @@ class _LoginPageState extends State<LoginPage> {
 			],
 		);
 	}
-
 }

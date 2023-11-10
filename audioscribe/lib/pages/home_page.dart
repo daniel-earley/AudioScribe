@@ -1,9 +1,6 @@
-import 'package:audioscribe/app_constants.dart';
-import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
-import 'package:audioscribe/pages/collection_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,10 +11,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-	// current page
-	AppPage _currentPage = AppPage.HOME;
-
 
 	// list of users book
 	final List<Map<String, String>> userBooks = [
@@ -58,7 +51,6 @@ class _HomePageState extends State<HomePage> {
 	Widget _buildHomePage(BuildContext context) {
 		// fallback for device back button
 		setState(() {
-		  	_currentPage = AppPage.HOME;
 		});
 
 		return Stack(

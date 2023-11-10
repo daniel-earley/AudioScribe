@@ -43,11 +43,12 @@ dependencies:
   path: ^1.8.3
   sqflite_common_ffi: any
   flutter_tts: ^3.8.3
-  path_provider: ^2.1.1
   permission_handler: ^11.0.1
-  mockito: ^5.4.2
   file_picker: ^6.1.1
-
+  http: ^0.13.6
+  flutter_dotenv: ^5.1.0
+  google_sign_in: ^6.1.6
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +82,7 @@ flutter:
     - lib/images/dummy_book_3.jpg
     - lib/images/dummy_book_4.jpg
     - lib/configs/api_keys.json
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

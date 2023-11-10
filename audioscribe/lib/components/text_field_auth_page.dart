@@ -5,13 +5,15 @@ class TextFieldAuthPage extends StatelessWidget {
 	final TextInputType type;
 	final String hintText;
 	final bool obscureText;
+	final void Function(String) onChanged;
 
 	const TextFieldAuthPage({
 		super.key,
 		required this.controller,
 		required this.type,
 		required this.hintText,
-		required this.obscureText
+		required this.obscureText,
+		required this.onChanged
 	});
 
   @override
@@ -33,6 +35,7 @@ class TextFieldAuthPage extends StatelessWidget {
 					contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
 				),
 				style: const TextStyle(color: Colors.white),
+				onChanged: onChanged
 			)
 		);
   }

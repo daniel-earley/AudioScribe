@@ -1,6 +1,7 @@
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/settings_text_field.dart';
 import 'package:audioscribe/data_classes/user.dart' as userClient;
+import 'package:audioscribe/services/gutenberg_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../utils/database/user_model.dart' as userInfo;
 import 'package:flutter/material.dart';
@@ -43,21 +44,29 @@ class _SettingsPageState extends State<SettingsPage> {
 			String userId = getCurrentUserId();
 
 			print('Fetching user information...');
-			userClient.User? users = await _userModel.getUserByID(userId);
+			userClient.User? user = await _userModel.getUserByID(userId);
 
 			// only set state when the page is mounted in lifecycle
-			if (mounted) {
-				setState(() {
-					_user = users;
-					_username = users?.username.split('@')[0] ?? 'loading...';
-				});
+			if (user != null) {
+				if (mounted) {
+					setState(() {
+						_user = user;
+						_username = user?.username.split('@')[0] ?? 'loading...';
+					});
+				}
+			} else {
+				print('User not found in SQLite. Fetching from Firebase');
+				fetchUserFromFirebase(userId);
 			}
+
 
 			print('current user from DB: $_user');
 
 			print('Fetched user information.');
 		} catch (e) {
 			print('Error fetching users: $e');
+			String userId = getCurrentUserId();
+			fetchUserFromFirebase(userId);
 		}
 
 	}
@@ -71,6 +80,34 @@ class _SettingsPageState extends State<SettingsPage> {
 		} else {
 			return 'No user is currently signed in';
 		}
+	}
+
+	/// fallback function to retrieve user info from firebase
+	void fetchUserFromFirebase(String userId) async {
+		User? firebaseUser = FirebaseAuth.instance.currentUser;
+		userInfo.UserModel _userModel = userInfo.UserModel();
+
+		if (firebaseUser != null) {
+			// Create a new user object from Firebase user
+			userClient.User user = userClient.User(
+				userId: firebaseUser.uid,
+				username: firebaseUser.email ?? '',
+				bookLibrary: []
+			);
+
+			// insert user in SQLite
+			await _userModel.insertUser(user);
+
+			// update state with firebase user
+			if (mounted) {
+				setState(() {
+					_user = user;
+					_username = user.username.split('@')[0];
+				});
+			}
+		}
+
+
 	}
 
 	Widget _buildSettingsPage(BuildContext context) {
@@ -115,16 +152,18 @@ class _SettingsPageState extends State<SettingsPage> {
 										),
 									),
 
-									// ElevatedButton(
-									// 	onPressed: clientQueryCurrentUser,
-									// 	child: const Text('Get users'),
-									// 	style: ElevatedButton.styleFrom(
-									// 		foregroundColor: Colors.white,
-									// 		backgroundColor: Colors.deepPurple,
-									// 		minimumSize: const Size(125, 40),
-									// 		padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-									// 	),
-									// ),
+									ElevatedButton(
+										onPressed: () {
+											getBookInformation();
+										},
+										child: const Text('Get users'),
+										style: ElevatedButton.styleFrom(
+											foregroundColor: Colors.white,
+											backgroundColor: Colors.deepPurple,
+											minimumSize: const Size(125, 40),
+											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+										),
+									),
 								],
 							),
 						)

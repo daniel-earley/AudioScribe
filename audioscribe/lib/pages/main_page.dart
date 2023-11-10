@@ -29,9 +29,9 @@ class _MainPageState extends State<MainPage> {
 
 	// list of widgets
 	final List<Widget> _widgetOptions = [
-		const HomePage(),
-		const CollectionPage(),
-		const SettingsPage()
+		const HomePage(key: ValueKey('HomePage')),
+		const CollectionPage(key: ValueKey('CollectionPage')),
+		const SettingsPage(key: ValueKey('SettingsPage')),
 	];
 	
 	/// Used to navigate to different screens/pages
@@ -90,7 +90,7 @@ class _MainPageState extends State<MainPage> {
 
 								// camera button
 								PopUpCircularButton(
-									buttonIcon: Icon(Icons.camera, color: Colors.white, size: 35.0),
+									buttonIcon: const Icon(Icons.camera, color: Colors.white, size: 35.0),
 									onTap: () {},
 									label: 'Camera'
 								),
@@ -144,9 +144,13 @@ class _MainPageState extends State<MainPage> {
 								onToggle: _toggleSwitch,
 							),
 							Expanded(
-								child: IndexedStack(
-									index: _selectedIndex,
-									children: _widgetOptions,
+								child: AnimatedSwitcher(
+									duration: const Duration(milliseconds: 200),
+									child: _widgetOptions.elementAt(_selectedIndex),
+									// IndexedStack(
+									// 	index: _selectedIndex,
+									// 	children: _widgetOptions,
+									// )
 								),
 							)
 						],

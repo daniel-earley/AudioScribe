@@ -12,7 +12,20 @@
           "package_name": "com.example.audioscribe"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "243906736454-18j5e7nl5mefajqaqhjt9f5pd5nuakku.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.audioscribe",
+            "certificate_hash": "3893edc31c18295c50617d03fa5a9160c300b29e"
+          }
+        },
+        {
+          "client_id": "243906736454-h3lfpe9g0ckuirjnkifv7ipunavaraef.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBgJ7j22m--ds1-jS39ZislHIA3YXyF1m0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "243906736454-h3lfpe9g0ckuirjnkifv7ipunavaraef.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "243906736454-idtdajimgvqku1hf08p5qk9ptqskkts3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.audioscribe"
+              }
+            }
+          ]
         }
       }
     }
