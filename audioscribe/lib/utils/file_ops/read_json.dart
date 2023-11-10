@@ -18,5 +18,9 @@ Future<String> getApiKey(String keyName) async {
     throw Exception('Key not found: $keyName');
   }
 
-  return apiKeys[keyName];
+  if (apiKeys[keyName] is String) {
+    return apiKeys[keyName]; 
+  } else {
+    return jsonEncode(apiKeys[keyName]);
+  }
 }
