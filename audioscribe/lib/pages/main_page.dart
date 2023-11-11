@@ -1,8 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
+import 'dart:io';
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/popup_circular_button.dart';
 import 'package:audioscribe/pages/collection_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/settings_page.dart';
+import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
+import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -74,8 +80,8 @@ class _MainPageState extends State<MainPage> {
 							children: [
 								// upload button
 								PopUpCircularButton(
-									buttonIcon: const Icon(Icons.file_upload, color: Colors.white, size: 35.0),
-									onTap: () {},
+									buttonIcon: Icon(Icons.file_upload, color: Colors.white, size: 35.0),
+									onTap: _uploadBook,
 									label: 'Upload'
 								),
 
@@ -94,6 +100,31 @@ class _MainPageState extends State<MainPage> {
 				);
 			}
 		);
+	}
+
+	Future <void> _uploadBook() async {
+		// Use FilePicker to let the user select a text file
+		FilePickerResult? result = await FilePicker.platform.pickFiles(
+			type: FileType.custom,
+			allowedExtensions: ['txt'],
+		);
+
+		if (result != null) {
+			// Get the selected file
+			PlatformFile file = result.files.first;
+
+			// Read the file as a string
+			String fileContent = await File(file.path!).readAsString();
+
+			// Use the path package to get the file name without extension
+			String fileName = path.basenameWithoutExtension(file.path!);
+
+			// Call your custom function with the file content and file name
+			createAudioBook(fileContent, fileName);
+		} else {
+			// User canceled the picker
+			print("No file selected");
+		}
 	}
 
 	@override
