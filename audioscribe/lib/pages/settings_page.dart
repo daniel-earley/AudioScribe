@@ -92,7 +92,8 @@ class _SettingsPageState extends State<SettingsPage> {
 			userClient.User user = userClient.User(
 				userId: firebaseUser.uid,
 				username: firebaseUser.email ?? '',
-				bookLibrary: []
+				bookLibrary: [],
+				loggedIn: true
 			);
 
 			// insert user in SQLite

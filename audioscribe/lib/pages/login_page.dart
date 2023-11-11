@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
 				print('User Information: $uid | $username');
 
 				// new user object
-				final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: []);
+				final userClient.User newUser = userClient.User(userId: uid, username: username, bookLibrary: [], loggedIn: true);
 
 				// insert user into db
 				await clientQueryInsertUser(newUser);
