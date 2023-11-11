@@ -156,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> {
 										onPressed: () {
 											getBookInformation();
 										},
-										child: const Text('Get users'),
+										child: const Text('Get book info'),
 										style: ElevatedButton.styleFrom(
 											foregroundColor: Colors.white,
 											backgroundColor: Colors.deepPurple,
