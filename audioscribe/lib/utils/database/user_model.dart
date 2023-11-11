@@ -83,6 +83,18 @@ class UserModel {
     }
   }
 
+  /// Method for updating user logged in status
+  Future<void> updateLoggedInStatus(String userId, bool loggedIn) async {
+    final db = await DbUtils.init();
+
+    await db.update(
+      DbUtils.userDb,
+      {'loggedIn': loggedIn ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [userId]
+    );
+  }
+
   /// Delete an user from the database
   Future<int> deleteUserWithId(String id) async {
     final db = await DbUtils.init();

@@ -39,7 +39,12 @@ class DbUtils {
           ')'
         );
       },
-      version: 1,
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE $userDb ADD COLUMN loggedIn INTEGER');
+        }
+      },
+      version: 2,
     );
 
     return database;

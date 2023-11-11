@@ -47,9 +47,10 @@ class _MainPageState extends State<MainPage> {
 	}
 
 	String currentPageHeaderTitle() {
+		String? currentUser = FirebaseAuth.instance.currentUser?.email?.split('@')[0];
 		switch(_selectedIndex) {
 			case 0:
-				return 'AudioScribe';
+				return '${currentUser?[0].toUpperCase()}${currentUser?.substring(1).toLowerCase()}';
 			case 1:
 				return 'Your collection';
 			case 2:

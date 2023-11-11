@@ -32,6 +32,15 @@ class _SettingsPageState extends State<SettingsPage> {
 	}
 
 	void signOut() async {
+		userInfo.UserModel _userModel = userInfo.UserModel();
+		String userId = getCurrentUserId();
+		// update logged in status for user
+		await _userModel.updateLoggedInStatus(userId, false);
+
+		// get user info
+		userClient.User? user = await _userModel.getUserByID(userId);
+		print('User $userId has been logged out | CURRENT STATUS: $user');
+
 		FirebaseAuth.instance.signOut();
 	}
 
