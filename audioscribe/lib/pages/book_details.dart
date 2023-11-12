@@ -2,12 +2,12 @@ import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../data_classes/user.dart' as userClient;
 import 'package:audioscribe/utils/database/user_model.dart';
-
 
 
 class BookDetailPage extends StatefulWidget {
@@ -96,7 +96,8 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			}
 
 			// FIREBASE STORAGE
-			addBookmarkFirestore(bookId);
+			String bookSummary = await _readBookSummary(widget.description);
+			addBookmarkFirestore(bookId.toString(), widget.bookTitle, widget.authorName, bookSummary);
 
 			// if user exists then bookmark the selected book
 			if (user != null) {
@@ -105,11 +106,39 @@ class _BookDetailPageState extends State<BookDetailPage> {
 					isBookmarked = true;
 				});
 				widget.onBookmarkChange();
+
+				if(mounted) {
+					SnackbarUtil.showSnackbarMessage(context, '${widget.bookTitle} has been bookmarked', Colors.white);
+				}
 			}
 		} catch (e) {
 			print("bookmark $e");
 		}
 	}
+
+	/// remove bookmark for the currently selected book
+	Future<void> removeBookmark(int bookId) async {
+		String userId = getCurrentUserId();
+		UserModel userModel = UserModel();
+
+		// query to see if this book exists for them || IN SQLITE
+		var books = await userModel.deleteBookmark(userId, widget.bookId);
+
+		// IN FIRESTORE
+		removeBookmarkFirestore(bookId.toString());
+
+		// sets the book mark to false
+		if (books > 0) {
+			setState(() {
+				isBookmarked = false;
+			});
+
+			if (mounted) {
+				SnackbarUtil.showSnackbarMessage(context, 'Bookmark removed', Colors.white);
+			}
+		}
+	}
+
 
 	/// check if currently selected book is bookmarked or not
 	Future<void> getCurrentBookInfo() async {
@@ -128,22 +157,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		} else {
 			setState(() {
 			  	isBookmarked = false;
-			});
-		}
-	}
-
-	/// remove bookmark for the currently selected book
-	Future<void> removeBookmark() async {
-		String userId = getCurrentUserId();
-		UserModel userModel = UserModel();
-
-		// query to see if this book exists for them
-		var books = await userModel.deleteBookmark(userId, widget.bookId);
-
-		// sets the book mark to false
-		if (books > 0) {
-			setState(() {
-				isBookmarked = false;
 			});
 		}
 	}
@@ -204,7 +217,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												onPressed: () {
 													// if bookmarked item them run remove function
 													if (isBookmarked) {
-														removeBookmark();
+														removeBookmark(widget.bookId);
 														widget.onBookmarkChange();
 													} else {
 														addBookmark(widget.bookId);

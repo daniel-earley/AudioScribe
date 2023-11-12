@@ -1,6 +1,8 @@
 import 'package:audioscribe/components/text_field_auth_page.dart';
 import 'package:audioscribe/components/toggle_button.dart';
 import 'package:audioscribe/services/auth_service.dart';
+import 'package:audioscribe/services/notification_services.dart';
+import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app_constants.dart';
@@ -64,6 +66,8 @@ class _LoginPageState extends State<LoginPage> {
 				// insert user into db
 				await clientQueryInsertUser(newUser);
 
+				// show welcome notification
+				await NotificationService.showWelcomeNotification();
 			} else {
 				authErrorMessage("Passwords don't match!");
 			}
@@ -135,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
 			FocusScope.of(context).unfocus();
 		}
 
-		showSnackbarMessage(errorMessage, Colors.red);
+		SnackbarUtil.showSnackbarMessage(context, errorMessage, Colors.red);
 	}
 
 	/// Shows the circular loading indicator when signin the user in
@@ -260,7 +264,7 @@ class _LoginPageState extends State<LoginPage> {
 								sendPasswordResetEmail(resetEmailController.text).then((_) {
 									Navigator.of(context).pop();
 									// send snack bar msg
-									showSnackbarMessage('Password reset link sent to: ${resetEmailController.text}', Colors.white);
+									SnackbarUtil.showSnackbarMessage(context, 'Password reset link sent to: ${resetEmailController.text}', Colors.white);
 								});
 							}
 						)
@@ -270,25 +274,6 @@ class _LoginPageState extends State<LoginPage> {
 		);
 	}
 
-	/// function to show snackbar message
-	void showSnackbarMessage(String message, Color color) {
-		ScaffoldMessenger.of(context).showSnackBar(
-			SnackBar(
-				content: Text(
-					message,
-					style: TextStyle(fontSize: 15.0, color: color),
-				),
-				backgroundColor: const Color(0xFF161515),
-				action: SnackBarAction(
-					label: 'Close',
-					onPressed: () {
-						ScaffoldMessenger.of(context).hideCurrentSnackBar();
-					},
-				),
-				duration: const Duration(seconds: 5),
-			)
-		);
-	}
 
 	/// builds entire login page
 	Widget _buildLoginPage(BuildContext context) {

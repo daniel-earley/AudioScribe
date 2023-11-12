@@ -68,21 +68,4 @@ class _BookGridViewState extends State<BookGridView> {
 			}
 		);
 	}
-
-	// void _onBookSelected(int index, String title, String author, String imageFileLocation, String summaryFileLocation) {
-	// 	Navigator.of(context).push(
-	// 		MaterialPageRoute(
-	// 			builder: (context) => BookDetailPage(
-	// 				bookId: index,
-	// 				bookTitle: title,
-	// 				authorName: author,
-	// 				imagePath: imageFileLocation,
-	// 				description: summaryFileLocation,
-	// 				onBookmarkChange: () {
-	// 					print(widget.books);
-	// 				},
-	// 			)
-	// 		)
-	// 	);
-	// }
 }
