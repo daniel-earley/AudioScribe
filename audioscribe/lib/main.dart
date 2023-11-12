@@ -13,6 +13,7 @@ void main() async {
 	
 	// initialize notification
 	await NotificationService.initialize();
+	NotificationService.sendRandomBookRecommendation();
 	
 	runApp(const MyApp());
 }
