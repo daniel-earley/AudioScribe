@@ -9,7 +9,6 @@ import '../data_classes/user.dart' as userClient;
 import 'package:audioscribe/utils/database/user_model.dart';
 
 
-
 class BookDetailPage extends StatefulWidget {
 	final int bookId;
 	final String bookTitle;
@@ -96,7 +95,8 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			}
 
 			// FIREBASE STORAGE
-			addBookmarkFirestore(bookId);
+			String bookSummary = await _readBookSummary(widget.description);
+			addBookmarkFirestore(bookId.toString(), widget.bookTitle, widget.authorName, bookSummary);
 
 			// if user exists then bookmark the selected book
 			if (user != null) {
@@ -133,12 +133,15 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	}
 
 	/// remove bookmark for the currently selected book
-	Future<void> removeBookmark() async {
+	Future<void> removeBookmark(int bookId) async {
 		String userId = getCurrentUserId();
 		UserModel userModel = UserModel();
 
-		// query to see if this book exists for them
+		// query to see if this book exists for them || IN SQLITE
 		var books = await userModel.deleteBookmark(userId, widget.bookId);
+
+		// IN FIRESTORE
+		removeBookmarkFirestore(bookId.toString());
 
 		// sets the book mark to false
 		if (books > 0) {
@@ -204,7 +207,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												onPressed: () {
 													// if bookmarked item them run remove function
 													if (isBookmarked) {
-														removeBookmark();
+														removeBookmark(widget.bookId);
 														widget.onBookmarkChange();
 													} else {
 														addBookmark(widget.bookId);
