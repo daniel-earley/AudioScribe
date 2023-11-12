@@ -2,6 +2,7 @@ import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -105,30 +106,13 @@ class _BookDetailPageState extends State<BookDetailPage> {
 					isBookmarked = true;
 				});
 				widget.onBookmarkChange();
+
+				if(mounted) {
+					SnackbarUtil.showSnackbarMessage(context, '${widget.bookTitle} has been bookmarked', Colors.white);
+				}
 			}
 		} catch (e) {
 			print("bookmark $e");
-		}
-	}
-
-	/// check if currently selected book is bookmarked or not
-	Future<void> getCurrentBookInfo() async {
-		// get user id from current log
-		String userId = getCurrentUserId();
-		UserModel userModel = UserModel();
-
-		// query to see if this book exists for them
-		var books = await userModel.checkBookIsBookmarked(userId, widget.bookId);
-
-		// set bookmark state depending on the book mark status
-		if (books.isNotEmpty) {
-			setState(() {
-				isBookmarked = true;
-			});
-		} else {
-			setState(() {
-			  	isBookmarked = false;
-			});
 		}
 	}
 
@@ -147,6 +131,32 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		if (books > 0) {
 			setState(() {
 				isBookmarked = false;
+			});
+
+			if (mounted) {
+				SnackbarUtil.showSnackbarMessage(context, 'Bookmark removed', Colors.white);
+			}
+		}
+	}
+
+
+	/// check if currently selected book is bookmarked or not
+	Future<void> getCurrentBookInfo() async {
+		// get user id from current log
+		String userId = getCurrentUserId();
+		UserModel userModel = UserModel();
+
+		// query to see if this book exists for them
+		var books = await userModel.checkBookIsBookmarked(userId, widget.bookId);
+
+		// set bookmark state depending on the book mark status
+		if (books.isNotEmpty) {
+			setState(() {
+				isBookmarked = true;
+			});
+		} else {
+			setState(() {
+			  	isBookmarked = false;
 			});
 		}
 	}
