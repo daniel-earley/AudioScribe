@@ -52,6 +52,7 @@ dependencies:
   cloud_firestore: ^4.13.0
   camera: ^0.10.5+5
   flutter_tesseract_ocr: ^0.4.24
+  device_info: ^2.0.3
 
 
 
@@ -86,6 +87,7 @@ flutter:
     - lib/images/dummy_book_2.jpg
     - lib/images/dummy_book_3.jpg
     - lib/images/dummy_book_4.jpg
+    - lib/images/image_with_text.png
     - lib/configs/api_keys.json
     - lib/assets/books/Moby_Dick_Or_The_Whale/coverImage/Moby_Dick_or_The_Whale.jpg
     - lib/assets/books/O_Pioneers/coverImage/O_Pioneers.jpg
@@ -93,6 +95,8 @@ flutter:
     - lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt
     - lib/assets/books/Peter_Pan/summary/summary.txt
     - lib/assets/books/O_Pioneers/summary/summary.txt
+    - assets/tessdata/
+    - assets/tessdata_config.json
     - .env
   #   - images/a_dot_ham.jpeg
 
