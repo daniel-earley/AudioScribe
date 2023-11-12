@@ -1,25 +1,21 @@
+import 'package:audioscribe/pages/book_details.dart';
 import 'package:flutter/material.dart';
 
-class Book {
-	final String title;
-	final String imageUrl;
-	final String author;
-
-	Book(this.title, this.imageUrl, this.author);
-}
 
 class BookGridView extends StatefulWidget {
+	final List<Map<String, dynamic>> books;
+
+	const BookGridView({
+		super.key,
+		required this.books
+	});
+
 	@override
 	_BookGridViewState createState() => _BookGridViewState();
 }
 
 class _BookGridViewState extends State<BookGridView> {
-	final List<Book> books = [
-		Book('The Psychology of Money', 'lib/images/dummy_book_1.jpg', 'Morgan Housel'),
-		Book('Atomic Habit', 'lib/images/dummy_book_2.jpg', 'James Clear'),
-		Book('Harry Potter and The Prisoner of Azkaban', 'lib/images/dummy_book_3.jpg', 'J.K. Rowling'),
-		Book('The World of Ice and fire', 'lib/images/dummy_book_4.jpg', 'George R. R. Martin'),
-	];
+
 
 	@override
 	Widget build(BuildContext context) {
@@ -31,32 +27,58 @@ class _BookGridViewState extends State<BookGridView> {
 				mainAxisSpacing: 15,
 				childAspectRatio: 0.6
 			),
-			itemCount: books.length,
+			itemCount: widget.books.length,
 			itemBuilder: (context, index) {
-				final book = books[index];
-				return Container(
-					decoration: BoxDecoration(
-						borderRadius: BorderRadius.circular(10),
-						color: Colors.white,
-					),
-					clipBehavior: Clip.antiAlias,
-					child: GridTile(
-						footer: Container(
-							padding: const EdgeInsets.all(4),
-							color: Colors.black87,
-							child: Text(
-								book.title,
-								style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-								textAlign: TextAlign.center,
-							),
+				final book = widget.books[index];
+				return GestureDetector(
+					onTap: () {
+						print('book grid (34) current book selected: $book');
+						_onBookSelected(
+							book['id'],
+							book['title'],
+							book['author'],
+							book['image'],
+							book['summary']
+						);
+					},
+					child: Container(
+						decoration: BoxDecoration(
+							borderRadius: BorderRadius.circular(10),
+							color: Colors.white,
 						),
-						child: Image.asset(
-							book.imageUrl,
-							fit: BoxFit.cover
+						clipBehavior: Clip.antiAlias,
+						child: GridTile(
+							footer: Container(
+								padding: const EdgeInsets.all(4),
+								color: Colors.black87,
+								child: Text(
+									book['title'],
+									style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+									textAlign: TextAlign.center,
+								),
+							),
+							child: Image.asset(
+								book['image'],
+								fit: BoxFit.cover
+							),
 						),
 					),
 				);
 			}
+		);
+	}
+
+	void _onBookSelected(int index, String title, String author, String imageFileLocation, String summaryFileLocation) {
+		Navigator.of(context).push(
+			MaterialPageRoute(
+				builder: (context) => BookDetailPage(
+					bookId: index,
+					bookTitle: title,
+					authorName: author,
+					imagePath: imageFileLocation,
+					description: summaryFileLocation
+				)
+			)
 		);
 	}
 }

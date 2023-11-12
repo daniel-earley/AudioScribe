@@ -6,8 +6,7 @@ import 'package:audioscribe/utils/file_ops/read_json.dart';
 
 class TxtSummarizerService {
   /// Summarizes a txt file into a given number of sentences.
-  static Future<String> txtSummary(
-      String filePath, int numberOfSentences) async {
+  static Future<String> txtSummary(String filePath, int numberOfSentences) async {
     var client = http.Client();
     var fileText = await (File(filePath).readAsString());
     var url = Uri.https(

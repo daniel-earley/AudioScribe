@@ -1,7 +1,13 @@
 import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
+import 'package:audioscribe/pages/book_details.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:audioscribe/utils/database/user_model.dart';
+import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/utils/database/book_model.dart';
+import '../data_classes/user.dart' as userClient;
 
 class HomePage extends StatefulWidget {
 	const HomePage({Key? key}) : super(key: key);
@@ -13,32 +19,38 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
 	// list of users book
-	final List<Map<String, String>> userBooks = [
+	List<Map<String, dynamic>> userBooks = [];
+
+	// list of recommendation books
+	final List<Map<String, dynamic>> recommendationBooks = [
 		{
-			'image': 'lib/images/dummy_book_1.jpg',
-			'title': 'The Psychology of Money'
+			'id': 0,
+			'image': 'lib/assets/books/Moby_Dick_Or_The_Whale/coverImage/Moby_Dick_or_The_Whale.jpg',
+			'title': 'Moby Dick Or The Whale',
+			'author': 'Herman Melville',
+			'summary': 'lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt'
+		},
+		{
+			'id': 1,
+			'image': 'lib/assets/books/O_Pioneers/coverImage/O_Pioneers.jpg',
+			'title': 'O Pioneers!',
+			'author': 'Willa Cather',
+			'summary': 'lib/assets/books/Peter_Pan/summary/summary.txt'
+		},
+		{
+			'id': 2,
+			'image': 'lib/assets/books/Peter_Pan/coverImage/Peter_Pan.jpg',
+			'title': 'Peter Pan',
+			'author': 'J.M. Barrie',
+			'summary': 'lib/assets/books/O_Pioneers/summary/summary.txt'
 		},
 	];
 
-	// list of recommendation books
-	final List<Map<String, String>> recommendationBooks = [
-		{
-			'image': 'lib/images/dummy_book_1.jpg',
-			'title': 'The Psychology of Money'
-		},
-		{
-			'image': 'lib/images/dummy_book_2.jpg',
-			'title': 'Atomic Habits'
-		},
-		{
-			'image': 'lib/images/dummy_book_3.jpg',
-			'title': 'Harry Potter and The Prisoner of Azkaban'
-		},
-		{
-			'image': 'lib/images/dummy_book_3.jpg',
-			'title': 'Harry Potter and The Prisoner of Azkaban'
-		},
-	];
+	@override
+	void initState() {
+		super.initState();
+		// fetchUserBooks();
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -50,8 +62,7 @@ class _HomePageState extends State<HomePage> {
 
 	Widget _buildHomePage(BuildContext context) {
 		// fallback for device back button
-		setState(() {
-		});
+		setState(() {});
 
 		return Stack(
 			children: [
@@ -67,13 +78,13 @@ class _HomePageState extends State<HomePage> {
 								const Separator(text: "Currently listening to..."),
 
 								// Book Row 1
-								BookRow(books: userBooks),
+								BookRow(books: userBooks, onBookSelected: _onBookSelected),
 
 								// Separator
 								const Separator(text: "Recommendations"),
 
 								// Book Row 2
-								BookRow(books: recommendationBooks),
+								BookRow(books: recommendationBooks, onBookSelected: _onBookSelected),
 							],
 						),
 					)
@@ -81,4 +92,67 @@ class _HomePageState extends State<HomePage> {
 			],
 		);
 	}
+
+	/// get the current instance of the user that is logged In
+	String getCurrentUserId() {
+		User? currentUser = FirebaseAuth.instance.currentUser;
+		if (currentUser != null) {
+			String uid = currentUser.uid;
+			return uid;
+		} else {
+			return 'No user is currently signed in';
+		}
+	}
+
+	/// run when any book is selected on the screen
+	void _onBookSelected(int index, String title, String author, String image, String summary) {
+		// print('$index, $title, $author, $image, $summary');
+		Navigator.of(context).push(
+			MaterialPageRoute(
+				builder: (context) => BookDetailPage(
+					bookId: index,
+					bookTitle: title,
+					authorName: author,
+					imagePath: image,
+					description: summary,
+					// onBookmarkChange: () {
+					// 	fetchUserBooks();
+					// },
+				)
+			)
+		);
+	}
+
+	/// get all the books that the user has bookmarked
+	// Future<void> fetchUserBooks() async {
+	// 	try {
+	// 		// get current user instance
+	// 		String userId = getCurrentUserId();
+	// 		UserModel userModel = UserModel();
+	// 		BookModel bookModel = BookModel();
+	//
+	// 		// get user id
+	// 		userClient.User? user = await userModel.getUserByID(userId);
+	// 		// print('user id: $user');
+	//
+	// 		// if the user exists
+	// 		if (user != null) {
+	// 			var books = await userModel.getAllUserBooks(userId);
+	// 			// print('homepage (136) books: $books');
+	//
+	// 			// convert books to book row format
+	// 			setState(() {
+	// 				userBooks = books.map((book) => {
+	// 					'id': book['bookId'],
+	// 					'image': book['imageFileLocation'] as String? ?? '',
+	// 					'title': book['title'] as String? ?? '',
+	// 					'author': book['author'] as String? ?? '',
+	// 					'summary': book['textFileLocation'] as String? ?? ''
+	// 				}).toList();
+	// 			});
+	// 		}
+	// 	} catch (e) {
+	// 		print("Error fetching user books: $e");
+	// 	}
+	// }
 }

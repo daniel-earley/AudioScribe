@@ -84,7 +84,6 @@ Future<void> getBookInformation() async {
 				print('Failed to load book information');
 			}
 
-
 			// get database instance
 			Book newBook = Book(
 				bookId: bookId,

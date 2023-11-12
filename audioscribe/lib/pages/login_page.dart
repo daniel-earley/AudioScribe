@@ -108,6 +108,13 @@ class _LoginPageState extends State<LoginPage> {
 			String username = userCredential.user?.email ?? "";
 			print('User Information: $uid | $username');
 
+			// check if user is in SQLite, if not then add them in
+			bool userExists = await checkUserExists();
+			String userId = getCurrentUserId();
+			if (!userExists) {
+				fetchUserFromFirebase(userId);
+			}
+
 			// dismiss loading
 			dismissLoadingDialog();
 		} on FirebaseAuthException catch(e) {
@@ -195,6 +202,50 @@ class _LoginPageState extends State<LoginPage> {
 			await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 		} on FirebaseAuthException catch (e) {
 			authErrorMessage(e.message.toString());
+		}
+	}
+
+	/// fallback function to retrieve user info from firebase
+	void fetchUserFromFirebase(String userId) async {
+		User? firebaseUser = FirebaseAuth.instance.currentUser;
+		userModel.UserModel _userModel = userModel.UserModel();
+
+		if (firebaseUser != null) {
+			// Create a new user object from Firebase user
+			userClient.User user = userClient.User(
+				userId: firebaseUser.uid,
+				username: firebaseUser.email ?? '',
+				bookLibrary: [],
+				loggedIn: true
+			);
+
+			// insert user in SQLite
+			await _userModel.insertUser(user);
+		}
+	}
+
+	/// get the current instance of the user that is logged In
+	String getCurrentUserId() {
+		User? currentUser = FirebaseAuth.instance.currentUser;
+		if (currentUser != null) {
+			String uid = currentUser.uid;
+			return uid;
+		} else {
+			return 'No user is currently signed in';
+		}
+	}
+
+	Future<bool> checkUserExists() async {
+		userModel.UserModel _userModel = userModel.UserModel();
+		try {
+			String userId = getCurrentUserId();
+
+			userClient.User? user = await _userModel.getUserByID(userId);
+
+			return user != null ? true : false;
+		} catch (e) {
+			print("Internal error : $e");
+			return false;
 		}
 	}
 

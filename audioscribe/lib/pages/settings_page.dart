@@ -6,6 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../utils/database/user_model.dart' as userInfo;
 import 'package:flutter/material.dart';
 
+import 'package:audioscribe/utils/database/user_model.dart';
+import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/utils/database/book_model.dart';
+
+
 class SettingsPage extends StatefulWidget {
 	const SettingsPage({Key? key}) : super(key: key);
 
@@ -116,8 +121,36 @@ class _SettingsPageState extends State<SettingsPage> {
 				});
 			}
 		}
+	}
 
 
+	Future<void> fetchUserBooks() async {
+		try {
+			// get current user instance
+			String userId = getCurrentUserId();
+			UserModel userModel = UserModel();
+			BookModel bookModel = BookModel();
+
+			// get user id
+			userClient.User? user = await userModel.getUserByID(userId);
+			print('user id: $user');
+
+			// if the user exists
+			if (user != null) {
+
+				List<Book> books = await bookModel.getAllBooks();
+
+				// await userModel.updateUserBookLibrary(user);
+				// var res = await userModel.getUserBookEntries(userId);
+				var res = await userModel.checkBookIsBookmarked(userId, 0);
+				// await userModel.deleteAllBooks();
+				// await userModel.deleteAllBooksRef();
+
+				print('$res');
+			}
+		} catch (e) {
+			print("Error fetching user books: $e");
+		}
 	}
 
 	Widget _buildSettingsPage(BuildContext context) {
@@ -153,32 +186,32 @@ class _SettingsPageState extends State<SettingsPage> {
 									// sign out button
 									ElevatedButton(
 										onPressed: signOut,
-										child: const Text('Sign out'),
 										style: ElevatedButton.styleFrom(
 											foregroundColor: Colors.white,
 											backgroundColor: Colors.deepPurple,
 											minimumSize: const Size(125, 40),
 											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
 										),
+										child: const Text('Sign out'),
 									),
 
 									ElevatedButton(
 										onPressed: () {
-											getBookInformation();
+											print("fetching books!!!!");
+											fetchUserBooks();
 										},
-										child: const Text('Get book info'),
 										style: ElevatedButton.styleFrom(
 											foregroundColor: Colors.white,
 											backgroundColor: Colors.deepPurple,
 											minimumSize: const Size(125, 40),
 											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
 										),
+										child: const Text('Get book info'),
 									),
 								],
 							),
 						)
 					),
-
 				),
 			],
 		);

@@ -84,6 +84,12 @@ flutter:
     - lib/images/dummy_book_3.jpg
     - lib/images/dummy_book_4.jpg
     - lib/configs/api_keys.json
+    - lib/assets/books/Moby_Dick_Or_The_Whale/coverImage/Moby_Dick_or_The_Whale.jpg
+    - lib/assets/books/O_Pioneers/coverImage/O_Pioneers.jpg
+    - lib/assets/books/Peter_Pan/coverImage/Peter_Pan.jpg
+    - lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt
+    - lib/assets/books/Peter_Pan/summary/summary.txt
+    - lib/assets/books/O_Pioneers/summary/summary.txt
     - .env
   #   - images/a_dot_ham.jpeg
 

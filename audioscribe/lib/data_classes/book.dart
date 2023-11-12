@@ -20,11 +20,17 @@ class Book {
   }
 
   Book.fromMap(Map map) {
-    bookId = map['id'];
-    title = map['title'];
-    author = map['author'];
-    textFileLocation = map['textFileLocation'];
-    audioFileLocation = map['audioFileLocation'];
-    imageFileLocation = map['imageFileLocation'];
+    bookId = map['id'] as int? ?? 0; // Default to 0 or another appropriate value if null.
+    title = map['title'] as String? ?? 'Unknown Title'; // Provide a default string if null.
+    author = map['author'] as String? ?? 'Unknown Author';
+    textFileLocation = map['textFileLocation'] as String? ?? '';
+    audioFileLocation = map['audioFileLocation'] as String? ?? '';
+    imageFileLocation = map['imageFileLocation'] as String? ?? '';
+  }
+
+
+  @override
+  String toString() {
+    return 'Book(bookId: $bookId, title: "$title", author: "$author", textFileLocation: "$textFileLocation", audioFileLocation: "$audioFileLocation", imageFileLocation: "$imageFileLocation")';
   }
 }

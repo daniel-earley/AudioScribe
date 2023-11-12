@@ -1,3 +1,4 @@
+import 'package:audioscribe/pages/book_details.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
@@ -31,9 +32,9 @@ class _MainPageState extends State<MainPage> {
 	final List<Widget> _widgetOptions = [
 		const HomePage(key: ValueKey('HomePage')),
 		const CollectionPage(key: ValueKey('CollectionPage')),
-		const SettingsPage(key: ValueKey('SettingsPage')),
+		const SettingsPage(key: ValueKey('SettingsPage'))
 	];
-	
+
 	/// Used to navigate to different screens/pages
 	void _onItemTapped(int index) {
 		setState(() {

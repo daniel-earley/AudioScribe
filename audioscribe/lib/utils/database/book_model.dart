@@ -26,6 +26,18 @@ class BookModel {
     return books;
   }
 
+  /// Get book information by a given ID
+  Future<List<Map<String, dynamic>>> getBookById(int bookId) async {
+    final db = await DbUtils.init();
+    final List<Map<String, dynamic>> bookMaps = await db.query(
+      DbUtils.bookDb,
+      where: 'id = ?',
+      whereArgs: [bookId]
+    );
+
+    return bookMaps;
+  }
+
   /// Retrieves all the books that is linked to a user
   Future<List<Book>> getAllBooksWithUser(User user) async {
     final db = await DbUtils.init();
