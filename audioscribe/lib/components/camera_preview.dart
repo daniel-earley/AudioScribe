@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:device_info/device_info.dart';
-import 'package:audioscribe/utils/file_ops/camera_service.dart'; // Assuming you have camera_service.dart
-import 'package:audioscribe/utils/file_ops/ocr_service.dart';
+import 'package:audioscribe/services/camera_service.dart';
+import 'package:audioscribe/services/ocr_service.dart';
 import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart'; // Assuming you have ocr_service.dart
+import 'package:path_provider/path_provider.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
