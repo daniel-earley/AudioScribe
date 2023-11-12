@@ -1,6 +1,7 @@
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
+import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -15,7 +16,7 @@ class BookDetailPage extends StatefulWidget {
 	final String authorName;
 	final String imagePath;
 	final String description;
-	// final VoidCallback onBookmarkChange;
+	final VoidCallback onBookmarkChange;
 
 	const BookDetailPage({
 		Key? key,
@@ -24,7 +25,7 @@ class BookDetailPage extends StatefulWidget {
 		required this.authorName,
 		required this.imagePath,
 		required this.description,
-		// required this.onBookmarkChange
+		required this.onBookmarkChange
 	}) : super(key : key);
 
   @override
@@ -88,11 +89,14 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
 			// check if book exists in DB
 			var book = await bookModel.getBookById(bookId);
-			// insert in DB if book is not in DB
+
+			// insert in DB if book is not in DB | SQLite STORAGE
 			if (book.isEmpty) {
 				await bookModel.insertBook(currentBook);
 			}
 
+			// FIREBASE STORAGE
+			addBookmarkFirestore(bookId);
 
 			// if user exists then bookmark the selected book
 			if (user != null) {
@@ -100,7 +104,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 				setState(() {
 					isBookmarked = true;
 				});
-				// widget.onBookmarkChange();
+				widget.onBookmarkChange();
 			}
 		} catch (e) {
 			print("bookmark $e");
@@ -201,7 +205,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 													// if bookmarked item them run remove function
 													if (isBookmarked) {
 														removeBookmark();
-														// widget.onBookmarkChange();
+														widget.onBookmarkChange();
 													} else {
 														addBookmark(widget.bookId);
 													}

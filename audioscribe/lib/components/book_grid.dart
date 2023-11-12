@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 class BookGridView extends StatefulWidget {
 	final List<Map<String, dynamic>> books;
+	final Function(int index, String title, String author, String image, String summary) onBookSelected;
 
 	const BookGridView({
 		super.key,
-		required this.books
+		required this.books,
+		required this.onBookSelected
 	});
 
 	@override
@@ -15,7 +17,6 @@ class BookGridView extends StatefulWidget {
 }
 
 class _BookGridViewState extends State<BookGridView> {
-
 
 	@override
 	Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class _BookGridViewState extends State<BookGridView> {
 				return GestureDetector(
 					onTap: () {
 						print('book grid (34) current book selected: $book');
-						_onBookSelected(
+						widget.onBookSelected(
 							book['id'],
 							book['title'],
 							book['author'],
@@ -68,17 +69,20 @@ class _BookGridViewState extends State<BookGridView> {
 		);
 	}
 
-	void _onBookSelected(int index, String title, String author, String imageFileLocation, String summaryFileLocation) {
-		Navigator.of(context).push(
-			MaterialPageRoute(
-				builder: (context) => BookDetailPage(
-					bookId: index,
-					bookTitle: title,
-					authorName: author,
-					imagePath: imageFileLocation,
-					description: summaryFileLocation
-				)
-			)
-		);
-	}
+	// void _onBookSelected(int index, String title, String author, String imageFileLocation, String summaryFileLocation) {
+	// 	Navigator.of(context).push(
+	// 		MaterialPageRoute(
+	// 			builder: (context) => BookDetailPage(
+	// 				bookId: index,
+	// 				bookTitle: title,
+	// 				authorName: author,
+	// 				imagePath: imageFileLocation,
+	// 				description: summaryFileLocation,
+	// 				onBookmarkChange: () {
+	// 					print(widget.books);
+	// 				},
+	// 			)
+	// 		)
+	// 	);
+	// }
 }

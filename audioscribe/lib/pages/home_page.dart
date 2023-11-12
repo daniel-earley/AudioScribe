@@ -4,10 +4,6 @@ import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:audioscribe/utils/database/user_model.dart';
-import 'package:audioscribe/data_classes/book.dart';
-import 'package:audioscribe/utils/database/book_model.dart';
-import '../data_classes/user.dart' as userClient;
 
 class HomePage extends StatefulWidget {
 	const HomePage({Key? key}) : super(key: key);
@@ -115,9 +111,9 @@ class _HomePageState extends State<HomePage> {
 					authorName: author,
 					imagePath: image,
 					description: summary,
-					// onBookmarkChange: () {
-					// 	fetchUserBooks();
-					// },
+					onBookmarkChange: () {
+						// fetchUserBooks();
+					},
 				)
 			)
 		);

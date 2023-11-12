@@ -135,22 +135,7 @@ class _LoginPageState extends State<LoginPage> {
 			FocusScope.of(context).unfocus();
 		}
 
-		ScaffoldMessenger.of(context).showSnackBar(
-			SnackBar(
-				content: Text(
-					errorMessage,
-					style: const TextStyle(fontSize: 15.0, color: Colors.red),
-				),
-				backgroundColor: const Color(0xFF161515),
-				action: SnackBarAction(
-					label: 'Close',
-					onPressed: () {
-						ScaffoldMessenger.of(context).hideCurrentSnackBar();
-					},
-				),
-				duration: const Duration(seconds: 5),
-			)
-		);
+		showSnackbarMessage(errorMessage, Colors.red);
 	}
 
 	/// Shows the circular loading indicator when signin the user in
@@ -260,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
 					title: const Text('Reset Password'),
 					content: TextField(
 						controller: resetEmailController,
-						decoration: InputDecoration(hintText: 'Enter your email'),
+						decoration: const InputDecoration(hintText: 'Enter your email'),
 					),
 					actions: [
 						TextButton(
@@ -274,12 +259,34 @@ class _LoginPageState extends State<LoginPage> {
 							onPressed: () {
 								sendPasswordResetEmail(resetEmailController.text).then((_) {
 									Navigator.of(context).pop();
+									// send snack bar msg
+									showSnackbarMessage('Password reset link sent to: ${resetEmailController.text}', Colors.white);
 								});
 							}
 						)
 					]
 				);
 			}
+		);
+	}
+
+	/// function to show snackbar message
+	void showSnackbarMessage(String message, Color color) {
+		ScaffoldMessenger.of(context).showSnackBar(
+			SnackBar(
+				content: Text(
+					message,
+					style: TextStyle(fontSize: 15.0, color: color),
+				),
+				backgroundColor: const Color(0xFF161515),
+				action: SnackBarAction(
+					label: 'Close',
+					onPressed: () {
+						ScaffoldMessenger.of(context).hideCurrentSnackBar();
+					},
+				),
+				duration: const Duration(seconds: 5),
+			)
 		);
 	}
 

@@ -1,6 +1,7 @@
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/book_grid.dart';
 import 'package:audioscribe/components/search_bar.dart';
+import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/user_model.dart';
 import 'package:audioscribe/data_classes/user.dart' as userClient;
@@ -43,7 +44,9 @@ class _CollectionPageState extends State<CollectionPage> {
 							const AppSearchBar(hintText: "search for your favourite books"),
 
 							// Book grid
-							Expanded(child: BookGridView(books: userBooks)),
+							Expanded(
+								child: BookGridView(books: userBooks, onBookSelected: _onBookSelected)
+							),
 						],
 					)
 				)
@@ -60,6 +63,24 @@ class _CollectionPageState extends State<CollectionPage> {
 		} else {
 			return 'No user is currently signed in';
 		}
+	}
+
+	/// run when any book is selected on screen
+	void _onBookSelected(int index, String title, String author, String image, String summary) {
+		Navigator.of(context).push(
+			MaterialPageRoute(
+				builder: (context) => BookDetailPage(
+					bookId: index,
+					bookTitle: title,
+					authorName: author,
+					imagePath: image,
+					description: summary,
+					onBookmarkChange: () {
+						fetchUserBooks();
+					}
+				)
+			)
+		);
 	}
 
 	/// function to fetch users books
@@ -93,4 +114,5 @@ class _CollectionPageState extends State<CollectionPage> {
 			print("Error fetching user books: $e");
 		}
 	}
+
 }

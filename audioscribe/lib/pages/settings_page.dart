@@ -195,19 +195,20 @@ class _SettingsPageState extends State<SettingsPage> {
 										child: const Text('Sign out'),
 									),
 
-									ElevatedButton(
-										onPressed: () {
-											print("fetching books!!!!");
-											fetchUserBooks();
-										},
-										style: ElevatedButton.styleFrom(
-											foregroundColor: Colors.white,
-											backgroundColor: Colors.deepPurple,
-											minimumSize: const Size(125, 40),
-											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-										),
-										child: const Text('Get book info'),
-									),
+									/// BUTTON TO TEST FUNCTIONS ///
+									// ElevatedButton(
+									// 	onPressed: () {
+									// 		print("fetching books!!!!");
+									// 		fetchUserBooks();
+									// 	},
+									// 	style: ElevatedButton.styleFrom(
+									// 		foregroundColor: Colors.white,
+									// 		backgroundColor: Colors.deepPurple,
+									// 		minimumSize: const Size(125, 40),
+									// 		padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+									// 	),
+									// 	child: const Text('Get book info'),
+									// ),
 								],
 							),
 						)
