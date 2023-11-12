@@ -20,12 +20,16 @@ their book is ready to be listened to.
 ### Features
 **File Format**:
 - Original Scope: Allow users to import books in various file formats, ensuring versatility and compatibility (PDF, Epub, txt)
+- Currently supporting text and pdf files
 
 **OCR**: 
 - Original Scope: Our app will utilise OCR technology to extract text from documents in cases where the text may be difficult to read due to scanning or other factors.
+- Current implementation: when the camera is opened in emulator, instead of showing the default 3d environment, a picture is shown. 
+  - When the capture button is pressed the user can choose to retake the photo or submit it to the ocr. 
 
 **AI Text to Speech**: 
 - Original Scope: Use an AI text to speech to generate high-quality, natural-sounding voices for reading the books.
+- Current implementation is not using AI tts but rather Flutter TTS for time sake 
 
 **Text Summary**: 
 - Original Scope: Allow users to get a summary of the text that has been read so far.
