@@ -17,6 +17,14 @@ their book is ready to be listened to.
 3. Make sure to have `firebase cli` set up as you will need firebase authentication in order to login
 4. Run the project in Android studio using an emulator with Google Play
 
+### Demonstration
+Something to run to try out the current features.
+
+1. Once you have the app running, sign up (or log in if you somehow already have an account).
+2. Once you sign up a notification should appear letting you know of your login.
+3. You can press on one of the books in the recommendation, then press on the bookmark symbol on the book to bookmark it
+4. Once every minute, a notification will pop out to recommend you to read a book.
+
 ### Features
 **File Format**:
 - Original Scope: Allow users to import books in various file formats, ensuring versatility and compatibility (PDF, Epub, txt)
