@@ -1,4 +1,5 @@
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
@@ -8,7 +9,6 @@ import 'package:audioscribe/components/popup_circular_button.dart';
 import 'package:audioscribe/pages/collection_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/settings_page.dart';
-import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
 import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:audioscribe/components/camera_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -116,11 +116,11 @@ class _MainPageState extends State<MainPage> {
       // Read the file as a string
       String fileContent = await File(file.path!).readAsString();
 
-      // Use the path package to get the file name without extension
-      String fileName = path.basenameWithoutExtension(file.path!);
+      // // Use the path package to get the file name without extension
+      // String fileName = path.basenameWithoutExtension(file.path!);
 
       // Call your custom function with the file content and file name
-      createAudioBook(fileContent, fileName);
+      _navigateToUploadBookPage(context, fileContent);
     } else {
       // User canceled the picker
       print("No file selected");
@@ -130,6 +130,12 @@ class _MainPageState extends State<MainPage> {
   void _navigateToCameraScreen(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CameraScreen(),
+    ));
+  }
+
+  void _navigateToUploadBookPage(BuildContext context, String text) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => UploadBookPage(text: text),
     ));
   }
 
