@@ -7,6 +7,7 @@ import 'package:audioscribe/services/ocr_service.dart';
 import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:audioscribe/pages/uploadBook_page.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -105,8 +106,10 @@ class _CameraScreenState extends State<CameraScreen> {
         setState(() {
           _extractedText = text;
         });
+
+        _navigateToUploadBookPage(context, _extractedText);
         // Call createAudioBook function with the extracted text
-        createAudioBook(_extractedText, "scan_test");
+        // createAudioBook(_extractedText, "scan_test");
       } catch (e) {
         print(e); // Handle the error appropriately
       }
@@ -126,6 +129,12 @@ class _CameraScreenState extends State<CameraScreen> {
     }
     // When running on a real device, display the camera preview
     return CameraPreview(_cameraService.controller!);
+  }
+
+  void _navigateToUploadBookPage(BuildContext context, String text) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => UploadBookPage(text: text),
+    ));
   }
 
   @override
