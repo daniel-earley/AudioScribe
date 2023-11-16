@@ -51,7 +51,9 @@ class _UploadBookPageState extends State<UploadBookPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF303030),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF524178),
         title: Text('Add Book'),
       ),
       body: Form(
@@ -61,7 +63,16 @@ class _UploadBookPageState extends State<UploadBookPage> {
           children: <Widget>[
             TextFormField(
               controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Title',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color:
+                          Colors.white), // Set underline color when not focused
+                ),
+              ),
               validator: (value) {
                 if (value!.isEmpty) {
                   return 'Please enter the book title';
@@ -71,7 +82,16 @@ class _UploadBookPageState extends State<UploadBookPage> {
             ),
             TextFormField(
               controller: _authorController,
-              decoration: InputDecoration(labelText: 'Author'),
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Author',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color:
+                          Colors.white), // Set underline color when not focused
+                ),
+              ),
               validator: (value) {
                 if (value!.isEmpty) {
                   return 'Please enter the author\'s name';
@@ -79,14 +99,12 @@ class _UploadBookPageState extends State<UploadBookPage> {
                 return null;
               },
             ),
-            TextFormField(
-              controller: _summaryController,
-              decoration: InputDecoration(labelText: 'Summary'),
-              maxLines: 4, // Allows for multiline input
-            ),
             ElevatedButton(
               onPressed: _submitBook,
               child: Text('Submit'),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Color(0xFF524178)),
+              ),
             ),
           ],
         ),
