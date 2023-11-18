@@ -11,7 +11,7 @@ class Separator extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		return Padding(
-			padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+			padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
 			child: Column(
 				crossAxisAlignment: CrossAxisAlignment.start,
 				children: [
@@ -23,7 +23,7 @@ class Separator extends StatelessWidget {
 						),
 					),
 					Container(
-						margin: EdgeInsets.only(top: 3.0),
+						margin: const EdgeInsets.only(top: 3.0),
 						height: 1.0,
 						color: Colors.white12
 					),

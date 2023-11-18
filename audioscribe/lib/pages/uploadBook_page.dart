@@ -1,4 +1,5 @@
 import 'package:audioscribe/pages/main_page.dart';
+import 'package:audioscribe/services/txt_summary_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
@@ -20,26 +21,25 @@ class _UploadBookPageState extends State<UploadBookPage> {
   final _summaryController = TextEditingController();
 
   Future<void> _submitBook() async {
-    if (_formKey.currentState!.validate()) {
-      // If the form is valid, add the book to Firestore
-      int bookId = DateTime.now()
-          .millisecondsSinceEpoch; // Or generate a unique ID as per your logic
-      await addBookToFirestore(
-        bookId,
-        _titleController.text,
-        _authorController.text,
-        _summaryController.text,
-      );
+		if (_formKey.currentState!.validate()) {
+			  // If the form is valid, add the book to Firestore
+			  int bookId = DateTime.now().millisecondsSinceEpoch; // Or generate a unique ID as per your logic
 
-      createAudioBook(widget.text, _titleController.text);
+			  // generate a summary
+			  String contentSummary = await TxtSummarizerService.SummarizeText(widget.text);
 
-      // Clear the text fields
-      _titleController.clear();
-      _authorController.clear();
-      _summaryController.clear();
-      // Optionally, show a success message or navigate to another page
-    }
-    _navigateToMainPage(context);
+			  // Store the book on firestore
+			  await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary);
+
+			  // generate the audio book for current context
+			  createAudioBook(widget.text, _titleController.text);
+
+			  // Clear the text fields
+			  _titleController.clear();
+			  _authorController.clear();
+			  _summaryController.clear();
+		}
+		_navigateToMainPage(context);
   }
 
   void _navigateToMainPage(BuildContext context) {
@@ -59,12 +59,12 @@ class _UploadBookPageState extends State<UploadBookPage> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           children: <Widget>[
             TextFormField(
               controller: _titleController,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
                 labelText: 'Title',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(
@@ -82,8 +82,8 @@ class _UploadBookPageState extends State<UploadBookPage> {
             ),
             TextFormField(
               controller: _authorController,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
                 labelText: 'Author',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(

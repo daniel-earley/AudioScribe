@@ -1,8 +1,10 @@
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -16,7 +18,9 @@ class BookDetailPage extends StatefulWidget {
 	final String authorName;
 	final String imagePath;
 	final String description;
+	final String bookType;
 	final VoidCallback onBookmarkChange;
+	final Future<void> Function(String, int) onBookDelete;
 
 	const BookDetailPage({
 		Key? key,
@@ -25,7 +29,9 @@ class BookDetailPage extends StatefulWidget {
 		required this.authorName,
 		required this.imagePath,
 		required this.description,
-		required this.onBookmarkChange
+		required this.bookType,
+		required this.onBookmarkChange,
+		required this.onBookDelete
 	}) : super(key : key);
 
   @override
@@ -55,7 +61,21 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			final contents = await rootBundle.loadString(filePath);
 			return contents;
 		} catch (e) {
-			print('Error reading file: $e');
+			try {
+				String userId = getCurrentUserId();
+
+				Map<String, dynamic>? book = await getUserBookById(userId, widget.bookId);
+
+				if (book != null) {
+					if (book['summary'].toString().isEmpty) {
+						return 'No summary was provided for this book';
+					}
+					return book['summary'];
+				}
+			} catch (firestoreError) {
+				print('Error fetching from firestore: $firestoreError');
+				return 'Error: unable to load summary';
+			}
 			return 'Error: unable to load summary';
 		}
 	}
@@ -142,6 +162,8 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
 	/// check if currently selected book is bookmarked or not
 	Future<void> getCurrentBookInfo() async {
+		print('current book selected: ${widget.bookId}');
+		print('current book selected: ${widget.bookType}');
 		// get user id from current log
 		String userId = getCurrentUserId();
 		UserModel userModel = UserModel();
@@ -208,11 +230,12 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									)
 								),
 
-								// Bookmark and Favourites
+								// Bookmark and delete
 								Align(
 									alignment: Alignment.centerLeft,
-									child: Column(
+									child: Row(
 										children: [
+											// Bookmark Icon
 											IconButton(
 												onPressed: () {
 													// if bookmarked item them run remove function
@@ -226,9 +249,41 @@ class _BookDetailPageState extends State<BookDetailPage> {
 													// getCurrentBookInfo();
 												},
 												icon: Icon(isBookmarked ? Icons.bookmark_add : Icons.bookmark_add_outlined, color: Colors.white, size: 42.0)
-											)
+											),
+
+											// Remove Icon for deleting
+											widget.bookType == 'user' ?
+											IconButton(
+												onPressed: ()  {
+													String userId = getCurrentUserId();
+													widget.onBookDelete(userId, widget.bookId);
+
+													// go back to the home page
+													Navigator.of(context).pop();
+												},
+												icon: const Icon(Icons.delete_forever_outlined, color: Colors.white, size: 42.0)
+											) : Container()
 										],
 									)
+								),
+
+								const SizedBox(height: 10.0,),
+
+								// Summary text
+								const Padding(
+									padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+									child: Align(
+									alignment: Alignment.centerLeft,
+										child: Text(
+											'Summary',
+											textAlign: TextAlign.left,
+											style: TextStyle(
+												color: Colors.white,
+												fontSize: 18.0,
+												fontWeight: FontWeight.w500
+											),
+										),
+									),
 								),
 
 								// book summary
@@ -244,7 +299,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 														color: const Color(0xFF242424),
 														borderRadius: BorderRadius.circular(15.0)
 													),
-													height: MediaQuery.of(context).size.width * 0.65,
+													height: MediaQuery.of(context).size.width * 0.3,
 													child: SingleChildScrollView(
 														child: Align(
 															alignment: Alignment.centerLeft,

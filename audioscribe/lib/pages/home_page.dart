@@ -2,6 +2,7 @@ import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -24,28 +25,31 @@ class _HomePageState extends State<HomePage> {
 			'image': 'lib/assets/books/Moby_Dick_Or_The_Whale/coverImage/Moby_Dick_or_The_Whale.jpg',
 			'title': 'Moby Dick Or The Whale',
 			'author': 'Herman Melville',
-			'summary': 'lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt'
+			'summary': 'lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt',
+			'bookType': 'recommendation'
 		},
 		{
 			'id': 1,
 			'image': 'lib/assets/books/O_Pioneers/coverImage/O_Pioneers.jpg',
 			'title': 'O Pioneers!',
 			'author': 'Willa Cather',
-			'summary': 'lib/assets/books/Peter_Pan/summary/summary.txt'
+			'summary': 'lib/assets/books/Peter_Pan/summary/summary.txt',
+			'bookType': 'recommendation'
 		},
 		{
 			'id': 2,
 			'image': 'lib/assets/books/Peter_Pan/coverImage/Peter_Pan.jpg',
 			'title': 'Peter Pan',
 			'author': 'J.M. Barrie',
-			'summary': 'lib/assets/books/O_Pioneers/summary/summary.txt'
+			'summary': 'lib/assets/books/O_Pioneers/summary/summary.txt',
+			'bookType': 'recommendation'
 		},
 	];
 
 	@override
 	void initState() {
 		super.initState();
-		// fetchUserBooks();
+		fetchUserBooks();
 	}
 
 	@override
@@ -68,19 +72,19 @@ class _HomePageState extends State<HomePage> {
 						child: Column(
 							children: [
 								// Search bar
-								const AppSearchBar(hintText: "search for your favourite books"),
+								const AppSearchBar(hintText: "search"),
 
 								// Separator
 								const Separator(text: "Currently listening to..."),
 
 								// Book Row 1
-								BookRow(books: userBooks, onBookSelected: _onBookSelected),
+								BookRow(books: userBooks, bookType: 'user', onBookSelected: _onBookSelected),
 
 								// Separator
 								const Separator(text: "Recommendations"),
 
 								// Book Row 2
-								BookRow(books: recommendationBooks, onBookSelected: _onBookSelected),
+								BookRow(books: recommendationBooks, bookType: 'recommendation', onBookSelected: _onBookSelected),
 							],
 						),
 					)
@@ -101,7 +105,7 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// run when any book is selected on the screen
-	void _onBookSelected(int index, String title, String author, String image, String summary) {
+	void _onBookSelected(int index, String title, String author, String image, String summary, String bookType) {
 		// print('$index, $title, $author, $image, $summary');
 		Navigator.of(context).push(
 			MaterialPageRoute(
@@ -111,15 +115,52 @@ class _HomePageState extends State<HomePage> {
 					authorName: author,
 					imagePath: image,
 					description: summary,
+					bookType: bookType,
 					onBookmarkChange: () {
 						// fetchUserBooks();
 					},
+					onBookDelete: (String userId, int bookId) async {
+						// for deleting book
+						print('Deleting book with id ${bookId} for user ${userId}');
+						// delete book
+						await deleteUserBook(userId, bookId);
+
+						// refresh book state
+						await fetchUserBooks();
+
+					}
 				)
 			)
 		);
 	}
 
-	/// get all the books that the user has bookmarked
+	/// get all the books that the user has uploaded or bookmarked
+	Future<void> fetchUserBooks() async {
+		String userId = getCurrentUserId();
+
+		List<Map<String, dynamic>> books = await getBooksForUser(userId);
+
+		// print('books: $books');
+
+		List<Map<String, dynamic>> transformedBooks = books.map((book)	{
+			return {
+				'id': book['id'],
+				'title': book['title'] ?? 'Unknown title',
+				'author': book['author'] ?? 'Unknown author',
+				'image': 'lib/assets/books/Default/textFile.png',
+				'summary': book['summary'] ?? 'No summary available',
+				'bookType': 'user' // this function specifically fetches top row books 'userBooks'
+			};
+		}).toList();
+
+		setState(() {
+		  	userBooks = transformedBooks;
+		});
+	}
+
+
+
+
 	// Future<void> fetchUserBooks() async {
 	// 	try {
 	// 		// get current user instance

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 class BookRow extends StatefulWidget {
 	final List<Map<String, dynamic>> books;
-	final Function(int index, String title, String author, String image, String summary) onBookSelected;
+	final String bookType;
+	final Function(int index, String title, String author, String image, String summary, String bookType) onBookSelected;
 
 	const BookRow({
 		super.key,
 		required this.books,
+		required this.bookType,
 		required this.onBookSelected
 	});
 
@@ -26,7 +28,7 @@ class _BookRow extends State<BookRow> {
 
 		return Container(
 			padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-			height: bookHeight + 50,//200,
+			height: bookHeight + 100,//200,
 			child: ListView.builder(
 				scrollDirection: Axis.horizontal,
 				itemCount: widget.books.length,
@@ -35,18 +37,20 @@ class _BookRow extends State<BookRow> {
 						onTap: () {
 							// print("selected book = ${widget.books[index]['title']!}");
 							var selectedBook = widget.books[index];
+							// print('selected book: $selectedBook');
 							// print("selected book = $selectedBook");
 							widget.onBookSelected(
 								selectedBook['id']!,
 								selectedBook['title']!,
 								selectedBook['author']!,
 								selectedBook['image']!,
-								selectedBook['summary']!
+								selectedBook['summary']!,
+								selectedBook['bookType']!
 							);
 						},
 						child: Container(
-							width: 120,
-							padding: const EdgeInsets.all(8.0),
+							width: bookWidth + 20,
+							padding: const EdgeInsets.all(6.0),
 							child: Column(
 								crossAxisAlignment: CrossAxisAlignment.start,
 								children: [
@@ -70,19 +74,21 @@ class _BookRow extends State<BookRow> {
 											),
 										),
 									),
-									const SizedBox(height: 8),
-
-									Text(
-										widget.books[index]['title']!,
-										textAlign: TextAlign.center,
-										style: const TextStyle(
-											color: Colors.white,
-											fontSize: 10,
-											fontWeight: FontWeight.w500
+									// const SizedBox(height: 8),
+									Center(
+										child: Text(
+											widget.books[index]['title']!,
+											textAlign: TextAlign.center,
+											style: const TextStyle(
+												color: Colors.white,
+												fontSize: 15,
+												fontWeight: FontWeight.w500
+											),
+											maxLines: 2,
+											overflow: TextOverflow.ellipsis,
 										),
-										maxLines: 2,
-										overflow: TextOverflow.ellipsis,
-									)
+									),
+
 								],
 							)
 						),

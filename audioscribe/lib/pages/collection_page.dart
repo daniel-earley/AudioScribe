@@ -75,9 +75,14 @@ class _CollectionPageState extends State<CollectionPage> {
 					authorName: author,
 					imagePath: image,
 					description: summary,
+					bookType: '',
 					onBookmarkChange: () {
 						fetchUserBooks();
-					}
+					},
+					onBookDelete: (String userId, int bookId) async {
+						// for deleting book
+						print('Deleting book with id $bookId for user $userId');
+					},
 				)
 			)
 		);

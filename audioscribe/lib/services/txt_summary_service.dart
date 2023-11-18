@@ -25,4 +25,25 @@ class TxtSummarizerService {
       return 'Could not summarize with response code ${response.statusCode}, ${response.body}';
     }
   }
+
+  /// summarizes text into a given number of sentences
+  static Future<String> SummarizeText(String content) async {
+      var client = http.Client();
+      var requestQuery = Uri.https(
+          'meaningcloud-summarization-v1.p.rapidapi.com',
+          '/summarization-1.0',
+          { "sentences": '${5}', "txt": content }
+      );
+      var response = await client.get(requestQuery, headers: {
+          "Accept": 'application/json',
+          'X-RapidAPI-Key': await getApiKey('txtSummarizer'),
+          'X-RapidAPI-Host': 'meaningcloud-summarization-v1.p.rapidapi.com'
+      });
+
+      if (response.statusCode == 200) {
+          return jsonDecode(response.body)['summary'];
+      } else {
+          return 'Text summarization could not be performed: ${response.statusCode}, ${response.body}';
+      }
+  }
 }
