@@ -47,7 +47,8 @@ class _ToggleLoginButton extends State<ToggleLoginButton> {
 				),
 				child: Text(
 					widget.buttonText,
-					style: const TextStyle(color: Colors.white, fontSize: 18.0)
+					style: const TextStyle(color: Colors.white, fontSize: 18.0),
+					textAlign: TextAlign.center,
 				)
 			)
 		);

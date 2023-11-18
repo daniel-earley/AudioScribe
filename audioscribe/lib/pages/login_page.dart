@@ -314,74 +314,91 @@ class _LoginPageState extends State<LoginPage> {
 								topRight: Radius.circular(20.0),
 							)
 						),
-						child: Center(
-							child: Column(
-								children: [
-									const Padding(padding: EdgeInsets.all(15.0)),
-									// Title of App
-									const Text(
-										'AudioScribe',
-										style: TextStyle(color: Colors.white, fontSize: 25)
-									),
-
-									const SizedBox(height: 15.0),	// add gap
-
-									// Login/SignIn Capsule
-									IntrinsicWidth(
-										child: Container(
-											decoration: const BoxDecoration(
-												color: Color(0xFF383838),
-												borderRadius: BorderRadius.all(Radius.circular(50.0)),
-											),
-											child: Row(
-												mainAxisAlignment: MainAxisAlignment.center,
-												children: [
-													// Login Capsule
-													ToggleLoginButton(
-														authMode: currentAuthMode,
-														onTap: () {
-															setState(() {
-																currentAuthMode = AuthMode.LOGIN;
-																resetTextFields();
-															});
-														},
-														buttonText: "Login"
-													),
-
-													// Signup capsule
-													ToggleLoginButton(
-														authMode: currentAuthMode,
-														onTap: () {
-															setState(() {
-																currentAuthMode = AuthMode.SIGNUP;
-																resetTextFields();
-															});
-														},
-														buttonText: "Signup"
-													),
-												],
-											)
+						child: SingleChildScrollView(
+							child: Center(
+								child: Column(
+									children: [
+										const Padding(padding: EdgeInsets.all(15.0)),
+										// Title of App
+										const Text(
+											'AudioScribe',
+											style: TextStyle(color: Colors.white, fontSize: 25)
 										),
-									),
 
-									const SizedBox(height: 15.0),
+										const SizedBox(height: 15.0),	// add gap
 
-									// enter email or username
-									TextFieldAuthPage(controller: emailController, type: TextInputType.emailAddress, hintText: "Enter email or username", obscureText: false, onChanged: (value){} ),
+										// Login/SignIn Capsule
+										IntrinsicWidth(
+											child: Container(
+												width: MediaQuery.of(context).size.width * 0.8,
+												decoration: const BoxDecoration(
+													color: Color(0xFF383838),
+													borderRadius: BorderRadius.all(Radius.circular(50.0)),
+												),
+												child: Row(
+													mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+													children: [
+														// Login Capsule
+														Expanded(child: ToggleLoginButton(
+															authMode: currentAuthMode,
+															onTap: () {
+																setState(() {
+																	currentAuthMode = AuthMode.LOGIN;
+																	resetTextFields();
+																});
+															},
+															buttonText: "Login"
+														)),
 
-									const SizedBox(height: 15.0),
 
-									// enter password
-									TextFieldAuthPage(controller: passwordController, type: TextInputType.visiblePassword, hintText: "Enter password", obscureText: true, onChanged: _onPasswordChanged),
+														// Signup capsule
+														Expanded(child: ToggleLoginButton(
+															authMode: currentAuthMode,
+															onTap: () {
+																setState(() {
+																	currentAuthMode = AuthMode.SIGNUP;
+																	resetTextFields();
+																});
+															},
+															buttonText: "Signup"
+														)),
 
-									const SizedBox(height: 15.0),
+													],
+												)
+											),
+										),
 
-									// confirm password
-									currentAuthMode == AuthMode.SIGNUP ?
-										TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true, onChanged: _onConfirmPasswordChanged)
-										: Container(),
+										const SizedBox(height: 15.0),
 
-									currentAuthMode == AuthMode.SIGNUP && passwordController.text.isNotEmpty && confirmPasswordController.text.isNotEmpty ?
+										// enter email or username
+										TextFieldAuthPage(controller: emailController, type: TextInputType.emailAddress, hintText: "Enter email or username", obscureText: false, onChanged: (value){} ),
+
+										const SizedBox(height: 15.0),
+
+										// enter password
+										TextFieldAuthPage(controller: passwordController, type: TextInputType.visiblePassword, hintText: "Enter password", obscureText: true, onChanged: _onPasswordChanged),
+
+										const SizedBox(height: 15.0),
+
+										// confirm password
+										AnimatedCrossFade(
+											duration: const Duration(milliseconds: 100), // Animation duration
+											firstChild: TextFieldAuthPage(
+												controller: confirmPasswordController,
+												type: TextInputType.visiblePassword,
+												hintText: "Confirm password",
+												obscureText: true,
+												onChanged: _onConfirmPasswordChanged
+											), // This is the widget for "Signup" mode
+											secondChild: Container(), // Empty container for "Login" mode
+											crossFadeState: currentAuthMode == AuthMode.SIGNUP ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+										),
+										// currentAuthMode == AuthMode.SIGNUP ?
+										//
+										// TextFieldAuthPage(controller: confirmPasswordController, type: TextInputType.visiblePassword, hintText: "Confirm password", obscureText: true, onChanged: _onConfirmPasswordChanged)
+										// 	: Container(),
+
+										currentAuthMode == AuthMode.SIGNUP && passwordController.text.isNotEmpty && confirmPasswordController.text.isNotEmpty ?
 										Padding(
 											padding: const EdgeInsets.symmetric(vertical: 10.0),
 											child: Text(
@@ -391,94 +408,95 @@ class _LoginPageState extends State<LoginPage> {
 												),
 											)
 										)
-									: Container(),
+											: Container(),
 
-									const SizedBox(height: 30.0),
+										const SizedBox(height: 30.0),
 
-									// login/signup button
-									IntrinsicWidth(
-										child: Container(
-											width: 150.0,
-											decoration: const BoxDecoration(
-												color: Color(0xFF383838),
-												borderRadius: BorderRadius.all(Radius.circular(50.0)),
-											),
-											child: GestureDetector(
-												onTap: currentAuthMode == AuthMode.LOGIN ? signin : signup,
-												child: Container(
-													padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-													decoration: const BoxDecoration(
-														color: Color(0xFF524178),
-														borderRadius: BorderRadius.all(Radius.circular(50.0)),
-													),
-													alignment: Alignment.center,
-													child:  Text(
-														currentAuthMode == AuthMode.LOGIN ? "Login" : "Sign up",
-														style: const TextStyle(color: Colors.white, fontSize: 18.0)
-													)
-												)
-											),
-										)
-									),
-
-									const SizedBox(height: 15.0),
-									// Text 'Or'
-									const Text(
-										"Or",
-										style: TextStyle(color: Colors.white, fontSize: 18.0)
-									),
-
-									const SizedBox(height: 15.0),
-
-									// Google Sign In
-									IntrinsicWidth(
-										child: Container(
-											padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
-											width: 240.0,
-											decoration: const BoxDecoration(
-												color: Color(0xFF1F1F1F),
-												borderRadius: BorderRadius.all(Radius.circular(5.0))
-											),
-											child: GestureDetector(
-												onTap: () {
-													print("Logging in with google");
-													AuthService().signInWithGoogle();
-												},
-												child: Row(
-													mainAxisAlignment: MainAxisAlignment.center,
-													children: [
-														Image.asset('lib/images/google.png', width: 24.0, height: 24.0),
-														const SizedBox(width: 5.0),
-														Text(
-															currentAuthMode == AuthMode.LOGIN ? "Continue with Google" : "Sign up with Google",
-															style: const TextStyle(color: Colors.white, fontSize: 15.0)
+										// login/signup button
+										IntrinsicWidth(
+											child: Container(
+												width: MediaQuery.of(context).size.width * 0.8,
+												decoration: const BoxDecoration(
+													color: Color(0xFF383838),
+													borderRadius: BorderRadius.all(Radius.circular(50.0)),
+												),
+												child: GestureDetector(
+													onTap: currentAuthMode == AuthMode.LOGIN ? signin : signup,
+													child: Container(
+														padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+														decoration: const BoxDecoration(
+															color: Color(0xFF524178),
+															borderRadius: BorderRadius.all(Radius.circular(50.0)),
+														),
+														alignment: Alignment.center,
+														child:  Text(
+															currentAuthMode == AuthMode.LOGIN ? "Login" : "Sign up",
+															style: const TextStyle(color: Colors.white, fontSize: 18.0)
 														)
-													],
+													)
+												),
+											)
+										),
+
+										const SizedBox(height: 15.0),
+										// Text 'Or'
+										const Text(
+											"Or",
+											style: TextStyle(color: Colors.white, fontSize: 18.0)
+										),
+
+										const SizedBox(height: 15.0),
+
+										// Google Sign In
+										IntrinsicWidth(
+											child: Container(
+												padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+												width: MediaQuery.of(context).size.width * 0.8,
+												decoration: const BoxDecoration(
+													color: Color(0xFF1F1F1F),
+													borderRadius: BorderRadius.all(Radius.circular(5.0))
+												),
+												child: GestureDetector(
+													onTap: () {
+														print("Logging in with google");
+														AuthService().signInWithGoogle();
+													},
+													child: Row(
+														mainAxisAlignment: MainAxisAlignment.center,
+														children: [
+															Image.asset('lib/images/google.png', width: 24.0, height: 24.0),
+															const SizedBox(width: 5.0),
+															Text(
+																currentAuthMode == AuthMode.LOGIN ? "Continue with Google" : "Sign up with Google",
+																style: const TextStyle(color: Colors.white, fontSize: 15.0)
+															)
+														],
+													),
 												),
 											),
 										),
-									),
 
-									const SizedBox(height: 10.0),
+										const SizedBox(height: 20.0),
 
-									// forgot password
-									currentAuthMode == AuthMode.LOGIN
-										? GestureDetector(
-										onTap: () {
-											showForgotPasswordDialog(context);
-										},
-										child: Container(
-											padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-											alignment: Alignment.center,
-											child: const Text(
-												"forgot password?",
-												style: TextStyle(color: Colors.white, fontSize: 15.0)
+										// forgot password
+										currentAuthMode == AuthMode.LOGIN
+											? GestureDetector(
+											onTap: () {
+												showForgotPasswordDialog(context);
+											},
+											child: Container(
+												padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+												alignment: Alignment.center,
+												child: const Text(
+													"forgot password?",
+													style: TextStyle(color: Colors.white, fontSize: 15.0)
+												)
 											)
 										)
-									)
-										: Container(),
-								]
-							)
+											: Container(),
+									]
+								)
+							),
 						)
 					),
 				),

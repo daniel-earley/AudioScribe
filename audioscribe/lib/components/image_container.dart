@@ -11,8 +11,8 @@ class ImageContainer extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		return Container(
-			width: MediaQuery.of(context).size.width * 0.5,
-			height: MediaQuery.of(context).size.width * 0.7,
+			width: MediaQuery.of(context).size.width * 0.6,
+			height: MediaQuery.of(context).size.width * 0.8,
 			decoration: BoxDecoration(
 				color: Colors.white,
 				borderRadius: BorderRadius.circular(4),

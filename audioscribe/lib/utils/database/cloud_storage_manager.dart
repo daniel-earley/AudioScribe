@@ -2,8 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data_classes/book.dart';
 
+/// Get current user logged in
+String getCurrentUserId() {
+	User? currentUser = FirebaseAuth.instance.currentUser;
+	if (currentUser != null) {
+		String uid = currentUser.uid;
+		return uid;
+	} else {
+		return 'No user is currently signed in';
+	}
+}
 
-/// Fetch book with bookmark for the current user logged in on device
+/// Get book with bookmark for the current user logged in on device
 Future<List<Map<String, dynamic>>> fetchBookmarkedBooks() async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 	var snapshot = await FirebaseFirestore.instance
@@ -40,6 +50,29 @@ Future<List<Map<String, dynamic>>> getBooksForUser(String userId) async {
 	} catch (e) {
 		print('An error occurred while fetching books: $e');
 		return [];
+	}
+}
+
+/// Get bookmarked book in firestore by id
+Future<Map<String, dynamic>?> getUserBookmarkById(String userId, int bookId) async {
+	try {
+		FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+		DocumentSnapshot documentSnapshot = await firestore
+			.collection('users')
+			.doc(userId)
+			.collection('bookmarks')
+			.doc(bookId.toString())
+			.get();
+
+		if (documentSnapshot.exists) {
+			return documentSnapshot.data() as Map<String, dynamic>;
+		} else {
+			print('Book not found!');
+			return null;
+		}
+ 	} catch (e) {
+		return null;
 	}
 }
 

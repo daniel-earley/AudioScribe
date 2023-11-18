@@ -41,7 +41,7 @@ class _CollectionPageState extends State<CollectionPage> {
 					child: Column(
 						children: [
 							// Search bar
-							const AppSearchBar(hintText: "search for your favourite books"),
+							const AppSearchBar(hintText: "search"),
 
 							// Book grid
 							Expanded(
@@ -81,7 +81,7 @@ class _CollectionPageState extends State<CollectionPage> {
 					},
 					onBookDelete: (String userId, int bookId) async {
 						// for deleting book
-						print('Deleting book with id $bookId for user $userId');
+						// print('Deleting book with id $bookId for user $userId');
 					},
 				)
 			)

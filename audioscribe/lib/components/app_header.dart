@@ -19,7 +19,7 @@ class AppHeader extends StatelessWidget {
 	});
 
 	void signOut() async {
-		FirebaseAuth.instance.signOut();
+		await FirebaseAuth.instance.signOut();
 	}
 
 	@override

@@ -22,7 +22,6 @@ class AuthPage extends StatelessWidget {
 					else {
 						return LoginPage();
 					}
-
 				}
 			)
 		);

@@ -1,8 +1,12 @@
+import 'package:audioscribe/components/PrimaryAppButton.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/data_classes/bookmark.dart';
+import 'package:audioscribe/pages/audio_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,11 +44,22 @@ class BookDetailPage extends StatefulWidget {
 
 class _BookDetailPageState extends State<BookDetailPage> {
 	bool isBookmarked = false;
+	late Bookmark bookmarkManager;
 
 	@override
 	void initState() {
 		super.initState();
 		getCurrentBookInfo();
+		// initialize bookmark instance
+		initializeBookmarkManager();
+	}
+
+	void initializeBookmarkManager() async {
+		bookmarkManager = Bookmark(
+			bookTitle: widget.bookTitle,
+			bookAuthor: widget.authorName,
+			descriptionFileLoc: widget.description
+		);
 	}
 
 	@override
@@ -55,104 +70,29 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		);
 	}
 
-	/// read book summary from the file path
-	Future<String> _readBookSummary(String filePath) async {
-		try {
-			final contents = await rootBundle.loadString(filePath);
-			return contents;
-		} catch (e) {
-			try {
-				String userId = getCurrentUserId();
 
-				Map<String, dynamic>? book = await getUserBookById(userId, widget.bookId);
-
-				if (book != null) {
-					if (book['summary'].toString().isEmpty) {
-						return 'No summary was provided for this book';
-					}
-					return book['summary'];
-				}
-			} catch (firestoreError) {
-				print('Error fetching from firestore: $firestoreError');
-				return 'Error: unable to load summary';
-			}
-			return 'Error: unable to load summary';
-		}
-	}
-
-	/// get the current instance of the user that is logged In
-	String getCurrentUserId() {
-		User? currentUser = FirebaseAuth.instance.currentUser;
-		if (currentUser != null) {
-			String uid = currentUser.uid;
-			return uid;
-		} else {
-			return 'No user is currently signed in';
-		}
-	}
-
-	/// store book detail for user
-	Future<void> addBookmark(int bookId) async {
-		try {
-			// get user id from current log
-			String userId = getCurrentUserId();
-
-			// make a new book object
-			Book currentBook = Book(bookId: bookId, title: widget.bookTitle, author: widget.authorName, textFileLocation: widget.description, imageFileLocation: widget.imagePath);
-
-			// make a new user model to perform DB queries
-			UserModel userModel = UserModel();
-			userClient.User? user = await userModel.getUserByID(userId);
-
-			// Insert the book into the database
-			BookModel bookModel = BookModel();
-
-			// check if book exists in DB
-			var book = await bookModel.getBookById(bookId);
-
-			// insert in DB if book is not in DB | SQLite STORAGE
-			if (book.isEmpty) {
-				await bookModel.insertBook(currentBook);
-			}
-
-			// FIREBASE STORAGE
-			String bookSummary = await _readBookSummary(widget.description);
-			addBookmarkFirestore(bookId.toString(), widget.bookTitle, widget.authorName, bookSummary);
-
-			// if user exists then bookmark the selected book
-			if (user != null) {
-				await userModel.bookmarkBookForUser(userId, bookId);
-				setState(() {
-					isBookmarked = true;
-				});
-				widget.onBookmarkChange();
-
-				if(mounted) {
-					SnackbarUtil.showSnackbarMessage(context, '${widget.bookTitle} has been bookmarked', Colors.white);
-				}
-			}
-		} catch (e) {
-			print("bookmark $e");
-		}
-	}
-
-	/// remove bookmark for the currently selected book
-	Future<void> removeBookmark(int bookId) async {
-		String userId = getCurrentUserId();
-		UserModel userModel = UserModel();
-
-		// query to see if this book exists for them || IN SQLITE
-		var books = await userModel.deleteBookmark(userId, widget.bookId);
-
-		// IN FIRESTORE
-		removeBookmarkFirestore(bookId.toString());
-
-		// sets the book mark to false
-		if (books > 0) {
+	/// handles adding bookmark for user
+	void handleAddBookmark(int bookId) async {
+		bool isBookBookmarked = await bookmarkManager.addBookmark(bookId);
+		if (isBookBookmarked) {
 			setState(() {
-				isBookmarked = false;
+			  	isBookmarked = true;
 			});
+			widget.onBookmarkChange();
+			if(mounted) {
+				SnackbarUtil.showSnackbarMessage(context, '${widget.bookTitle} has been bookmarked', Colors.white);
+			}
+		}
+	}
 
+	/// handles removing bookmark for users
+	void handleRemoveBookmark(int bookId) async {
+		bool isBookBookmarked = await bookmarkManager.removeBookmark(bookId);
+		if (!isBookBookmarked) {
+			setState(() {
+			  	isBookmarked = false;
+			});
+			widget.onBookmarkChange();
 			if (mounted) {
 				SnackbarUtil.showSnackbarMessage(context, 'Bookmark removed', Colors.white);
 			}
@@ -211,7 +151,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
 								// book title
 								Align(
-									alignment: Alignment.centerLeft,
+									alignment: Alignment.center,
 									child: Text(
 										widget.bookTitle,
 										style: const TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.w500)
@@ -220,7 +160,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
 								// book author
 								Align(
-									alignment: Alignment.centerLeft,
+									alignment: Alignment.center,
 									child: Padding(
 										padding: const EdgeInsets.symmetric(vertical: 10.0),
 										child: Text(
@@ -229,6 +169,26 @@ class _BookDetailPageState extends State<BookDetailPage> {
 										),
 									)
 								),
+
+								// Listen button
+								PrimaryAppButton(buttonText: 'Listen', buttonSize: 0.85, onTap: () {
+									print('listening...');
+									Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+										AudioPlayerPage(
+											bookId: widget.bookId,
+											imagePath: widget.imagePath,
+											bookTitle: widget.bookTitle,
+											bookAuthor: widget.authorName,
+											isBookmarked: isBookmarked,
+											onBookmarkChanged: (bool isBookmarked) {
+												setState(() {
+												  	this.isBookmarked = isBookmarked;
+												});
+												widget.onBookmarkChange();
+											},
+										))
+									);
+								}),
 
 								// Bookmark and delete
 								Align(
@@ -240,10 +200,9 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												onPressed: () {
 													// if bookmarked item them run remove function
 													if (isBookmarked) {
-														removeBookmark(widget.bookId);
-														widget.onBookmarkChange();
+														handleRemoveBookmark(widget.bookId);
 													} else {
-														addBookmark(widget.bookId);
+														handleAddBookmark(widget.bookId);
 													}
 
 													// getCurrentBookInfo();
@@ -290,7 +249,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 								Padding(
 									padding: const EdgeInsets.symmetric(vertical: 10.0),
 									child: FutureBuilder(
-										future: _readBookSummary(widget.description),
+										future: bookmarkManager.readBookSummary(widget.description, widget.bookId),
 										builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
 											if (snapshot.connectionState == ConnectionState.done) {
 												return Container(

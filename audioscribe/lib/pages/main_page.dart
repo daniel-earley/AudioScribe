@@ -48,7 +48,7 @@ class _MainPageState extends State<MainPage> {
 
   // sign user out
   void signOut() async {
-    FirebaseAuth.instance.signOut();
+    await FirebaseAuth.instance.signOut();
   }
 
   String currentPageHeaderTitle() {
@@ -86,7 +86,7 @@ class _MainPageState extends State<MainPage> {
                     children: [
                       // upload button
                       PopUpCircularButton(
-                          buttonIcon: Icon(Icons.file_upload,
+                          buttonIcon: const Icon(Icons.file_upload,
                               color: Colors.white, size: 35.0),
                           onTap: _uploadBook,
                           label: 'Upload'),

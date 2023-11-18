@@ -1,6 +1,7 @@
 import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
+import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,32 +20,7 @@ class _HomePageState extends State<HomePage> {
 	List<Map<String, dynamic>> userBooks = [];
 
 	// list of recommendation books
-	final List<Map<String, dynamic>> recommendationBooks = [
-		{
-			'id': 0,
-			'image': 'lib/assets/books/Moby_Dick_Or_The_Whale/coverImage/Moby_Dick_or_The_Whale.jpg',
-			'title': 'Moby Dick Or The Whale',
-			'author': 'Herman Melville',
-			'summary': 'lib/assets/books/Moby_Dick_Or_The_Whale/summary/summary.txt',
-			'bookType': 'recommendation'
-		},
-		{
-			'id': 1,
-			'image': 'lib/assets/books/O_Pioneers/coverImage/O_Pioneers.jpg',
-			'title': 'O Pioneers!',
-			'author': 'Willa Cather',
-			'summary': 'lib/assets/books/Peter_Pan/summary/summary.txt',
-			'bookType': 'recommendation'
-		},
-		{
-			'id': 2,
-			'image': 'lib/assets/books/Peter_Pan/coverImage/Peter_Pan.jpg',
-			'title': 'Peter Pan',
-			'author': 'J.M. Barrie',
-			'summary': 'lib/assets/books/O_Pioneers/summary/summary.txt',
-			'bookType': 'recommendation'
-		},
-	];
+	final List<Map<String, dynamic>> recommendationBooks = bookData;
 
 	@override
 	void initState() {
@@ -81,7 +57,7 @@ class _HomePageState extends State<HomePage> {
 								BookRow(books: userBooks, bookType: 'user', onBookSelected: _onBookSelected),
 
 								// Separator
-								const Separator(text: "Recommendations"),
+								const Separator(text: "See what's new"),
 
 								// Book Row 2
 								BookRow(books: recommendationBooks, bookType: 'recommendation', onBookSelected: _onBookSelected),
@@ -157,39 +133,4 @@ class _HomePageState extends State<HomePage> {
 		  	userBooks = transformedBooks;
 		});
 	}
-
-
-
-
-	// Future<void> fetchUserBooks() async {
-	// 	try {
-	// 		// get current user instance
-	// 		String userId = getCurrentUserId();
-	// 		UserModel userModel = UserModel();
-	// 		BookModel bookModel = BookModel();
-	//
-	// 		// get user id
-	// 		userClient.User? user = await userModel.getUserByID(userId);
-	// 		// print('user id: $user');
-	//
-	// 		// if the user exists
-	// 		if (user != null) {
-	// 			var books = await userModel.getAllUserBooks(userId);
-	// 			// print('homepage (136) books: $books');
-	//
-	// 			// convert books to book row format
-	// 			setState(() {
-	// 				userBooks = books.map((book) => {
-	// 					'id': book['bookId'],
-	// 					'image': book['imageFileLocation'] as String? ?? '',
-	// 					'title': book['title'] as String? ?? '',
-	// 					'author': book['author'] as String? ?? '',
-	// 					'summary': book['textFileLocation'] as String? ?? ''
-	// 				}).toList();
-	// 			});
-	// 		}
-	// 	} catch (e) {
-	// 		print("Error fetching user books: $e");
-	// 	}
-	// }
 }
