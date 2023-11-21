@@ -180,6 +180,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                       bookTitle: widget.bookTitle,
                       bookAuthor: widget.authorName,
                       isBookmarked: isBookmarked,
+                      audioBookPath: widget.audioBookPath,
                       onBookmarkChanged: (bool isBookmarked) {
                         setState(() {
                           this.isBookmarked = isBookmarked;
