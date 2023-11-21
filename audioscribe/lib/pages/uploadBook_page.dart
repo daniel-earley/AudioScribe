@@ -21,25 +21,29 @@ class _UploadBookPageState extends State<UploadBookPage> {
   final _summaryController = TextEditingController();
 
   Future<void> _submitBook() async {
-		if (_formKey.currentState!.validate()) {
-			  // If the form is valid, add the book to Firestore
-			  int bookId = DateTime.now().millisecondsSinceEpoch; // Or generate a unique ID as per your logic
+    if (_formKey.currentState!.validate()) {
+      // If the form is valid, add the book to Firestore
+      int bookId = DateTime.now()
+          .millisecondsSinceEpoch; // Or generate a unique ID as per your logic
 
-			  // generate a summary
-			  String contentSummary = await TxtSummarizerService.SummarizeText(widget.text);
+      // generate a summary
+      String contentSummary =
+          await TxtSummarizerService.SummarizeText(widget.text);
 
-			  // Store the book on firestore
-			  await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary);
+      // generate the audio book for current context
+      String audioBookPath =
+          await createAudioBook(widget.text, _titleController.text);
 
-			  // generate the audio book for current context
-			  createAudioBook(widget.text, _titleController.text);
+      // Store the book on firestore
+      await addBookToFirestore(bookId, _titleController.text,
+          _authorController.text, contentSummary, audioBookPath);
 
-			  // Clear the text fields
-			  _titleController.clear();
-			  _authorController.clear();
-			  _summaryController.clear();
-		}
-		_navigateToMainPage(context);
+      // Clear the text fields
+      _titleController.clear();
+      _authorController.clear();
+      _summaryController.clear();
+    }
+    _navigateToMainPage(context);
   }
 
   void _navigateToMainPage(BuildContext context) {

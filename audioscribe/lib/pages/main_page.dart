@@ -106,52 +106,55 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _uploadBook() async {
-		// Use FilePicker to let the user select a text file
-		FilePickerResult? result = await FilePicker.platform.pickFiles(
-			  type: FileType.custom,
-			  allowedExtensions: ['txt', 'pdf'],
-		);
+    // Use FilePicker to let the user select a text file
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['txt', 'pdf'],
+    );
 
-		if (result != null) {
-			  // Get the selected file
-			  PlatformFile file = result.files.first;
-			  String fileContent = '';
-			  if (path.extension(file.path!) == ".txt") {
-					fileContent = await File(file.path!).readAsString();
-			  } else {
-					// PDF book found
-					// Create a directory called "AudioScribeTextBooks" inside the external directory
-					Directory? externalDirectory = await getExternalStorageDirectory();
-					String? externalPath = externalDirectory?.path;
-					String BookDirectoryPath = "$externalPath/AudioScribeTextBooks";
-					Directory BookDirectory = Directory(BookDirectoryPath);
+    if (result != null) {
+      // Get the selected file
+      PlatformFile file = result.files.first;
+      String fileContent = '';
+      if (path.extension(file.path!) == ".txt") {
+        fileContent = await File(file.path!).readAsString();
+      } else {
+        // PDF book found
+        // Create a directory called "AudioScribeTextBooks" inside the external directory
+        Directory? externalDirectory = await getExternalStorageDirectory();
+        String? externalPath = externalDirectory?.path;
+        String BookDirectoryPath = "$externalPath/AudioScribeTextBooks";
+        Directory BookDirectory = Directory(BookDirectoryPath);
 
-					if (!await BookDirectory.exists()) {
-					  	await BookDirectory.create(recursive: true); // This will create the directory if it doesn't exist
-					}
-					String fileName = path.basenameWithoutExtension(file.name);
-					await convertFileToTxt(file.path!, '$BookDirectoryPath');
-					fileContent = await File('$BookDirectoryPath/$fileName.txt').readAsString();
-			  }
+        if (!await BookDirectory.exists()) {
+          await BookDirectory.create(
+              recursive:
+                  true); // This will create the directory if it doesn't exist
+        }
+        String fileName = path.basenameWithoutExtension(file.name);
+        await convertFileToTxt(file.path!, '$BookDirectoryPath');
+        fileContent =
+            await File('$BookDirectoryPath/$fileName.txt').readAsString();
+      }
 
-		// Call your custom function with the file content and file name
-		_navigateToUploadBookPage(context, fileContent);
-		} else {
-		  	// User canceled the picker
-		  	print("No file selected");
-		}
+      // Go to upload page
+      _navigateToUploadBookPage(context, fileContent);
+    } else {
+      // User canceled the picker
+      print("No file selected");
+    }
   }
 
   void _navigateToCameraScreen(BuildContext context) {
-    	Navigator.of(context).push(MaterialPageRoute(
-      		builder: (context) => CameraScreen(),
-    	));
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => CameraScreen(),
+    ));
   }
 
   void _navigateToUploadBookPage(BuildContext context, String text) {
-		Navigator.of(context).push(MaterialPageRoute(
-		  	builder: (context) => UploadBookPage(text: text),
-		));
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => UploadBookPage(text: text),
+    ));
   }
 
   @override
