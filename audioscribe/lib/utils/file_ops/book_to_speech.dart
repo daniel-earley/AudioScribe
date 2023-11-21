@@ -43,12 +43,12 @@ Future createAudioBook(String text, String name) async {
   // Create filename with full path
   String fileExtension = Platform.isAndroid ? ".wav" : ".caf";
   String fileNameWithPath = "$audioBookDirectoryPath/$name$fileExtension";
-
+  String fileNameWithUnderscores = fileNameWithPath.replaceAll(' ', '_');
   // Save tts to file
-  int result = await flutterTts.synthesizeToFile(text, fileNameWithPath);
+  int result = await flutterTts.synthesizeToFile(text, fileNameWithUnderscores);
   if (result == 1) {
-    print("File created: $fileNameWithPath");
-    return fileNameWithPath;
+    print("File created: $fileNameWithUnderscores");
+    return fileNameWithUnderscores;
   } else {
     print("Error: File not created.");
     return null;
