@@ -224,7 +224,7 @@ class _AudioControlsState extends State<AudioControls> {
             IconButton(
               icon: Icon(Icons.fast_rewind, color: Colors.white),
               onPressed: () {
-                // Implement rewind functionality
+                audioManager.reverse();
               },
             ),
             IconButton(
@@ -240,7 +240,7 @@ class _AudioControlsState extends State<AudioControls> {
             IconButton(
               icon: Icon(Icons.fast_forward, color: Colors.white),
               onPressed: () {
-                // Implement fast forward functionality
+                audioManager.forward();
               },
             ),
           ],
