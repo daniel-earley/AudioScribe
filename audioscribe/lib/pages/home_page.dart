@@ -85,8 +85,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// run when any book is selected on the screen
-  void _onBookSelected(int index, String title, String author, String image,
-      String summary, String bookType, String audioBookPath) {
+  void _onBookSelected(int index, String title, String author, String image, String summary, String bookType, String audioBookPath) {
     // print('$index, $title, $author, $image, $summary');
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => BookDetailPage(
@@ -126,8 +125,7 @@ class _HomePageState extends State<HomePage> {
         'author': book['author'] ?? 'Unknown author',
         'image': 'lib/assets/books/Default/textFile.png',
         'summary': book['summary'] ?? 'No summary available',
-        'bookType':
-            'user', // this function specifically fetches top row books 'userBooks'
+        'bookType': 'user', // this function specifically fetches top row books 'userBooks'
         'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
       };
     }).toList();

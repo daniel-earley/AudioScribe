@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BookRow extends StatefulWidget {
 	final List<Map<String, dynamic>> books;
 	final String bookType;
-	final Function(int index, String title, String author, String image, String summary, String bookType) onBookSelected;
+	final Function(int index, String title, String author, String image, String summary, String bookType, String audioBookPath) onBookSelected;
 
 	const BookRow({
 		super.key,
@@ -37,15 +37,15 @@ class _BookRow extends State<BookRow> {
 						onTap: () {
 							// print("selected book = ${widget.books[index]['title']!}");
 							var selectedBook = widget.books[index];
-							// print('selected book: $selectedBook');
-							// print("selected book = $selectedBook");
+							print('selected book: $selectedBook');
 							widget.onBookSelected(
 								selectedBook['id']!,
 								selectedBook['title']!,
 								selectedBook['author']!,
 								selectedBook['image']!,
 								selectedBook['summary']!,
-								selectedBook['bookType']!
+								selectedBook['bookType']!,
+								selectedBook['audioBookPath']!
 							);
 						},
 						child: Container(

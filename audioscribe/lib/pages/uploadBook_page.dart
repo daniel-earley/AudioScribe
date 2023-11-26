@@ -27,8 +27,7 @@ class _UploadBookPageState extends State<UploadBookPage> {
           .millisecondsSinceEpoch; // Or generate a unique ID as per your logic
 
       // generate a summary
-      String contentSummary =
-          await TxtSummarizerService.SummarizeText(widget.text);
+      String contentSummary = await TxtSummarizerService.SummarizeText(widget.text);
 
       // generate the audio book for current context
       String audioBookPath =

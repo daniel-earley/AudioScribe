@@ -3,6 +3,7 @@ import 'package:audioscribe/components/book_grid.dart';
 import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
+import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/database/user_model.dart';
 import 'package:audioscribe/data_classes/user.dart' as userClient;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -62,8 +63,8 @@ class _CollectionPageState extends State<CollectionPage> {
   }
 
   /// run when any book is selected on screen
-  void _onBookSelected(int index, String title, String author, String image,
-      String summary, String audioBookPath) {
+  void _onBookSelected(int index, String title, String author, String image, String summary, String audioBookPath) {
+      print("user collection: $audioBookPath");
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => BookDetailPage(
               bookId: index,
@@ -78,7 +79,13 @@ class _CollectionPageState extends State<CollectionPage> {
               },
               onBookDelete: (String userId, int bookId) async {
                 // for deleting book
-                // print('Deleting book with id $bookId for user $userId');
+                print('Deleting book with id $bookId for user $userId');
+
+                // delete book
+                await deleteUserBook(userId, bookId);
+
+                // refresh book state
+                await fetchUserBooks();
               },
             )));
   }
@@ -107,7 +114,8 @@ class _CollectionPageState extends State<CollectionPage> {
                     'image': book['imageFileLocation'] as String? ?? '',
                     'title': book['title'] as String? ?? '',
                     'author': book['author'] as String? ?? '',
-                    'summary': book['textFileLocation'] as String? ?? ''
+                    'summary': book['textFileLocation'] as String? ?? '',
+                    'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
                   })
               .toList();
         });

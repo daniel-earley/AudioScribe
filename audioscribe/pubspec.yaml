@@ -53,6 +53,7 @@ dependencies:
   flutter_tesseract_ocr: ^0.4.24
   device_info: ^2.0.3
   flutter_local_notifications: ^16.1.0
+  audioplayers: ^5.2.1
 
 dev_dependencies:
   flutter_test:

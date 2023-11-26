@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class BookGridView extends StatefulWidget {
 	final List<Map<String, dynamic>> books;
-	final Function(int index, String title, String author, String image, String summary) onBookSelected;
+	final Function(int index, String title, String author, String image, String summary, String audioBookPath) onBookSelected;
 
 	const BookGridView({
 		super.key,
@@ -39,7 +39,8 @@ class _BookGridViewState extends State<BookGridView> {
 							book['title'],
 							book['author'],
 							book['image'],
-							book['summary']
+							book['summary'],
+							book['audioBookPath']
 						);
 					},
 					child: Container(

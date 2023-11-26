@@ -32,13 +32,15 @@ class TxtSummarizerService {
       var requestQuery = Uri.https(
           'meaningcloud-summarization-v1.p.rapidapi.com',
           '/summarization-1.0',
-          { "sentences": '${5}', "txt": content }
+          { "sentences": '${2}', "txt": content }
       );
       var response = await client.get(requestQuery, headers: {
           "Accept": 'application/json',
           'X-RapidAPI-Key': await getApiKey('txtSummarizer'),
           'X-RapidAPI-Host': 'meaningcloud-summarization-v1.p.rapidapi.com'
       });
+
+      print('summarizer response: ${jsonDecode(response.body)['summary']}');
 
       if (response.statusCode == 200) {
           return jsonDecode(response.body)['summary'];
