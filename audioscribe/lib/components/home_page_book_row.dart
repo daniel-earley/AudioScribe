@@ -10,7 +10,7 @@ class BookRow extends StatefulWidget {
 		required this.books,
 		required this.bookType,
 		required this.onBookSelected
-	});
+	}); 
 
 	@override
 	_BookRow createState() => _BookRow();
@@ -37,7 +37,7 @@ class _BookRow extends State<BookRow> {
 						onTap: () {
 							// print("selected book = ${widget.books[index]['title']!}");
 							var selectedBook = widget.books[index];
-							print('selected book: $selectedBook');
+							// print('selected book: $selectedBook');
 							widget.onBookSelected(
 								selectedBook['id']!,
 								selectedBook['title']!,

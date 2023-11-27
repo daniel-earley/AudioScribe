@@ -26,8 +26,9 @@ class BookDetailPage extends StatefulWidget {
 	final String audioBookPath;
 	final VoidCallback onBookmarkChange;
 	final Future<void> Function(String, int) onBookDelete;
+	List<Map<String, String>>? audioFiles;
 
-	const BookDetailPage(
+	BookDetailPage(
 		{Key? key,
 			required this.bookId,
 			required this.bookTitle,
@@ -37,8 +38,9 @@ class BookDetailPage extends StatefulWidget {
 			required this.bookType,
 			required this.audioBookPath,
 			required this.onBookmarkChange,
-			required this.onBookDelete})
-		: super(key: key);
+			required this.onBookDelete,
+			this.audioFiles
+		}) : super(key: key);
 
 	@override
 	State<BookDetailPage> createState() => _BookDetailPageState();
@@ -119,8 +121,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
 	/// check if currently selected book is bookmarked or not
 	Future<void> getCurrentBookInfo() async {
-		print('current book selected: ${widget.bookId}');
-		print('current book selected: ${widget.bookType}');
 		// get user id from current log
 		String userId = getCurrentUserId();
 		UserModel userModel = UserModel();
@@ -128,6 +128,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		// query to see if this book exists for them
 		var books = await userModel.checkBookIsBookmarked(userId, widget.bookId);
 
+		// check if book is favourited
 		bool favouriteStatus = await getUserFavouriteBook(userId, widget.bookId);
 
 		// set bookmark state depending on the book mark status
@@ -135,15 +136,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		  	isBookmarked = books.isNotEmpty;
 			isFavourited = favouriteStatus;
 		});
-		// if (books.isNotEmpty) {
-		// 	setState(() {
-		// 		isBookmarked = true;
-		// 	});
-		// } else {
-		// 	setState(() {
-		// 		isBookmarked = false;
-		// 	});
-		// }
 	}
 
 	Widget _buildBookDetails(BuildContext context) {
@@ -167,8 +159,11 @@ class _BookDetailPageState extends State<BookDetailPage> {
 								// book image
 								Padding(
 									padding: const EdgeInsets.symmetric(vertical: 10.0),
-									child:
-									Center(child: ImageContainer(imagePath: widget.imagePath)),
+									child: Center(
+										child: widget.bookType == 'app'
+										? Image.network(widget.imagePath, fit: BoxFit.fill, width: 200, height: 300,)
+										: ImageContainer(imagePath: widget.imagePath)
+									),
 								),
 
 								// book title
@@ -289,6 +284,29 @@ class _BookDetailPageState extends State<BookDetailPage> {
 								),
 
 								// book summary
+								widget.bookType == 'app' ?
+								Container(
+									padding: const EdgeInsets.symmetric(
+										horizontal: 10.0, vertical: 3.0),
+									decoration: BoxDecoration(
+										color: const Color(0xFF242424),
+										borderRadius: BorderRadius.circular(15.0)),
+									height: MediaQuery.of(context).size.width * 0.3,
+									child: SingleChildScrollView(
+										child: Align(
+											alignment: Alignment.centerLeft,
+											child: Padding(
+												padding: const EdgeInsets.symmetric(
+													vertical: 10.0),
+												child: Text(
+													widget.description ?? 'No summary available',
+													style: const TextStyle(
+														color: Colors.white,
+														fontSize: 16.0,
+														height: 1.5)),
+											)),
+									),
+								):
 								Padding(
 									padding: const EdgeInsets.symmetric(vertical: 10.0),
 									child: FutureBuilder(
