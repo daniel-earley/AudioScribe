@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
@@ -177,8 +179,17 @@ class AudioControls extends StatefulWidget {
 class _AudioControlsState extends State<AudioControls> {
   bool isPlaying = false;
   late AudioManager audioManager;
-  double _currentSliderValue =
-      0; // This should reflect the current position of the audio.
+
+  StreamSubscription? _durationSubscription;
+  StreamSubscription? _positionSubscription;
+  StreamSubscription? _playerCompleteSubscription;
+
+  Duration? _duration;
+  Duration? _position;
+  PlayerState? _playerState;
+
+  String get _durationText => _duration?.toString().split('.').first ?? '';
+  String get _positionText => _position?.toString().split('.').first ?? '';
 
   @override
   void initState() {
@@ -186,6 +197,8 @@ class _AudioControlsState extends State<AudioControls> {
     audioManager = AudioManager();
 
     audioManager.setSource(widget.audioBookPath);
+
+    _initStreams();
   }
 
   void _togglePlayPause() {
@@ -200,23 +213,58 @@ class _AudioControlsState extends State<AudioControls> {
     });
   }
 
+  void _initStreams() {
+    _durationSubscription = audioManager.onDurationChanged.listen((duration) {
+      setState(() => _duration = duration);
+    });
+
+    _positionSubscription = audioManager.onPositionChanged.listen(
+      (p) => setState(() => _position = p),
+    );
+
+    _playerCompleteSubscription = audioManager.onPlayerComplete.listen((event) {
+      setState(() {
+        _playerState = PlayerState.stopped;
+        _position = Duration.zero;
+        audioManager.setSource(widget.audioBookPath);
+        isPlaying = !isPlaying;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        // Your slider here
+        // Audio Duration Slider
         Slider(
-          value: _currentSliderValue,
-          min: 0,
-          max: 100, // This should be the total duration of the audio.
           onChanged: (value) {
-            setState(() {
-              _currentSliderValue = value;
-              // Add logic to change the position of the audio
-            });
+            final duration = _duration;
+            if (duration == null) {
+              return;
+            }
+            final position = value * duration.inMilliseconds;
+            audioManager.seek(Duration(milliseconds: position.round()));
           },
+          value: (_position != null &&
+                  _duration != null &&
+                  _position!.inMilliseconds > 0 &&
+                  _position!.inMilliseconds < _duration!.inMilliseconds)
+              ? _position!.inMilliseconds / _duration!.inMilliseconds
+              : 0.0,
+          activeColor: Colors.deepPurpleAccent,
         ),
-        // Your start and end duration text here
+        Text(
+          _position != null
+              ? '$_positionText / $_durationText'
+              : _duration != null
+                  ? _durationText
+                  : '',
+          style: const TextStyle(
+            fontSize: 16.0,
+            color: Colors.white,
+          ),
+        ),
 // Your control buttons here
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
