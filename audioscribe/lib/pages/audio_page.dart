@@ -4,7 +4,9 @@ import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/main_page.dart';
+import 'package:audioscribe/utils/interface/animated_fab.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:audioscribe/services/audio_player_service.dart';
 import 'package:flutter/material.dart';
@@ -49,8 +51,20 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFF303030),
-        body: _buildAudioPlayerPage());
+      backgroundColor: const Color(0xFF303030),
+      body: _buildAudioPlayerPage(),
+      floatingActionButton: AnimatedFAB(
+        listItems: const [
+          Text('Home', style: TextStyle(color: Colors.white)),
+          Text('Second Item', style: TextStyle(color: Colors.white)),
+        ],
+        onTapActions: [
+          () => Navigator.popUntil(
+              context, (Route<dynamic> route) => route.isFirst),
+          () => print('Second Item Tapped'),
+        ],
+      ),
+    );
   }
 
   /// handles adding bookmark for book
@@ -270,7 +284,7 @@ class _AudioControlsState extends State<AudioControls> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.fast_rewind, color: Colors.white),
+              icon: const Icon(Icons.fast_rewind, color: Colors.white),
               onPressed: () {
                 audioManager.reverse();
               },

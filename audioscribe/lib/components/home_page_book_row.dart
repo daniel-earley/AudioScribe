@@ -37,7 +37,6 @@ class _BookRow extends State<BookRow> {
                 // print("selected book = ${widget.books[index]['title']!}");
                 var selectedBook = widget.books[index];
                 // print('selected book: $selectedBook');
-                // print("selected book = $selectedBook");
                 widget.onBookSelected(
                     selectedBook['id']!,
                     selectedBook['title']!,

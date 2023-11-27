@@ -3,5 +3,6 @@
     "ClientId": "42f44528-4dbf-4ea1-9d43-496130243d0a",
     "ClientSecret": "560a356caa4f1c7c8953020462ae27f4"
   },
-  "txtSummarizer" : "47a6d06287msh01b2a8c217d6b2fp1b3a60jsndc961e7a6eaa"
+  "txtSummarizer" : "47a6d06287msh01b2a8c217d6b2fp1b3a60jsndc961e7a6eaa",
+  "openAI": "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"
 }
