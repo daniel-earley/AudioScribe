@@ -76,7 +76,12 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	Widget build(BuildContext context) {
 		return Scaffold(
 			backgroundColor: const Color(0xFF303030),
-			body: _buildBookDetails(context));
+			appBar: AppBar(
+				title: Text(widget.bookTitle),
+				backgroundColor: Color(0xFF524178),
+			),
+			body: _buildBookDetails(context)
+		);
 	}
 
 	/// handles adding bookmark for user
@@ -138,213 +143,283 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		});
 	}
 
+	// displays list of chapters
+	Widget _buildChapterDetails(List<Map<String, String>> audioFiles) {
+		return audioFiles.isNotEmpty
+		? Column(
+			crossAxisAlignment: CrossAxisAlignment.stretch,
+			children: audioFiles
+				.asMap()
+				.entries
+				.map((entry) => Padding(
+					padding: EdgeInsets.symmetric(vertical: 2.0),
+					child: GestureDetector(
+						onTap: () {
+							var chapter = entry.value['chapter']!;
+							var audioFile = entry.value['file'];
+							print('$chapter, $audioFile');
+						},
+						child: Container(
+							decoration: const BoxDecoration(
+								// borderRadius: BorderRadius.all(Radius.circular(0.0)),
+								// border: Border(
+								// 	top: BorderSide(width: 1.0, color: Colors.grey), // Top border
+								// 	bottom: BorderSide(width: 1.0, color: Colors.grey), // Bottom border
+								// ),
+								color: Color(0xFF242424)
+							),
+							child: Row(
+								children: [
+									const Padding(
+										padding: EdgeInsets.all(4.0),
+										child: Icon(Icons.play_circle_fill, color: Colors.white),
+									),
+									Flexible(
+										child: Padding(
+											padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+											child: Text(
+												entry.value['chapter']!,
+												style: const TextStyle(color: Colors.white, fontSize: 18.0),
+												overflow: TextOverflow.fade,
+											),
+										)
+									),
+								],
+							)
+						),
+					),
+				)
+			).toList(),
+		)
+		: Container();
+	}
+
 	Widget _buildBookDetails(BuildContext context) {
 		return Stack(
 			children: [
-				Positioned(
-					top: 60.0,
-					right: 20.0,
-					child: IconButton(
-						icon: const Icon(Icons.close, color: Colors.white, size: 50.0),
-						onPressed: () {
-							Navigator.of(context).pop(); // Close the current page
-						},
-					),
-				),
 				SafeArea(
-					child: Padding(
-						padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-						child: Column(
-							children: [
-								// book image
-								Padding(
-									padding: const EdgeInsets.symmetric(vertical: 10.0),
-									child: Center(
-										child: widget.bookType == 'app'
-										? Image.network(widget.imagePath, fit: BoxFit.fill, width: 200, height: 300,)
-										: ImageContainer(imagePath: widget.imagePath)
-									),
-								),
-
-								// book title
-								Align(
-									alignment: Alignment.center,
-									child: Text(widget.bookTitle,
-										style: const TextStyle(
-											color: Colors.white,
-											fontSize: 20.0,
-											fontWeight: FontWeight.w500)),
-								),
-
-								// book author
-								Align(
-									alignment: Alignment.center,
-									child: Padding(
+					child: SingleChildScrollView(
+						// main content //
+						child: Padding(
+							padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+							child: Column(
+								children: [
+									// book image
+									Padding(
 										padding: const EdgeInsets.symmetric(vertical: 10.0),
-										child: Text(widget.authorName,
-											style: const TextStyle(
-												color: Colors.white, fontSize: 16.0)),
-									)),
-
-								// Listen button
-								PrimaryAppButton(
-									buttonText: 'Listen',
-									buttonSize: 0.85,
-									onTap: () {
-										print('listening...');
-										Navigator.of(context)
-											.push(CustomRoute.routeTransitionBottom(AudioPlayerPage(
-											bookId: widget.bookId,
-											imagePath: widget.imagePath,
-											bookTitle: widget.bookTitle,
-											bookAuthor: widget.authorName,
-											isBookmarked: isBookmarked,
-											audioBookPath: widget.audioBookPath,
-											onBookmarkChanged: (bool isBookmarked) {
-												setState(() {
-													this.isBookmarked = isBookmarked;
-												});
-												widget.onBookmarkChange();
-											},
-										)));
-									}),
-
-								// Bookmark and delete
-								Align(
-									alignment: Alignment.centerLeft,
-									child: Row(
-										children: [
-											// Bookmark Icon
-											IconButton(
-												onPressed: () {
-													// if bookmarked item them run remove function
-													if (isBookmarked) {
-														handleRemoveBookmark(widget.bookId);
-													} else {
-														handleAddBookmark(widget.bookId);
-													}
-
-													// getCurrentBookInfo();
-												},
-												icon: Icon(
-													isBookmarked
-														? Icons.bookmark_add
-														: Icons.bookmark_add_outlined,
-													color: Colors.white,
-													size: 42.0)),
-
-											// Remove Icon for deleting
-											widget.bookType == 'user'
-												? IconButton(
-												onPressed: () {
-													String userId = getCurrentUserId();
-													widget.onBookDelete(userId, widget.bookId);
-
-													// go back to the home page
-													Navigator.of(context).pop();
-												},
-												icon: const Icon(Icons.delete_forever_outlined,
-													color: Colors.white, size: 42.0))
-												:
-											Container(),
-
-											// Favourite Icon
-											IconButton(
-												onPressed: () {
-													isFavourited ? handleRemoveBookFavourite(widget.bookId) : handleAddBookFavourite(widget.bookId);
-													setState(() {
-													  	isFavourited = !isFavourited;
-													});
-												},
-												icon: isFavourited
-													? const Icon(Icons.favorite, color: Colors.red, size: 42.0)
-													: const Icon(Icons.favorite_border, color: Colors.white, size: 42.0
-												),
-											)
-										],
-									)),
-								const SizedBox(
-									height: 10.0,
-								),
-
-								// Summary text
-								const Padding(
-									padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-									child: Align(
-										alignment: Alignment.centerLeft,
-										child: Text(
-											'Summary',
-											textAlign: TextAlign.left,
-											style: TextStyle(
-												color: Colors.white,
-												fontSize: 18.0,
-												fontWeight: FontWeight.w500),
+										child: Center(
+											child: widget.bookType == 'app'
+												? Image.network(widget.imagePath, fit: BoxFit.fill, width: 200, height: 300,)
+												: ImageContainer(imagePath: widget.imagePath)
 										),
 									),
-								),
 
-								// book summary
-								widget.bookType == 'app' ?
-								Container(
-									padding: const EdgeInsets.symmetric(
-										horizontal: 10.0, vertical: 3.0),
-									decoration: BoxDecoration(
-										color: const Color(0xFF242424),
-										borderRadius: BorderRadius.circular(15.0)),
-									height: MediaQuery.of(context).size.width * 0.3,
-									child: SingleChildScrollView(
+									// book title
+									Align(
+										alignment: Alignment.center,
+										child: Text(widget.bookTitle,
+											style: const TextStyle(
+												color: Colors.white,
+												fontSize: 20.0,
+												fontWeight: FontWeight.w500)),
+									),
+
+									// book author
+									Align(
+										alignment: Alignment.center,
+										child: Padding(
+											padding: const EdgeInsets.symmetric(vertical: 10.0),
+											child: Text(widget.authorName,
+												style: const TextStyle(
+													color: Colors.white, fontSize: 16.0)),
+										)),
+
+									// Listen button
+									PrimaryAppButton(
+										buttonText: 'Listen',
+										buttonSize: 0.85,
+										onTap: () {
+											print('listening...');
+											Navigator.of(context)
+												.push(CustomRoute.routeTransitionBottom(AudioPlayerPage(
+												bookId: widget.bookId,
+												imagePath: widget.imagePath,
+												bookTitle: widget.bookTitle,
+												bookAuthor: widget.authorName,
+												isBookmarked: isBookmarked,
+												audioBookPath: widget.audioBookPath,
+												onBookmarkChanged: (bool isBookmarked) {
+													setState(() {
+														this.isBookmarked = isBookmarked;
+													});
+													widget.onBookmarkChange();
+												},
+											)));
+										}),
+
+									// Bookmark and delete
+									Align(
+										alignment: Alignment.centerLeft,
+										child: Row(
+											children: [
+												// Bookmark Icon
+												IconButton(
+													onPressed: () {
+														// if bookmarked item them run remove function
+														if (isBookmarked) {
+															handleRemoveBookmark(widget.bookId);
+														} else {
+															handleAddBookmark(widget.bookId);
+														}
+
+														// getCurrentBookInfo();
+													},
+													icon: Icon(
+														isBookmarked
+															? Icons.bookmark_add
+															: Icons.bookmark_add_outlined,
+														color: Colors.white,
+														size: 42.0)),
+
+												// Remove Icon for deleting
+												widget.bookType == 'user'
+													? IconButton(
+													onPressed: () {
+														String userId = getCurrentUserId();
+														widget.onBookDelete(userId, widget.bookId);
+
+														// go back to the home page
+														Navigator.of(context).pop();
+													},
+													icon: const Icon(Icons.delete_forever_outlined,
+														color: Colors.white, size: 42.0))
+													:
+												Container(),
+
+												// Favourite Icon
+												IconButton(
+													onPressed: () {
+														isFavourited ? handleRemoveBookFavourite(widget.bookId) : handleAddBookFavourite(widget.bookId);
+														setState(() {
+															isFavourited = !isFavourited;
+														});
+													},
+													icon: isFavourited
+														? const Icon(Icons.favorite, color: Colors.red, size: 42.0)
+														: const Icon(Icons.favorite_border, color: Colors.white, size: 42.0
+													),
+												)
+											],
+										)),
+									const SizedBox(
+										height: 10.0,
+									),
+
+									// Summary text
+									const Padding(
+										padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
 										child: Align(
 											alignment: Alignment.centerLeft,
-											child: Padding(
-												padding: const EdgeInsets.symmetric(
-													vertical: 10.0),
-												child: Text(
-													widget.description ?? 'No summary available',
-													style: const TextStyle(
-														color: Colors.white,
-														fontSize: 16.0,
-														height: 1.5)),
-											)),
+											child: Text(
+												'Summary',
+												textAlign: TextAlign.left,
+												style: TextStyle(
+													color: Colors.white,
+													fontSize: 18.0,
+													fontWeight: FontWeight.w500),
+											),
+										),
 									),
-								):
-								Padding(
-									padding: const EdgeInsets.symmetric(vertical: 10.0),
-									child: FutureBuilder(
-										future: bookmarkManager.readBookSummary(
-											widget.description, widget.bookId),
-										builder:
-											(BuildContext context, AsyncSnapshot<String> snapshot) {
-											if (snapshot.connectionState == ConnectionState.done) {
-												return Container(
+
+									// book summary
+									widget.bookType == 'app' ?
+									Container(
+										padding: const EdgeInsets.symmetric(
+											horizontal: 10.0, vertical: 3.0),
+										decoration: BoxDecoration(
+											color: const Color(0xFF242424),
+											borderRadius: BorderRadius.circular(15.0)),
+										height: MediaQuery.of(context).size.width * 0.3,
+										child: SingleChildScrollView(
+											child: Align(
+												alignment: Alignment.centerLeft,
+												child: Padding(
 													padding: const EdgeInsets.symmetric(
-														horizontal: 10.0, vertical: 3.0),
-													decoration: BoxDecoration(
-														color: const Color(0xFF242424),
-														borderRadius: BorderRadius.circular(15.0)),
-													height: MediaQuery.of(context).size.width * 0.3,
-													child: SingleChildScrollView(
-														child: Align(
-															alignment: Alignment.centerLeft,
-															child: Padding(
-																padding: const EdgeInsets.symmetric(
-																	vertical: 10.0),
-																child: Text(
-																	snapshot.data ?? 'No summary available',
-																	style: const TextStyle(
-																		color: Colors.white,
-																		fontSize: 16.0,
-																		height: 1.5)),
-															)),
+														vertical: 10.0),
+													child: Text(
+														widget.description ?? 'No summary available',
+														style: const TextStyle(
+															color: Colors.white,
+															fontSize: 16.0,
+															height: 1.5)),
+												)),
+										),
+									):
+									Padding(
+										padding: const EdgeInsets.symmetric(vertical: 10.0),
+										child: FutureBuilder(
+											future: bookmarkManager.readBookSummary(
+												widget.description, widget.bookId),
+											builder:
+												(BuildContext context, AsyncSnapshot<String> snapshot) {
+												if (snapshot.connectionState == ConnectionState.done) {
+													return Container(
+														padding: const EdgeInsets.symmetric(
+															horizontal: 10.0, vertical: 3.0),
+														decoration: BoxDecoration(
+															color: const Color(0xFF242424),
+															borderRadius: BorderRadius.circular(15.0)),
+														height: MediaQuery.of(context).size.width * 0.3,
+														child: SingleChildScrollView(
+															child: Align(
+																alignment: Alignment.centerLeft,
+																child: Padding(
+																	padding: const EdgeInsets.symmetric(
+																		vertical: 10.0),
+																	child: Text(
+																		snapshot.data ?? 'No summary available',
+																		style: const TextStyle(
+																			color: Colors.white,
+																			fontSize: 16.0,
+																			height: 1.5)),
+																)),
+														),
+													);
+												} else {
+													return const CircularProgressIndicator();
+												}
+											}),
+									),
+
+									// chapter list
+
+									widget.bookType == 'app' ?
+									Column(
+										children: [
+											const Padding(
+												padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+												child: Align(
+													alignment: Alignment.centerLeft,
+													child: Text(
+														'Chapters',
+														textAlign: TextAlign.left,
+														style: TextStyle(
+															color: Colors.white,
+															fontSize: 18.0,
+															fontWeight: FontWeight.w500),
 													),
-												);
-											} else {
-												return const CircularProgressIndicator();
-											}
-										}),
-								),
-							],
-						),
-					))
+												),
+											),
+
+											_buildChapterDetails(widget.audioFiles!)
+										],
+									)
+									: Container()
+								],
+							),
+						)
+					)
+				)
 			],
 		);
 	}

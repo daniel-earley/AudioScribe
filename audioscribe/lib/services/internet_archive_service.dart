@@ -44,7 +44,6 @@ class ArchiveApiProvider {
 			}
 		}
 
-		print('audiobooks: $audioUrls');
 		return audioUrls;
 	}
 

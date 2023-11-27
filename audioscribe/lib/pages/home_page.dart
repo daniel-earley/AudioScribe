@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// run when any book is selected on the screen
-	void _onBookSelected(int index, String title, String author, String image, String summary, String bookType, String audioBookPath) {
+	void _onBookSelected(int index, String title, String author, String image, String summary, String bookType, String audioBookPath, {List<Map<String, String>>? audioFiles}) {
 		// print('$index, $title, $author, $image, $summary');
 		Navigator.of(context).push(MaterialPageRoute(
 			builder: (context) => BookDetailPage(
@@ -108,6 +108,7 @@ class _HomePageState extends State<HomePage> {
 				description: summary,
 				bookType: bookType,
 				audioBookPath: audioBookPath,
+				audioFiles: audioFiles,
 				onBookmarkChange: () {
 					// fetchUserBooks();
 				},
@@ -119,7 +120,9 @@ class _HomePageState extends State<HomePage> {
 
 					// refresh book state
 					await fetchUserBooks();
-				})));
+				}
+			)
+		));
 	}
 
 	/// get all the books that the user has uploaded or bookmarked
@@ -175,9 +178,9 @@ class _HomePageState extends State<HomePage> {
 					var bookCoverImg = "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}";
 					return GestureDetector(
 						onTap: () async {
-							_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '');
 							ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-							await archiveApiProvider.fetchAudioFiles(book['identifier']);
+							List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
+							_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '', audioFiles: audioFilesList);
 						},
 						child: Container(
 							padding: const EdgeInsets.all(6.0),
