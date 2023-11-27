@@ -28,7 +28,7 @@ class ArchiveApiProvider {
 		return allbooks;
 	}
 
-	Future<void> fetchAudioFiles(String? bookId) async {
+	Future<List<Map<String, String>>> fetchAudioFiles(String? bookId) async {
 		final response = await client.get(Uri.parse("$_metadata/$bookId/files"));
 		Map resJson = json.decode(response.body);
 
@@ -45,6 +45,7 @@ class ArchiveApiProvider {
 		}
 
 		print('audiobooks: $audioUrls');
+		return audioUrls;
 	}
 
 	Future<List<Map<String, dynamic>>> fetchTopDownloads() async {
