@@ -7,6 +7,7 @@ import 'package:audioscribe/pages/audio_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/file_ops/book_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -78,7 +79,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			backgroundColor: const Color(0xFF303030),
 			appBar: AppBar(
 				title: Text(widget.bookTitle),
-				backgroundColor: Color(0xFF524178),
+				backgroundColor: const Color(0xFF524178),
 			),
 			body: _buildBookDetails(context)
 		);
@@ -152,20 +153,21 @@ class _BookDetailPageState extends State<BookDetailPage> {
 				.asMap()
 				.entries
 				.map((entry) => Padding(
-					padding: EdgeInsets.symmetric(vertical: 2.0),
+					padding: const EdgeInsets.symmetric(vertical: 2.0),
 					child: GestureDetector(
-						onTap: () {
+						onTap: () async {
 							var chapter = entry.value['chapter']!;
 							var audioFile = entry.value['file'];
+
+							// String imageName = getImageName(widget.imagePath);
+
+							// download and save images locally on SQLite
+							// String? imageFilePath = await downloadAndSaveImage(widget.imagePath, '${imageName}_img.png');
+
 							print('$chapter, $audioFile');
 						},
 						child: Container(
 							decoration: const BoxDecoration(
-								// borderRadius: BorderRadius.all(Radius.circular(0.0)),
-								// border: Border(
-								// 	top: BorderSide(width: 1.0, color: Colors.grey), // Top border
-								// 	bottom: BorderSide(width: 1.0, color: Colors.grey), // Bottom border
-								// ),
 								color: Color(0xFF242424)
 							),
 							child: Row(
@@ -176,7 +178,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									),
 									Flexible(
 										child: Padding(
-											padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+											padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
 											child: Text(
 												entry.value['chapter']!,
 												style: const TextStyle(color: Colors.white, fontSize: 18.0),

@@ -49,6 +49,10 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 	@override
 	Widget build(BuildContext context) {
 		return Scaffold(
+			appBar: AppBar(
+				title: Text('Now Playing ${widget.bookTitle}'),
+				backgroundColor: const Color(0xFF524178),
+			),
 			backgroundColor: const Color(0xFF303030),
 			body: _buildAudioPlayerPage(),
 			floatingActionButton: AnimatedFAB(
@@ -103,48 +107,6 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 							horizontal: 10.0, vertical: 10.0),
 						child: Column(
 							children: [
-								// Header section
-								Row(
-									mainAxisAlignment: MainAxisAlignment.spaceBetween,
-									children: [
-										// back arrow
-										IconButton(
-											icon: const Icon(Icons.arrow_back,
-												color: Colors.white, size: 35.0),
-											onPressed: () {
-												Navigator.of(context).pop(); // Close the current page
-											},
-										),
-
-										// title
-										const Text('Now Playing',
-											textAlign: TextAlign.center,
-											style: TextStyle(
-												color: Colors.white,
-												fontSize: 18.0,
-												fontWeight: FontWeight.w400)),
-
-										// bookmark
-										IconButton(
-											icon: Icon(
-												isBookBookmarked
-													? Icons.bookmark
-													: Icons.bookmark_outline,
-												color: Colors.white,
-												size: 42.0),
-											onPressed: () {
-												if (isBookBookmarked) {
-													// print('Removing bookmark for ${widget.bookId}');
-													handleRemoveBookmark(widget.bookId);
-												} else {
-													// print('Adding bookmark for ${widget.bookId}');
-													handleAddBookmark(widget.bookId);
-												}
-											},
-										),
-									],
-								),
-
 								// Image
 								ImageContainer(imagePath: widget.imagePath),
 
@@ -250,7 +212,7 @@ class _AudioControlsState extends State<AudioControls> {
 							onPressed: _togglePlayPause, // Call the toggle function on press
 						),
 						IconButton(
-							icon: Icon(Icons.fast_forward, color: Colors.white),
+							icon: const Icon(Icons.fast_forward, color: Colors.white),
 							onPressed: () {
 								audioManager.forward();
 							},

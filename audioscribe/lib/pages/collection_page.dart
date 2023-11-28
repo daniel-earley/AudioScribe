@@ -104,7 +104,7 @@ class _CollectionPageState extends State<CollectionPage> {
       // if the user exists
       if (user != null) {
         var books = await userModel.getAllUserBooks(userId);
-        print('collection_page (78) books: $books');
+        // print('collection_page (78) books: $books');
 
         // convert books to book row format
         setState(() {

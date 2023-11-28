@@ -1,5 +1,6 @@
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
@@ -160,19 +161,34 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('AudioScribe'),
+        backgroundColor: const Color(0xFF524178),
+        actions: [
+          Padding(padding: EdgeInsets.only(right: 10.0),
+            child: IconButton(
+                onPressed: () {
+                  print("Going to settings page");
+                  Navigator.of(context).push(CustomRoute.routeTransitionBottom(const SettingsPage()));
+                },
+                icon: const Icon(Icons.account_circle, color: Colors.white, size: 38.0,)
+            )
+          )
+        ],
+      ),
       backgroundColor: const Color(0xFF303030),
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                AppHeader(
-                  headerText: currentPageHeaderTitle(),
-                  onTap: () => _onItemTapped(2),
-                  currentScreen: _selectedIndex,
-                  isSwitched: _switchOn,
-                  onToggle: _toggleSwitch,
-                ),
+                // AppHeader(
+                //   headerText: currentPageHeaderTitle(),
+                //   onTap: () => _onItemTapped(2),
+                //   currentScreen: _selectedIndex,
+                //   isSwitched: _switchOn,
+                //   onToggle: _toggleSwitch,
+                // ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),

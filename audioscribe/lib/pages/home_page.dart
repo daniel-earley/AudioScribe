@@ -1,3 +1,4 @@
+import 'package:audioscribe/components/BookCard.dart';
 import 'package:audioscribe/components/book_grid.dart';
 import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
@@ -7,6 +8,7 @@ import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +33,9 @@ class _HomePageState extends State<HomePage> {
 	void initState() {
 		super.initState();
 		fetchUserBooks();
-		fetchApiBooks();
+		fetchApiBooks().then((_) {
+			print("book fetch completed");
+		});
 	}
 
 	@override
@@ -60,24 +64,26 @@ class _HomePageState extends State<HomePage> {
 								const Separator(text: "Your uploads"),
 
 								// Book Row 1
-								BookRow(
-									books: userBooks,
-									bookType: 'user',
-									onBookSelected: _onBookSelected),
+								_buildBookRow(),
+								// BookRow(
+								// 	books: userBooks,
+								// 	bookType: 'user',
+								// 	onBookSelected: _onBookSelected),
 
-								// Separator
-								const Separator(text: "See what's new"),
-
-								// Book Row 2
-								BookRow(
-									books: recommendationBooks,
-									bookType: 'recommendation',
-									onBookSelected: _onBookSelected),
+								// // Separator
+								// const Separator(text: "See what's new"),
+								//
+								// // Book Row 2
+								// BookRow(
+								// 	books: recommendationBooks,
+								// 	bookType: 'recommendation',
+								// 	onBookSelected: _onBookSelected),
 
 								// Separator
 								const Separator(text: "See our collection"),
 
-                                _buildBooklist()
+								 _buildBooklist(),
+
 							],
 						),
 					)),
@@ -99,8 +105,8 @@ class _HomePageState extends State<HomePage> {
 	/// run when any book is selected on the screen
 	void _onBookSelected(int index, String title, String author, String image, String summary, String bookType, String audioBookPath, {List<Map<String, String>>? audioFiles}) {
 		// print('$index, $title, $author, $image, $summary');
-		Navigator.of(context).push(MaterialPageRoute(
-			builder: (context) => BookDetailPage(
+		Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+			BookDetailPage(
 				bookId: index,
 				bookTitle: title,
 				authorName: author,
@@ -114,10 +120,9 @@ class _HomePageState extends State<HomePage> {
 				},
 				onBookDelete: (String userId, int bookId) async {
 					// for deleting book
-					print('Deleting book with id ${bookId} for user ${userId}');
+					print('Deleting book with id $bookId for user $userId');
 					// delete book
 					await deleteUserBook(userId, bookId);
-
 					// refresh book state
 					await fetchUserBooks();
 				}
@@ -150,6 +155,7 @@ class _HomePageState extends State<HomePage> {
 		});
 	}
 
+	/// fetches book from internet archive
 	Future<void> fetchApiBooks() async {
 		print('fetching books...');
 		ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
@@ -157,75 +163,81 @@ class _HomePageState extends State<HomePage> {
 		setState(() {
 		  	books = allbooks;
 		});
-		print('fetched books');
+	}
+
+	/// build a book row for uploaded books
+	Widget _buildBookRow() {
+		var screenWidth = MediaQuery.of(context).size.width;
+
+		var bookWidth = screenWidth / 3;
+		var bookHeight = bookWidth / 0.8;
+
+		return Container(
+			padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+			height: bookHeight + 100,
+			child: ListView.builder(
+				scrollDirection: Axis.horizontal,
+				itemCount: userBooks.length,
+				itemBuilder: (context, index) {
+					return GestureDetector(
+						onTap: () {
+							var book = userBooks[index];
+							// print("$index, ${book['title']}, ${book['author']}, ${book['image']}, ${book['summary']}, ${book['bookType']}, ${book['audioBookPath']}");
+							_onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath']);
+						},
+						child: Container(
+							width: bookWidth + 20,
+							padding: const EdgeInsets.all(6.0),
+							child: Column(
+								crossAxisAlignment: CrossAxisAlignment.start,
+								children: [
+									AspectRatio(
+										aspectRatio: 0.6,
+										child: BookCard(bookTitle: userBooks[index]['title'], bookAuthor: userBooks[index]['author'], bookImage: userBooks[index]['image']),
+									)
+								],
+							)
+						),
+					);
+				}
+			),
+		);
 	}
 
 	/// build a grid pattern for books fetched from librivox
 	Widget _buildBooklist() {
-		return SizedBox(
-			height: 600, // Set a fixed height or calculate dynamically
-			child: GridView.builder(
-				padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-				gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-					crossAxisCount: 2,
-					crossAxisSpacing: 15,
-					mainAxisSpacing: 15,
-					childAspectRatio: 0.6
-				),
-				itemCount: books.length,
-				itemBuilder: (context, index) {
-					var book = books[index];
-					var bookCoverImg = "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}";
-					return GestureDetector(
-						onTap: () async {
-							ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-							List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
-							_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '', audioFiles: audioFilesList);
-						},
-						child: Container(
-							padding: const EdgeInsets.all(6.0),
-							child: Column(
-								children: [
-									AspectRatio(
-										aspectRatio: 0.7,
-										child: Container(
-											decoration: BoxDecoration(
-												color: Colors.white,
-												borderRadius: BorderRadius.circular(4.0),
-												boxShadow: [
-													BoxShadow(
-														color: Colors.black.withOpacity(0.2),
-														blurRadius: 3,
-														offset: const Offset(0, 2),
-													)
-												],
-												image: DecorationImage(
-													image: NetworkImage(bookCoverImg),
-													fit: BoxFit.fill
-												)
-											),
-										)
-									),
-
-									Center(
-										child: Text(
-											book['title'],
-											textAlign: TextAlign.center,
-											style: const TextStyle(
-												color: Colors.white,
-												fontSize: 15.0,
-												fontWeight: FontWeight.w500
-											),
-											maxLines: 2,
-											overflow: TextOverflow.ellipsis,
-										)
-									)
-								],
-							),
-						)
-					);
-				}
+		return GridView.builder(
+			shrinkWrap: true,
+			physics: const NeverScrollableScrollPhysics(),
+			padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+			gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+				crossAxisCount: 2,
+				crossAxisSpacing: 15,
+				mainAxisSpacing: 15,
+				childAspectRatio: 0.7
 			),
+			itemCount: books.length,
+			itemBuilder: (context, index) {
+				var book = books[index];
+				var bookCoverImg = "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}";
+				return GestureDetector(
+					onTap: () async {
+						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
+						List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
+						_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '', audioFiles: audioFilesList);},
+					child: Container(
+						padding: const EdgeInsets.all(6.0),
+						child: Column(
+							children: [
+								AspectRatio(
+									aspectRatio: 0.7,
+									child: BookCard(bookTitle: book['title'], bookAuthor: book['creator'], bookImage: bookCoverImg),
+								)
+							],
+						),
+					)
+				);
+			}
 		);
 	}
 }

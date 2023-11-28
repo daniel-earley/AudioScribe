@@ -88,7 +88,6 @@ class _BookRow extends State<BookRow> {
 											overflow: TextOverflow.ellipsis,
 										),
 									),
-
 								],
 							)
 						),
