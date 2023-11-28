@@ -47,7 +47,6 @@ class _CameraScreenState extends State<CameraScreen> {
         _isCameraInitialized = true;
       });
     } else {
-      // Proceed with normal camera initialization
       _cameras = await availableCameras();
       if (_cameras.isNotEmpty) {
         await _cameraService.initializeCamera(_cameras.first);
@@ -66,8 +65,7 @@ class _CameraScreenState extends State<CameraScreen> {
           .load('lib/images/image_with_text.png'); // Load the asset
       final tempDir =
           await getTemporaryDirectory(); // Get the temporary directory
-      final exampleImg =
-          File('${tempDir.path}/image_with_text.png'); // Create a new file path
+      final exampleImg = File('${tempDir.path}/image_with_text.png');
       await exampleImg.writeAsBytes(byteData.buffer.asUint8List(
           byteData.offsetInBytes,
           byteData.lengthInBytes)); // Write the bytes to the file
@@ -82,11 +80,13 @@ class _CameraScreenState extends State<CameraScreen> {
       try {
         final image = await _cameraService.captureImage();
         setState(() {
-          _capturedImage = image as XFile?;
+          // Current issue: type 'String' is not a subtype of type 'XFile?' in type cast
+          // _capturedImage = image as XFile?;
+          _capturedImage = XFile(image);
           _isImageCaptured = true;
         });
       } catch (e) {
-        print(e); // Handle the error appropriately
+        print(e);
       }
     }
   }
@@ -108,10 +108,8 @@ class _CameraScreenState extends State<CameraScreen> {
         });
 
         _navigateToUploadBookPage(context, _extractedText);
-        // Call createAudioBook function with the extracted text
-        // createAudioBook(_extractedText, "scan_test");
       } catch (e) {
-        print(e); // Handle the error appropriately
+        print(e);
       }
     }
   }
