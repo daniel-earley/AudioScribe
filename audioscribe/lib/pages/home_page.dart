@@ -167,11 +167,11 @@ class _HomePageState extends State<HomePage> {
 					description: book['description'],
 					date: book['date'],
 					downloads: book['downloads'],
-					numberReviews: book['num_reviews'],
-					rating: book['avg_rating'],
-					runtime: book['runtime'],
+					numberReviews: book['num_reviews'] ?? 0,
+					rating: (book['avg_rating'] ?? 0) + 0.0, // For some reason dart cannot cast an int to a double so if a value in the json isn't a double, it will crash
+					runtime: book['runtime'] ?? 'No Data',
 					size: book['item_size'],
-					imageFileLocation: imageLocation!
+					imageFileLocation: imageLocation ?? ''
 			);
 			processedBooks.add(processedBook);
 
@@ -265,7 +265,7 @@ class _HomePageState extends State<HomePage> {
 					onTap: () async {
 						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
 						List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book.identifier);
-						_onBookSelected(index, book.title, book.author, book.imageFileLocation, book.description, 'not app', '', audioFiles: audioFilesList);},
+						_onBookSelected(index, book.title, book.author, book.imageFileLocation, book.description, 'app', '', audioFiles: audioFilesList);},
 					child: Container(
 						padding: const EdgeInsets.all(6.0),
 						child: Column(

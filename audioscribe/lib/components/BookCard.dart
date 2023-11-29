@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class BookCard extends StatelessWidget {
 	final String bookTitle;
@@ -29,8 +30,8 @@ class BookCard extends StatelessWidget {
 				},
 			);
 		} else {
-			imageWidget = Image.asset(
-				bookImage,
+			imageWidget = Image.file(
+				File(bookImage),
 				fit: BoxFit.fill,
 				errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
 					print('error loading $bookImage');
