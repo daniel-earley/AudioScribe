@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../data_classes/user.dart' as userClient;
 import 'package:audioscribe/utils/database/user_model.dart';
+import 'dart:io';
 
 class BookDetailPage extends StatefulWidget {
 	final int bookId;
@@ -212,7 +213,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 										padding: const EdgeInsets.symmetric(vertical: 10.0),
 										child: Center(
 											child: widget.bookType == 'app'
-												? Image.network(widget.imagePath, fit: BoxFit.fill, width: 200, height: 300,)
+												? Image.file(File(widget.imagePath), fit: BoxFit.fill, width: 200, height: 300,)
 												: ImageContainer(imagePath: widget.imagePath)
 										),
 									),
