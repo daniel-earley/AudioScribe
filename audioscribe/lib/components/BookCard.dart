@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class BookCard extends StatelessWidget {
@@ -15,6 +17,7 @@ class BookCard extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		bool isNetworkImage = bookImage.startsWith('https://');
+		bool isAssetImage = bookImage.startsWith('lib/assets');
 
 		Widget imageWidget;
 
@@ -23,17 +26,28 @@ class BookCard extends StatelessWidget {
 				bookImage,
 				fit: BoxFit.fill,
 				errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-					print('error loading $bookImage');
+					print('error loading networking image: $bookImage');
+					// Handle network image loading error
+					return const Icon(Icons.error);
+				},
+			);
+		} else if (isAssetImage) {
+			imageWidget = Image.asset(
+				bookImage,
+				fit: BoxFit.fill,
+				errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+					print('error loading asset image: $bookImage');
 					// Handle network image loading error
 					return const Icon(Icons.error);
 				},
 			);
 		} else {
-			imageWidget = Image.asset(
-				bookImage,
+			File imageFile = File(bookImage);
+			imageWidget = Image.file(
+				imageFile,
 				fit: BoxFit.fill,
 				errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-					print('error loading $bookImage');
+					print('error loading image file: $bookImage');
 					// Handle network image loading error
 					return const Icon(Icons.error);
 				},

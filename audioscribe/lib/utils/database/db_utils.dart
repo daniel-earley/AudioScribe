@@ -22,11 +22,20 @@ class DbUtils {
         db.execute(
           'CREATE TABLE $bookDb('
             'id INTEGER PRIMARY KEY, '
-            'title TEXT,'
-            'author TEXT,'
+            'title TEXT, '
+            'author TEXT, '
+            'date TEXT, '
+            'identifier TEXT, '
+            'runtime TEXT, '
+            'description TEXT, '
+            'rating REAL, '
+            'numberReviews INT, '
+            'downloads INT, '
+            'size INT, '
             'textFileLocation TEXT, '
             'audioFileLocation TEXT, '
-            'imageFileLocation TEXT'
+            'imageFileLocation TEXT, '
+            'bookType TEXT'
           ')'
         );
         db.execute(

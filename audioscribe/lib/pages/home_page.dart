@@ -41,8 +41,40 @@ class _HomePageState extends State<HomePage> {
 	void initState() {
 		super.initState();
 		fetchUserBooks();
-		fetchApiBooks().then((_) {
+		fetchApiBooks().then((allBooks) async {
 			print("book fetch completed");
+			BookModel model = BookModel();
+			List<LibrivoxBook> processedBooks = [];
+			print('downloading books');
+			for (var book in allBooks) {
+				// check if book exists in db
+				var bookExists = await model.getBooksByTitle(book.title);
+				if (bookExists.isNotEmpty) {
+					print('book ${book.title} already exists in DB');
+					// is book exists then return
+					continue;
+				} else {
+					print('downloading book: ${book.title}');
+					var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book.identifier}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
+					LibrivoxBook processedBook = LibrivoxBook(
+						author: book.author,
+						title: book.title,
+						identifier: book.identifier,
+						description: book.description,
+						date: book.date,
+						downloads: book.downloads,
+						numberReviews: book.numberReviews,
+						rating: book.rating,
+						runtime: book.runtime,
+						size: book.size,
+						imageFileLocation: imageLocation!
+					);
+					processedBooks.add(processedBook);
+
+					model.insertAPIBook(processedBook);
+				}
+			}
+			print("finished downloading books");
 		});
 	}
 
@@ -152,34 +184,27 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// fetches book from internet archive
-	Future<void> fetchApiBooks() async {
-		BookModel model = BookModel();
+	Future<List<LibrivoxBook>> fetchApiBooks() async {
 		print('fetching books...');
-		ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-		var allBooks = await archiveApiProvider.fetchTopDownloads();
-		List<LibrivoxBook> processedBooks = [];
-		for (var book in allBooks) {
-			var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book['identifier']}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book['identifier']}")}_img.png');
-			LibrivoxBook processedBook = LibrivoxBook(
-					author: book['creator'] ?? "Librivox",
-					title: book['title'],
-					identifier: book['identifier'],
-					description: book['description'],
-					date: book['date'],
-					downloads: book['downloads'],
-					numberReviews: book['num_reviews'],
-					rating: book['avg_rating'],
-					runtime: book['runtime'],
-					size: book['item_size'],
-					imageFileLocation: imageLocation!
-			);
-			processedBooks.add(processedBook);
+		var apiBooksDb = await BookModel().getBooksByType('API');
 
-			model.insertBook(processedBook.toBook());
+		if (apiBooksDb.isNotEmpty) {
+			print("fetching from DB");
+			// if API books exist then return them
+			setState(() {
+			  	books = apiBooksDb;
+			});
+			return apiBooksDb;
+		} else {
+			print("fetching from API");
+			// if API books do not exist fetch from url
+			ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
+			var allBooks = await archiveApiProvider.fetchTopDownloads();
+			setState(() {
+			  	books = allBooks;
+			});
+			return allBooks;
 		}
-		setState(() {
-		  	books = processedBooks;
-		});
 	}
 
 	/// build a book row for uploaded books
