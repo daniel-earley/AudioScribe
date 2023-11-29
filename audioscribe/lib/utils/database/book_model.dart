@@ -11,7 +11,7 @@ class BookModel {
     return db.insert(
       DbUtils.bookDb,
       book.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.fail,
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
