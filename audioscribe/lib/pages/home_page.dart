@@ -4,13 +4,17 @@ import 'package:audioscribe/components/home_page_book_row.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
+import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/file_ops/book_storage_manager.dart';
 
 class HomePage extends StatefulWidget {
 	const HomePage({Key? key}) : super(key: key);
@@ -27,7 +31,7 @@ class _HomePageState extends State<HomePage> {
 	final List<Map<String, dynamic>> recommendationBooks = bookData;
 
 	// list of fetched books
-	List<Map<String, dynamic>> books = [];
+	List<LibrivoxBook> books = [];
 
 	@override
 	void initState() {
@@ -157,11 +161,32 @@ class _HomePageState extends State<HomePage> {
 
 	/// fetches book from internet archive
 	Future<void> fetchApiBooks() async {
+		BookModel model = BookModel();
 		print('fetching books...');
 		ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-		var allbooks = await archiveApiProvider.fetchTopDownloads();
+		var allBooks = await archiveApiProvider.fetchTopDownloads();
+		List<LibrivoxBook> processedBooks = [];
+		for (var book in allBooks) {
+			var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book['identifier']}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book['identifier']}")}_img.png');
+			LibrivoxBook processedBook = LibrivoxBook(
+					author: book['creator'] ?? "Librivox",
+					title: book['title'],
+					identifier: book['identifier'],
+					description: book['description'],
+					date: book['date'],
+					downloads: book['downloads'],
+					numberReviews: book['num_reviews'],
+					rating: book['avg_rating'],
+					runtime: book['runtime'],
+					size: book['item_size'],
+					imageFileLocation: imageLocation!
+			);
+			processedBooks.add(processedBook);
+			
+			model.insertBook(processedBook.toBook());
+		}
 		setState(() {
-		  	books = allbooks;
+		  	books = processedBooks;
 		});
 	}
 
@@ -219,19 +244,18 @@ class _HomePageState extends State<HomePage> {
 			itemCount: books.length,
 			itemBuilder: (context, index) {
 				var book = books[index];
-				var bookCoverImg = "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}";
 				return GestureDetector(
 					onTap: () async {
 						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-						List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
-						_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '', audioFiles: audioFilesList);},
+						List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book.identifier);
+						_onBookSelected(index, book.title, book.author, book.imageFileLocation, book.description, 'not app', '', audioFiles: audioFilesList);},
 					child: Container(
 						padding: const EdgeInsets.all(6.0),
 						child: Column(
 							children: [
 								AspectRatio(
 									aspectRatio: 0.7,
-									child: BookCard(bookTitle: book['title'], bookAuthor: book['creator'], bookImage: bookCoverImg),
+									child: BookCard(bookTitle: book.title, bookAuthor: book.author, bookImage: book.imageFileLocation),
 								)
 							],
 						),
