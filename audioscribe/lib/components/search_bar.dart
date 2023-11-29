@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audioscribe/app_constants.dart';
 import 'package:flutter/material.dart';
 
@@ -76,6 +78,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
 								physics: const NeverScrollableScrollPhysics(),
 								itemCount: filteredItems.length,
 								itemBuilder: (context, index) {
+									Map<String, dynamic> book = filteredItems[index];
+
+									File imageFile = File(filteredItems[index]['image']);
 									return Padding(
 										padding: const EdgeInsets.all(10.0),
 										child: GestureDetector(
@@ -86,11 +91,14 @@ class _AppSearchBarState extends State<AppSearchBar> {
 											child: Row(
 												crossAxisAlignment: CrossAxisAlignment.center,
 												children: [
-													Image.network(
-														filteredItems[index]['image']!,
+													 Image.file(
+														imageFile,
 														width: 50,
 														height: 70,
 														fit: BoxFit.fill,
+														errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+															return const Icon(Icons.error);
+														},
 													),
 													Flexible(
 														child: Padding(

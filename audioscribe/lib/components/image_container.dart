@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ImageContainer extends StatelessWidget {
@@ -10,6 +12,17 @@ class ImageContainer extends StatelessWidget {
 
 	@override
 	Widget build(BuildContext context) {
+		bool isAssetImage = imagePath.startsWith('lib/assets');
+		File imageFile = File(imagePath);
+
+		// Create the appropriate ImageProvider based on the image path
+		ImageProvider imageProvider;
+		if (isAssetImage) {
+			imageProvider = AssetImage(imagePath);
+		} else {
+			File imageFile = File(imagePath);
+			imageProvider = FileImage(imageFile);
+		}
 		return Container(
 			width: MediaQuery.of(context).size.width * 0.6,
 			height: MediaQuery.of(context).size.width * 0.8,
@@ -24,7 +37,7 @@ class ImageContainer extends StatelessWidget {
 					)
 				],
 				image: DecorationImage(
-					image: AssetImage(imagePath),
+					image: imageProvider,
 					fit: BoxFit.fill	 // Changed from BoxFit.fill to BoxFit.cover
 				),
 			),
