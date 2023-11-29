@@ -52,6 +52,12 @@ class BookModel {
     return books;
   }
 
+  /// Update the book row in the database for a given Book object
+  Future<int> updateBook(Book book) async {
+    final db = await DbUtils.init();
+    return db.update(DbUtils.bookDb, book.toMap());
+  }
+
   /// Delete a book from the database
   Future<int> deleteBookWithId(int id) async {
     final db = await DbUtils.init();

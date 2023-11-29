@@ -51,7 +51,7 @@ class NotificationService {
 		);
 
 		while (true) {
-			await Future.delayed(const Duration(minutes: 1));
+			await Future.delayed(const Duration(hours: 6));
 
 			String notifTitle = "Have you read this book?";
 
