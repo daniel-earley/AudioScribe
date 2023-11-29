@@ -39,7 +39,7 @@ class _CollectionPageState extends State<CollectionPage> {
             child: Column(
           children: [
             // Search bar
-            const AppSearchBar(hintText: "search"),
+            // AppSearchBar(hintText: "search"),
 
             // Book grid
             Expanded(

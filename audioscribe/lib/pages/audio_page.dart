@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
@@ -50,7 +51,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Now Playing ${widget.bookTitle}'),
-        backgroundColor: const Color(0xFF524178),
+        backgroundColor: AppColors.primaryAppColor,
       ),
       backgroundColor: const Color(0xFF303030),
       body: _buildAudioPlayerPage(),
