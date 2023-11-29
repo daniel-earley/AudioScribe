@@ -10,7 +10,9 @@ import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/file_ops/book_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -69,28 +71,11 @@ class _HomePageState extends State<HomePage> {
 
 								// Separator
 								const Separator(text: "Your uploads"),
-
-								// Book Row 1
 								_buildBookRow(),
-								// BookRow(
-								// 	books: userBooks,
-								// 	bookType: 'user',
-								// 	onBookSelected: _onBookSelected),
-
-								// // Separator
-								// const Separator(text: "See what's new"),
-								//
-								// // Book Row 2
-								// BookRow(
-								// 	books: recommendationBooks,
-								// 	bookType: 'recommendation',
-								// 	onBookSelected: _onBookSelected),
 
 								// Separator
 								const Separator(text: "See our collection"),
-
-								 _buildBooklist(),
-
+								_buildBooklist(),
 							],
 						),
 					)),
@@ -186,7 +171,9 @@ class _HomePageState extends State<HomePage> {
 					height: bookHeight + 50,
 					child: GestureDetector(
 						onTap: () {
-							/// TODO: navigate to upload
+							uploadBook().then((data) {
+								Navigator.of(context).push(CustomRoute.routeTransitionBottom(UploadBookPage(text: data)));
+							});
 						},
 						child: Container(
 							width: bookWidth + 20,
@@ -269,4 +256,5 @@ class _HomePageState extends State<HomePage> {
 			}
 		);
 	}
+
 }

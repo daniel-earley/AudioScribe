@@ -18,7 +18,7 @@ class AppSearchBar extends StatefulWidget {
 }
 
 class _AppSearchBarState extends State<AppSearchBar> {
-	FocusNode _focusNode = FocusNode();
+	final FocusNode _focusNode = FocusNode();
 	final TextEditingController _controller = TextEditingController();
 	List<Map<String, dynamic>> filteredItems = [];
 
@@ -30,8 +30,8 @@ class _AppSearchBarState extends State<AppSearchBar> {
 		super.initState();
 		_focusNode.addListener(() {
 			if (!_focusNode.hasFocus) {
-				_controller.clear(); // Clear text in the TextField
 				_filterItems(''); // Reset filtered items, assuming this method sets the state
+				_hideOverlay();
 			}
 		});
 	}
