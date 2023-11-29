@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/PrimaryAppButton.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
@@ -79,7 +80,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			backgroundColor: const Color(0xFF303030),
 			appBar: AppBar(
 				title: Text(widget.bookTitle),
-				backgroundColor: const Color(0xFF524178),
+				backgroundColor: AppColors.primaryAppColor,
 			),
 			body: _buildBookDetails(context)
 		);
@@ -164,7 +165,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 							// download and save images locally on SQLite
 							// String? imageFilePath = await downloadAndSaveImage(widget.imagePath, '${imageName}_img.png');
 
-							print('$chapter, $audioFile');
+							print('$chapter, $audioFile, ${widget.imagePath}');
 						},
 						child: Container(
 							decoration: const BoxDecoration(

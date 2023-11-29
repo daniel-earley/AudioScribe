@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
@@ -163,15 +164,43 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AudioScribe'),
-        backgroundColor: const Color(0xFF524178),
+        backgroundColor: AppColors.primaryAppColor,
         actions: [
           Padding(padding: EdgeInsets.only(right: 10.0),
-            child: IconButton(
-                onPressed: () {
-                  print("Going to settings page");
+            child:
+            PopupMenuButton<String>(
+              onSelected: (String value) {
+                if (value == 'logout') {
+                  // perform logout
+                  signOut();
+                } else if (value == 'setting') {
+                  // navigate to settings page
                   Navigator.of(context).push(CustomRoute.routeTransitionBottom(const SettingsPage()));
-                },
-                icon: const Icon(Icons.account_circle, color: Colors.white, size: 38.0,)
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                    value: 'setting',
+                    child: Row(
+                        children: [
+                          Icon(Icons.settings, color: Colors.white),
+                          SizedBox(width: 10.0),
+                          Text('Settings', style: TextStyle(color: Colors.white))
+                        ]
+                    )
+                ),
+                const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.white),
+                          SizedBox(width: 10.0),
+                          Text('Logout', style: TextStyle(color: Colors.white))
+                        ]
+                    )
+                ),
+              ],
+              icon: const Icon(Icons.account_circle, size: 42.0, color: Colors.white),
             )
           )
         ],

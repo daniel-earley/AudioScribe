@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/BookCard.dart';
 import 'package:audioscribe/components/book_grid.dart';
 import 'package:audioscribe/components/home_page_book_row.dart';
@@ -6,6 +7,7 @@ import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
@@ -58,7 +60,12 @@ class _HomePageState extends State<HomePage> {
 						child: Column(
 							children: [
 								// Search bar
-								const AppSearchBar(hintText: "search"),
+								AppSearchBar(hintText: "search", allItems: books.map((book) {
+									return {
+										'item': book['title'],
+										'image': "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}"
+									};
+								}).toList()),
 
 								// Separator
 								const Separator(text: "Your uploads"),
@@ -168,40 +175,62 @@ class _HomePageState extends State<HomePage> {
 	/// build a book row for uploaded books
 	Widget _buildBookRow() {
 		var screenWidth = MediaQuery.of(context).size.width;
-
 		var bookWidth = screenWidth / 3;
 		var bookHeight = bookWidth / 0.8;
 
-		return Container(
-			padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-			height: bookHeight + 100,
-			child: ListView.builder(
-				scrollDirection: Axis.horizontal,
-				itemCount: userBooks.length,
-				itemBuilder: (context, index) {
-					return GestureDetector(
+		if (userBooks.isEmpty) {
+			return Align(
+				alignment: Alignment.centerLeft,
+				child: Container(
+					padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 0.0),
+					height: bookHeight + 50,
+					child: GestureDetector(
 						onTap: () {
-							var book = userBooks[index];
-							// print("$index, ${book['title']}, ${book['author']}, ${book['image']}, ${book['summary']}, ${book['bookType']}, ${book['audioBookPath']}");
-							_onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath']);
+							/// TODO: navigate to upload
 						},
 						child: Container(
 							width: bookWidth + 20,
-							padding: const EdgeInsets.all(6.0),
-							child: Column(
-								crossAxisAlignment: CrossAxisAlignment.start,
-								children: [
-									AspectRatio(
-										aspectRatio: 0.6,
-										child: BookCard(bookTitle: userBooks[index]['title'], bookAuthor: userBooks[index]['author'], bookImage: userBooks[index]['image']),
-									)
-								],
-							)
+							decoration: const  BoxDecoration(
+								color: AppColors.secondaryAppColor,
+								borderRadius: BorderRadius.all(Radius.circular(10.0))
+							),
+							child: const Icon(Icons.add_box_rounded, color: Colors.white, size: 42.0),
 						),
-					);
-				}
-			),
-		);
+					),
+				),
+			);
+		} else {
+			return Container(
+				padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+				height: bookHeight + 100,
+				child: ListView.builder(
+					scrollDirection: Axis.horizontal,
+					itemCount: userBooks.length,
+					itemBuilder: (context, index) {
+						return GestureDetector(
+							onTap: () {
+								var book = userBooks[index];
+								// print("$index, ${book['title']}, ${book['author']}, ${book['image']}, ${book['summary']}, ${book['bookType']}, ${book['audioBookPath']}");
+								_onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath']);
+							},
+							child: Container(
+								width: bookWidth + 50,
+								padding: const EdgeInsets.all(6.0),
+								child: Column(
+									crossAxisAlignment: CrossAxisAlignment.start,
+									children: [
+										AspectRatio(
+											aspectRatio: 0.7,
+											child: BookCard(bookTitle: userBooks[index]['title'], bookAuthor: userBooks[index]['author'], bookImage: userBooks[index]['image']),
+										)
+									],
+								)
+							),
+						);
+					}
+				),
+			);
+		}
 	}
 
 	/// build a grid pattern for books fetched from librivox

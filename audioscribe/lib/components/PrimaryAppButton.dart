@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:flutter/material.dart';
 
 class PrimaryAppButton extends StatelessWidget {
@@ -19,7 +20,7 @@ class PrimaryAppButton extends StatelessWidget {
 			child: Container(
 				padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
 				decoration: const BoxDecoration(
-					color: Color(0xFF524178),
+					color: AppColors.primaryAppColor,
 					borderRadius: BorderRadius.all(Radius.circular(50.0)),
 				),
 				width: MediaQuery.of(context).size.width * buttonSize,
