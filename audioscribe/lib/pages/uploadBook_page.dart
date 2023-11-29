@@ -7,8 +7,13 @@ import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
 
 class UploadBookPage extends StatefulWidget {
 	final String text;
+	final VoidCallback? onUpload;
 
-	UploadBookPage({Key? key, required this.text}) : super(key: key);
+	UploadBookPage({
+		Key? key,
+		required this.text,
+		this.onUpload
+	}) : super(key: key);
 
 	@override
 	_UploadBookPageState createState() => _UploadBookPageState();
@@ -43,12 +48,11 @@ class _UploadBookPageState extends State<UploadBookPage> {
 			_summaryController.clear();
 		}
 		_navigateToMainPage(context);
+		widget.onUpload!();
 	}
 
 	void _navigateToMainPage(BuildContext context) {
-		Navigator.of(context).push(MaterialPageRoute(
-			builder: (context) => MainPage(),
-		));
+		Navigator.of(context).pop();
 	}
 
 	@override

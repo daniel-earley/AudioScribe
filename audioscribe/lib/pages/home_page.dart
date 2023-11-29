@@ -36,19 +36,19 @@ class _HomePageState extends State<HomePage> {
 		super.initState();
 		fetchUserBooks();
 		fetchApiBooks().then((allBooks) async {
-			print("book fetch completed");
+			// print("book fetch completed");
 			BookModel model = BookModel();
 			List<LibrivoxBook> processedBooks = [];
-			print('downloading books');
+			// print('downloading books');
 			for (var book in allBooks) {
 				// check if book exists in db
 				var bookExists = await model.getBooksByTitle(book.title);
 				if (bookExists.isNotEmpty) {
-					print('book ${book.title} already exists in DB');
+					// print('book ${book.title} already exists in DB');
 					// is book exists then return
 					continue;
 				} else {
-					print('downloading book: ${book.title}');
+					// print('downloading book: ${book.title}');
 					var imageLocation = await downloadAndSaveImage(
 						"https://archive.org/services/get-item-image.php?identifier=${book.identifier}",
 						'${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
@@ -160,8 +160,6 @@ class _HomePageState extends State<HomePage> {
 
 		List<Map<String, dynamic>> books = await getBooksForUser(userId);
 
-		// print('books: $books');
-
 		List<Map<String, dynamic>> transformedBooks = books.map((book) {
 			return {
 				'id': book['id'],
@@ -224,7 +222,10 @@ class _HomePageState extends State<HomePage> {
 								// if a file is selected then navigate to upload book page
 								if (data.isNotEmpty) {
 									Navigator.of(context).push(CustomRoute.routeTransitionBottom(
-										UploadBookPage(text: data))
+										UploadBookPage(text: data, onUpload: () {
+											fetchUserBooks();
+										},
+										))
 									);
 								}
 							});
