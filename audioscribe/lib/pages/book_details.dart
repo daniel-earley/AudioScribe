@@ -6,6 +6,7 @@ import 'package:audioscribe/data_classes/bookmark.dart';
 import 'package:audioscribe/data_classes/favourite.dart';
 import 'package:audioscribe/pages/audio_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
+import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/file_ops/book_storage_manager.dart';
@@ -29,7 +30,8 @@ class BookDetailPage extends StatefulWidget {
 	final String audioBookPath;
 	final VoidCallback onBookmarkChange;
 	final Future<void> Function(String, int) onBookDelete;
-	List<Map<String, String>>? audioFiles;
+	String? identifier;
+	// List<Map<String, String>>? audioFiles;
 
 	BookDetailPage(
 		{Key? key,
@@ -42,7 +44,7 @@ class BookDetailPage extends StatefulWidget {
 			required this.audioBookPath,
 			required this.onBookmarkChange,
 			required this.onBookDelete,
-			this.audioFiles
+			this.identifier
 		}) : super(key: key);
 
 	@override
@@ -62,7 +64,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		// initialize bookmark instance
 		initializeBookmarkManager();
 		initializeFavouriteManager();
-		print('book id: ${widget.bookId}');
 	}
 
 	void initializeBookmarkManager() async {
@@ -134,56 +135,59 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	}
 
 	// displays list of chapters
-	Widget _buildChapterDetails(List<Map<String, String>> audioFiles) {
-		return audioFiles.isNotEmpty
-		? Column(
-			crossAxisAlignment: CrossAxisAlignment.stretch,
-			children: audioFiles
-				.asMap()
-				.entries
-				.map((entry) => Padding(
-					padding: const EdgeInsets.symmetric(vertical: 2.0),
-					child: GestureDetector(
-						onTap: () async {
-							var chapter = entry.value['chapter']!;
-							var audioFile = entry.value['file'];
-
-							// String imageName = getImageName(widget.imagePath);
-
-							// download and save images locally on SQLite
-							// String? imageFilePath = await downloadAndSaveImage(widget.imagePath, '${imageName}_img.png');
-
-							print('$chapter, $audioFile, ${widget.imagePath}');
-						},
-						child: Container(
-							decoration: const BoxDecoration(
-								color: Color(0xFF242424)
-							),
-							child: Row(
-								children: [
-									const Padding(
-										padding: EdgeInsets.all(4.0),
-										child: Icon(Icons.play_circle_fill, color: Colors.white),
-									),
-									Flexible(
-										child: Padding(
-											padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
-											child: Text(
-												entry.value['chapter']!,
-												style: const TextStyle(color: Colors.white, fontSize: 18.0),
-												overflow: TextOverflow.fade,
-											),
-										)
-									),
-								],
-							)
-						),
-					),
-				)
-			).toList(),
-		)
-		: Container();
-	}
+	// Widget _buildChapterDetails() {
+	//
+	// 	ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
+	// 	List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book.identifier);
+	// 	return audioFiles.isNotEmpty
+	// 	? Column(
+	// 		crossAxisAlignment: CrossAxisAlignment.stretch,
+	// 		children: audioFiles
+	// 			.asMap()
+	// 			.entries
+	// 			.map((entry) => Padding(
+	// 				padding: const EdgeInsets.symmetric(vertical: 2.0),
+	// 				child: GestureDetector(
+	// 					onTap: () async {
+	// 						var chapter = entry.value['chapter']!;
+	// 						var audioFile = entry.value['file'];
+	//
+	// 						// String imageName = getImageName(widget.imagePath);
+	//
+	// 						// download and save images locally on SQLite
+	// 						// String? imageFilePath = await downloadAndSaveImage(widget.imagePath, '${imageName}_img.png');
+	//
+	// 						print('$chapter, $audioFile, ${widget.imagePath}');
+	// 					},
+	// 					child: Container(
+	// 						decoration: const BoxDecoration(
+	// 							color: Color(0xFF242424)
+	// 						),
+	// 						child: Row(
+	// 							children: [
+	// 								const Padding(
+	// 									padding: EdgeInsets.all(4.0),
+	// 									child: Icon(Icons.play_circle_fill, color: Colors.white),
+	// 								),
+	// 								Flexible(
+	// 									child: Padding(
+	// 										padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+	// 										child: Text(
+	// 											entry.value['chapter']!,
+	// 											style: const TextStyle(color: Colors.white, fontSize: 18.0),
+	// 											overflow: TextOverflow.fade,
+	// 										),
+	// 									)
+	// 								),
+	// 							],
+	// 						)
+	// 					),
+	// 				),
+	// 			)
+	// 		).toList(),
+	// 	)
+	// 	: Container();
+	// }
 
 	Widget _buildBookDetails(BuildContext context) {
 		return Stack(
@@ -377,9 +381,9 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									// chapter list
 
 									widget.bookType == 'app' ?
-									Column(
+									const Column(
 										children: [
-											const Padding(
+											Padding(
 												padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
 												child: Align(
 													alignment: Alignment.centerLeft,
@@ -394,7 +398,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												),
 											),
 
-											_buildChapterDetails(widget.audioFiles!)
+											// _buildChapterDetails(widget.audioFiles!)
 										],
 									)
 									: Container()

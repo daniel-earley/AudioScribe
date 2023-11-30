@@ -82,8 +82,8 @@ class LibrivoxBook {
 			downloads: map['downloads'] ?? 0,
 			size: map['size'] ?? 0,
 			imageFileLocation: map['imageFileLocation'] ?? '',
-			isFavourite: map['isFavourite'],
-			isBookmark: map['isBookmark']
+			isFavourite: map['isFavourite'] ?? 0,
+			isBookmark: map['isBookmark'] ?? 0
 		);
 	}
 

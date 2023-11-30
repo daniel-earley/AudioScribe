@@ -40,22 +40,25 @@ class _CollectionPageState extends State<CollectionPage> {
 		return Stack(
 			children: [
 				SafeArea(
-					child: Column(
-						children: [
-							// Search bar
-							AppSearchBar(hintText: "search", allItems: books.map((book) {
-								print(book['imageFileLocation']);
-								return {
-									'item': book['title'],
-									'image': book['imageFileLocation']
-								};
-							}).toList()
-							),
+					child: SingleChildScrollView(
+						child: Column(
+							children: [
+								// Search bar
+								AppSearchBar(hintText: "search", allItems: books.map((book) {
+									print(book['imageFileLocation']);
+									return {
+										'item': book['title'],
+										'image': book['imageFileLocation']
+									};
+								}).toList()
+								),
 
-							// Book grid
-							_buildBooklist()
-						],
-					))
+								// Book grid
+								_buildBooklist()
+							],
+						),
+					)
+				)
 			],
 		);
 	}

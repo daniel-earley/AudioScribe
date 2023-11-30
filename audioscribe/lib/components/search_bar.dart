@@ -4,8 +4,6 @@ import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:flutter/material.dart';
 
-GlobalKey _searchBarKey = GlobalKey();
-
 class AppSearchBar extends StatefulWidget {
 	final String hintText;
 	final List<Map<String, dynamic>> allItems;
@@ -21,6 +19,7 @@ class AppSearchBar extends StatefulWidget {
 }
 
 class _AppSearchBarState extends State<AppSearchBar> {
+	GlobalKey _searchBarKey = GlobalKey();
 	final FocusNode _focusNode = FocusNode();
 	final TextEditingController _controller = TextEditingController();
 	List<Map<String, dynamic>> filteredItems = [];

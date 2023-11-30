@@ -69,10 +69,10 @@ class Favourite {
 
 			print("book $bookId removed as favourite");
 
-			return false;
+			return true;
 		} catch (e) {
 			print('$e');
-			return true;
+			return false;
 		}
 	}
 

@@ -6,6 +6,7 @@ import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/details_page.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
@@ -50,9 +51,7 @@ class _HomePageState extends State<HomePage> {
 					continue;
 				} else {
 					print('downloading book: ${book.title}, ${book.id}');
-					// var imageLocation = await downloadAndSaveImage(
-					// 	"https://archive.org/services/get-item-image.php?identifier=${book.identifier}",
-					// 	'${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
+					var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book.identifier}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
 					LibrivoxBook processedBook = LibrivoxBook(
 						id: book.id,
 						author: book.author,
@@ -65,7 +64,8 @@ class _HomePageState extends State<HomePage> {
 						rating: book.rating,
 						runtime: book.runtime,
 						size: book.size,
-						imageFileLocation: "https://archive.org/services/get-item-image.php?identifier=${book.identifier}");
+						imageFileLocation: imageLocation!
+					);
 					processedBooks.add(processedBook);
 
 					// SQLite storage
@@ -134,34 +134,45 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// run when any book is selected on the screen
-	void _onBookSelected(int id, String title, String author, String image,
-		String summary, String bookType, String audioBookPath,
-		{List<Map<String, String>>? audioFiles}) {
-		// print('$index, $title, $author, $image, $summary');
-		Navigator.of(context).push(CustomRoute.routeTransitionBottom(BookDetailPage(
-			bookId: id,
-			bookTitle: title,
-			authorName: author,
-			imagePath: image,
-			description: summary,
-			bookType: bookType,
-			audioBookPath: audioBookPath,
-			audioFiles: audioFiles,
-			onBookmarkChange: () {
-				// fetchUserBooks();
-			},
-			onBookDelete: (String userId, int bookId) async {
-				// for deleting book
-				print('Deleting book with id $bookId for user $userId');
-				// delete book
-				await deleteUserBook(userId, bookId);
+	void _onBookSelected(int id, String title, String author, String image, String summary, String bookType, String audioBookPath, String? identifier) {
+		// print('$id, $title, $author, $image, $summary');
+		Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+			BookDetailPage(
+				bookId: id,
+				bookTitle: title,
+				authorName: author,
+				imagePath: image,
+				description: summary,
+				bookType: bookType,
+				audioBookPath: audioBookPath,
+				identifier: identifier,
+				onBookmarkChange: () {
+					// fetchUserBooks();
+				},
+				onBookDelete: (String userId, int bookId) async {
+					// for deleting book
+					print('Deleting book with id $bookId for user $userId');
+					// delete book
+					await deleteUserBook(userId, bookId);
 
-				// delete book from sqlite
-				await BookModel().deleteBookWithId(bookId);
+					// delete book from sqlite
+					await BookModel().deleteBookWithId(bookId);
 
-				// refresh book state
-				await fetchUserBooks();
-			})));
+					// refresh book state
+					await fetchUserBooks();
+				}
+			)
+		));
+	}
+
+	void bookSelected(LibrivoxBook book, String? audioBookPath) {
+		Navigator.of(context).push(
+			CustomRoute.routeTransitionBottom(
+				DetailsPage(book: book, audioBookPath: audioBookPath, onChange: () async {
+					await fetchUserBooks();
+				})
+			)
+		);
 	}
 
 	/// get all the books that the user has uploaded or bookmarked
@@ -264,17 +275,35 @@ class _HomePageState extends State<HomePage> {
 					itemCount: userBooks.length,
 					itemBuilder: (context, index) {
 						return GestureDetector(
-							onTap: () {
+							onTap: () async {
 								var book = userBooks[index];
-								// print("$index, ${book['title']}, ${book['author']}, ${book['image']}, ${book['summary']}, ${book['bookType']}, ${book['audioBookPath']}");
-								_onBookSelected(
-									book['id'],
-									book['title'],
-									book['author'],
-									book['image'],
-									book['summary'],
-									book['bookType'],
-									book['audioBookPath']);
+
+								// get book mark status
+								bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+								bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
+
+								// print('audioBookPath ${book['audioBookPath']}');
+								LibrivoxBook selectedBook = LibrivoxBook(
+									id: book['id'],
+									title: book['title'],
+									author: book['author'],
+									imageFileLocation: book['image'],
+									bookType: book['bookType'],
+									date: DateTime.now().toLocal().toString(),
+									identifier: '',
+									runtime: '',
+									description: book['summary'],
+									rating: 0.0,
+									numberReviews: 0,
+									downloads: 0,
+									size: 0,
+									isBookmark: isBookmark == true ? 1: 0,
+									isFavourite: isFavourite == true ? 1: 0
+								);
+
+								bookSelected(selectedBook, book['audioBookPath']);
+
+								// _onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath'], '');
 							},
 							child: Container(
 								width: bookWidth + 50,
@@ -313,12 +342,8 @@ class _HomePageState extends State<HomePage> {
 				var book = books[index];
 				return GestureDetector(
 					onTap: () async {
-						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-						List<Map<String, String>> audioFilesList =
-						await archiveApiProvider.fetchAudioFiles(book.identifier);
-						_onBookSelected(book.id, book.title, book.author,
-							book.imageFileLocation, book.description, 'app', '',
-							audioFiles: audioFilesList);
+						bookSelected(book, null);
+						// _onBookSelected(book.id, book.title, book.author, book.imageFileLocation, book.description, 'app', '', book.identifier);
 					},
 					child: Container(
 						padding: const EdgeInsets.all(6.0),
@@ -329,7 +354,8 @@ class _HomePageState extends State<HomePage> {
 									child: BookCard(
 										bookTitle: book.title,
 										bookAuthor: book.author,
-										bookImage: book.imageFileLocation),
+										bookImage: book.imageFileLocation
+									),
 								)
 							],
 						),
