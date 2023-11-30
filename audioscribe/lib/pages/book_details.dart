@@ -62,6 +62,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		// initialize bookmark instance
 		initializeBookmarkManager();
 		initializeFavouriteManager();
+		print('book id: ${widget.bookId}');
 	}
 
 	void initializeBookmarkManager() async {
@@ -212,9 +213,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									Padding(
 										padding: const EdgeInsets.symmetric(vertical: 10.0),
 										child: Center(
-											child: widget.bookType == 'app'
-												? Image.file(File(widget.imagePath), fit: BoxFit.fill, width: 200, height: 300,)
-												: ImageContainer(imagePath: widget.imagePath)
+											child: ImageContainer(imagePath: widget.imagePath)
 										),
 									),
 

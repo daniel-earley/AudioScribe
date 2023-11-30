@@ -12,12 +12,16 @@ class ImageContainer extends StatelessWidget {
 
 	@override
 	Widget build(BuildContext context) {
+		print('image $imagePath');
+
+		bool isNetworkImage = imagePath.startsWith('https://');
 		bool isAssetImage = imagePath.startsWith('lib/assets');
-		File imageFile = File(imagePath);
 
 		// Create the appropriate ImageProvider based on the image path
 		ImageProvider imageProvider;
-		if (isAssetImage) {
+		if (isNetworkImage) {
+			imageProvider = NetworkImage(imagePath);
+		} else if (isAssetImage) {
 			imageProvider = AssetImage(imagePath);
 		} else {
 			File imageFile = File(imagePath);

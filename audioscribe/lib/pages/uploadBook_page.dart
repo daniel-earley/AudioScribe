@@ -40,7 +40,7 @@ class _UploadBookPageState extends State<UploadBookPage> {
 
 			// Store the book on firestore
 			await addBookToFirestore(bookId, _titleController.text,
-				_authorController.text, contentSummary, audioBookPath);
+				_authorController.text, contentSummary, audioBookPath, 'UPLOAD');
 
 			// Clear the text fields
 			_titleController.clear();

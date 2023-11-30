@@ -26,7 +26,7 @@ Future<List<Map<String, dynamic>>> fetchBookmarkedBooks() async {
 }
 
 /// Get list of stored items for a user
-Future<List<Map<String, dynamic>>> getBooksForUser(String userId) async {
+Future<List<Map<String, dynamic>>> getBooksForUser(String userId, String bookType) async {
 	try {
 		// Reference to firestore
 		FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -36,6 +36,7 @@ Future<List<Map<String, dynamic>>> getBooksForUser(String userId) async {
 			.collection('users')
 			.doc(userId)
 			.collection('books')
+			.where('bookType', isEqualTo: bookType)
 			.get();
 
 		// map the results to a list of maps
@@ -126,8 +127,7 @@ Future<bool> getUserFavouriteBook(String userId, int bookId) async {
 }
 
 /// Adds a book to the firestore database
-Future<void> addBookToFirestore(int bookId, String title, String author,
-	String summary, String audioBookPath) async {
+Future<void> addBookToFirestore(int bookId, String title, String author, String summary, String audioBookPath, String bookType) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
@@ -135,12 +135,15 @@ Future<void> addBookToFirestore(int bookId, String title, String author,
 		.doc(userId) // add user Id
 		.collection('books') // add books subcollection
 		.doc(bookId.toString()) // add book Id
-		.set({
-		'title': title,
-		'author': author,
-		'summary': summary,
-		'audioBookPath': audioBookPath
-	});
+		.set(
+			{
+				'title': title,
+				'author': author,
+				'summary': summary,
+				'audioBookPath': audioBookPath,
+				'bookType': bookType
+			}
+		);
 }
 
 /// Adds book mark for a certain book with the userId and book information

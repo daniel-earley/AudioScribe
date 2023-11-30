@@ -44,15 +44,16 @@ class _HomePageState extends State<HomePage> {
 				// check if book exists in db
 				var bookExists = await model.getBooksByTitle(book.title);
 				if (bookExists.isNotEmpty) {
-					// print('book ${book.title} already exists in DB');
+					print('book ${book.title} already exists in DB');
 					// is book exists then return
 					continue;
 				} else {
-					// print('downloading book: ${book.title}');
-					var imageLocation = await downloadAndSaveImage(
-						"https://archive.org/services/get-item-image.php?identifier=${book.identifier}",
-						'${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
+					print('downloading book: ${book.title}, ${book.id}');
+					// var imageLocation = await downloadAndSaveImage(
+					// 	"https://archive.org/services/get-item-image.php?identifier=${book.identifier}",
+					// 	'${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
 					LibrivoxBook processedBook = LibrivoxBook(
+						id: book.id,
 						author: book.author,
 						title: book.title,
 						identifier: book.identifier,
@@ -63,10 +64,14 @@ class _HomePageState extends State<HomePage> {
 						rating: book.rating,
 						runtime: book.runtime,
 						size: book.size,
-						imageFileLocation: imageLocation!);
+						imageFileLocation: "https://archive.org/services/get-item-image.php?identifier=${book.identifier}");
 					processedBooks.add(processedBook);
 
-					model.insertAPIBook(processedBook);
+					// SQLite storage
+					await model.insertAPIBook(processedBook);
+
+					// Firestore storage
+					await addBookToFirestore(processedBook.id, processedBook.title, processedBook.author, processedBook.description, '', processedBook.bookType);
 				}
 			}
 			print("finished downloading books");
@@ -128,12 +133,12 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// run when any book is selected on the screen
-	void _onBookSelected(int index, String title, String author, String image,
+	void _onBookSelected(int id, String title, String author, String image,
 		String summary, String bookType, String audioBookPath,
 		{List<Map<String, String>>? audioFiles}) {
 		// print('$index, $title, $author, $image, $summary');
 		Navigator.of(context).push(CustomRoute.routeTransitionBottom(BookDetailPage(
-			bookId: index,
+			bookId: id,
 			bookTitle: title,
 			authorName: author,
 			imagePath: image,
@@ -158,8 +163,10 @@ class _HomePageState extends State<HomePage> {
 	Future<void> fetchUserBooks() async {
 		String userId = getCurrentUserId();
 
-		List<Map<String, dynamic>> books = await getBooksForUser(userId);
+		// fetch books from firestore that are uploaded
+		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
 
+		// transform for proper usage
 		List<Map<String, dynamic>> transformedBooks = books.map((book) {
 			return {
 				'id': book['id'],
@@ -184,7 +191,7 @@ class _HomePageState extends State<HomePage> {
 		var apiBooksDb = await BookModel().getBooksByType('API');
 
 		if (apiBooksDb.isNotEmpty) {
-			print("fetching from DB");
+			print("fetching from DB, ${apiBooksDb.map((item) => '${item.id}, ${item.imageFileLocation}')}");
 			// if API books exist then return them
 			setState(() {
 				books = apiBooksDb;
@@ -301,7 +308,7 @@ class _HomePageState extends State<HomePage> {
 						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
 						List<Map<String, String>> audioFilesList =
 						await archiveApiProvider.fetchAudioFiles(book.identifier);
-						_onBookSelected(index, book.title, book.author,
+						_onBookSelected(book.id, book.title, book.author,
 							book.imageFileLocation, book.description, 'app', '',
 							audioFiles: audioFilesList);
 					},
