@@ -191,7 +191,7 @@ class _HomePageState extends State<HomePage> {
 		var apiBooksDb = await BookModel().getBooksByType('API');
 
 		if (apiBooksDb.isNotEmpty) {
-			print("fetching from DB, ${apiBooksDb.map((item) => '${item.id}, ${item.imageFileLocation}')}");
+			// print("fetching from DB, ${apiBooksDb.map((item) => '${item.id}, ${item.imageFileLocation}')}");
 			// if API books exist then return them
 			setState(() {
 				books = apiBooksDb;

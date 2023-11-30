@@ -12,8 +12,6 @@ class ImageContainer extends StatelessWidget {
 
 	@override
 	Widget build(BuildContext context) {
-		print('image $imagePath');
-
 		bool isNetworkImage = imagePath.startsWith('https://');
 		bool isAssetImage = imagePath.startsWith('lib/assets');
 

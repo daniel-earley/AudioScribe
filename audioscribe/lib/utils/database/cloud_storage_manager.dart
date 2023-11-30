@@ -154,17 +154,11 @@ Future<void> addBookmarkFirestore(
 	await FirebaseFirestore.instance
 		.collection('users') // creates 'users' coll if not exist
 		.doc(userId) // creates doc id 'userId' if not exist
-		.collection('bookmarks')
+		.collection('books')
 		.doc(bookId)
-		.set({
-		'uid': userId,
-		'bookName': bookName,
-		'author': author,
-		'summary': summary
-	});
+		.update({ 'isBookmark': true });
 
-	print(
-		'cloud_storage_manager (7) Adding book $bookId to Firestore User ID: $userId');
+	print('book $bookId is bookmarked');
 }
 
 /// Favourite a book
@@ -186,11 +180,11 @@ Future<void> removeBookmarkFirestore(String bookId) async {
 	await FirebaseFirestore.instance
 		.collection('users')
 		.doc(userId)
-		.collection('bookmarks')
+		.collection('books')
 		.doc(bookId)
-		.delete();
+		.update({ 'isBookmark': false });
 
-	print('cloud_storage_manager (29) Removing book $bookId from firestore for User ID: $userId');
+	print('book $bookId has been removed from bookmark');
 }
 
 /// Remove book as favourite
