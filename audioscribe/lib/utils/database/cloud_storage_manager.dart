@@ -181,7 +181,7 @@ Future<void> addBookmarkFirestore(int bookId) async {
 		.doc(bookId.toString())
 		.update({ 'isBookmark': true });
 
-	print('book $bookId is bookmarked');
+	print('book $bookId has been bookmarked');
 }
 
 /// Favourite a book

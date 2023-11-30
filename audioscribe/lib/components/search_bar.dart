@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audioscribe/app_constants.dart';
+import 'package:audioscribe/components/image_container.dart';
 import 'package:flutter/material.dart';
 
 GlobalKey _searchBarKey = GlobalKey();
@@ -91,14 +92,10 @@ class _AppSearchBarState extends State<AppSearchBar> {
 											child: Row(
 												crossAxisAlignment: CrossAxisAlignment.center,
 												children: [
-													 Image.file(
-														imageFile,
-														width: 50,
-														height: 70,
-														fit: BoxFit.fill,
-														errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-															return const Icon(Icons.error);
-														},
+													SizedBox(
+														 width: 50,
+														 height: 70,
+														 child: ImageContainer(imagePath: filteredItems[index]['image']),
 													),
 													Flexible(
 														child: Padding(

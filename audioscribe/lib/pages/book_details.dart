@@ -91,21 +91,27 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	/// handles adding bookmark for user
 	void handleAddBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.addBookmark(bookId);
+		widget.onBookmarkChange();
 	}
 
 	/// handles removing bookmark for users
 	void handleRemoveBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.removeBookmark(bookId);
+		widget.onBookmarkChange();
 	}
 
 	/// handle adding book as a favourite
 	void handleAddBookFavourite(int bookId) async {
 		bool isBookFavourited = await favouriteManager.favouriteBook(bookId);
+		// TODO: TEMPORARY SINCE BOOKMARK AND FAVOURITE ACCOMPLISH THE SAME THING ON CALLBACK
+		widget.onBookmarkChange();
 	}
 
 	/// handle removing book as a favourite
 	void handleRemoveBookFavourite(int bookId) async {
 		bool isBookFavourited = await favouriteManager.unFavouriteBook(bookId);
+		// TODO: TEMPORARY SINCE BOOKMARK AND FAVOURITE ACCOMPLISH THE SAME THING ON CALLBACK
+		widget.onBookmarkChange();
 	}
 
 	/// check if currently selected book is bookmarked or not
@@ -253,7 +259,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 														setState(() {
 															isBookmarked = !isBookmarked;
 														});
-														// getCurrentBookInfo();
 													},
 													icon: isBookmarked
 														? const Icon(Icons.bookmark_add, color: Colors.white, size: 42.0)
@@ -265,8 +270,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
 													onPressed: () {
 														String userId = getCurrentUserId();
 														widget.onBookDelete(userId, widget.bookId);
-
-
 
 														// go back to the home page
 														Navigator.of(context).pop();

@@ -43,13 +43,17 @@ class _CollectionPageState extends State<CollectionPage> {
 					child: Column(
 						children: [
 							// Search bar
-							// AppSearchBar(hintText: "search"),
+							AppSearchBar(hintText: "search", allItems: books.map((book) {
+								print(book['imageFileLocation']);
+								return {
+									'item': book['title'],
+									'image': book['imageFileLocation']
+								};
+							}).toList()
+							),
 
 							// Book grid
 							_buildBooklist()
-							// Expanded(
-							// 	child: BookGridView(
-							// 		books: userBooks, onBookSelected: _onBookSelected)),
 						],
 					))
 			],
@@ -78,8 +82,9 @@ class _CollectionPageState extends State<CollectionPage> {
 				description: summary,
 				bookType: '',
 				audioBookPath: audioBookPath,
-				onBookmarkChange: () {
-					fetchUserBooks();
+				onBookmarkChange: () async {
+					print('fetching user books after something happened');
+					await fetchUserBooks();
 				},
 				onBookDelete: (String userId, int bookId) async {
 					// for deleting book

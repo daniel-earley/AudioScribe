@@ -39,7 +39,7 @@ class Bookmark {
 
 			await bookModel.updateLibrivoxBook(book);
 
-			print("book $bookId has been bookmarked");
+			// print("book $bookId has been bookmarked");
 
 			return true;
 		} catch (e) {
@@ -74,7 +74,7 @@ class Bookmark {
 			// remove bookmark from sqlite
 			await bookModel.updateLibrivoxBook(book);
 
-			print("book $bookId has been bookmarked");
+			// print("book $bookId has been bookmarked");
 
 			return true;
 		} catch (e) {
