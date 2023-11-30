@@ -2,6 +2,7 @@ import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/BookCard.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
+import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
@@ -154,6 +155,10 @@ class _HomePageState extends State<HomePage> {
 				print('Deleting book with id $bookId for user $userId');
 				// delete book
 				await deleteUserBook(userId, bookId);
+
+				// delete book from sqlite
+				await BookModel().deleteBookWithId(bookId);
+
 				// refresh book state
 				await fetchUserBooks();
 			})));
@@ -165,6 +170,9 @@ class _HomePageState extends State<HomePage> {
 
 		// fetch books from firestore that are uploaded
 		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
+
+		List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
+		print('${bookss.map((item) => '${item.bookType}')}');
 
 		// transform for proper usage
 		List<Map<String, dynamic>> transformedBooks = books.map((book) {

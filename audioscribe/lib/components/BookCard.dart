@@ -19,6 +19,8 @@ class BookCard extends StatelessWidget {
 		bool isNetworkImage = bookImage.startsWith('https://');
 		bool isAssetImage = bookImage.startsWith('lib/assets');
 
+		// print('image: $bookImage');
+
 		Widget imageWidget;
 
 		if (isNetworkImage) {

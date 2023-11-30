@@ -126,6 +126,30 @@ Future<bool> getUserFavouriteBook(String userId, int bookId) async {
 	}
 }
 
+/// Get current book bookmark status
+Future<bool> getUserBookmarkStatus(String userId, int bookId) async {
+	try {
+		FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+		DocumentSnapshot documentSnapshot = await firestore
+			.collection('users')
+			.doc(userId)
+			.collection('books')
+			.doc(bookId.toString())
+			.get();
+
+		if (documentSnapshot.exists) {
+			Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+			return data['isBookmark'] ?? false;
+		} else {
+			return false;
+		}
+	} catch (e) {
+		print('An error occurred getting favourited book info $e');
+		return false;
+	}
+}
+
 /// Adds a book to the firestore database
 Future<void> addBookToFirestore(int bookId, String title, String author, String summary, String audioBookPath, String bookType) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
@@ -147,15 +171,14 @@ Future<void> addBookToFirestore(int bookId, String title, String author, String 
 }
 
 /// Adds book mark for a certain book with the userId and book information
-Future<void> addBookmarkFirestore(
-	String bookId, String bookName, String author, String summary) async {
+Future<void> addBookmarkFirestore(int bookId) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
 		.collection('users') // creates 'users' coll if not exist
 		.doc(userId) // creates doc id 'userId' if not exist
 		.collection('books')
-		.doc(bookId)
+		.doc(bookId.toString())
 		.update({ 'isBookmark': true });
 
 	print('book $bookId is bookmarked');
@@ -174,14 +197,14 @@ Future<void> favouriteBookFirestore(String userId, int bookId) async {
 }
 
 /// Removes a book mark for a  certain book with book id
-Future<void> removeBookmarkFirestore(String bookId) async {
+Future<void> removeBookmarkFirestore(int bookId) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
 		.collection('users')
 		.doc(userId)
 		.collection('books')
-		.doc(bookId)
+		.doc(bookId.toString())
 		.update({ 'isBookmark': false });
 
 	print('book $bookId has been removed from bookmark');

@@ -91,31 +91,11 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	/// handles adding bookmark for user
 	void handleAddBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.addBookmark(bookId);
-		if (isBookBookmarked) {
-			setState(() {
-				isBookmarked = true;
-			});
-			widget.onBookmarkChange();
-			if (mounted) {
-				SnackbarUtil.showSnackbarMessage(
-					context, '${widget.bookTitle} has been bookmarked', Colors.white);
-			}
-		}
 	}
 
 	/// handles removing bookmark for users
 	void handleRemoveBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.removeBookmark(bookId);
-		if (!isBookBookmarked) {
-			setState(() {
-				isBookmarked = false;
-			});
-			widget.onBookmarkChange();
-			if (mounted) {
-				SnackbarUtil.showSnackbarMessage(
-					context, 'Bookmark removed', Colors.white);
-			}
-		}
 	}
 
 	/// handle adding book as a favourite
@@ -135,14 +115,14 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		UserModel userModel = UserModel();
 
 		// query to see if this book exists for them
-		var books = await userModel.checkBookIsBookmarked(userId, widget.bookId);
+		bool bookmarkStatus = await getUserBookmarkStatus(userId, widget.bookId);
 
 		// check if book is favourited
 		bool favouriteStatus = await getUserFavouriteBook(userId, widget.bookId);
 
 		// set bookmark state depending on the book mark status
 		setState(() {
-		  	isBookmarked = books.isNotEmpty;
+		  	isBookmarked = bookmarkStatus;
 			isFavourited = favouriteStatus;
 		});
 	}
@@ -269,27 +249,24 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												IconButton(
 													onPressed: () {
 														// if bookmarked item them run remove function
-														if (isBookmarked) {
-															handleRemoveBookmark(widget.bookId);
-														} else {
-															handleAddBookmark(widget.bookId);
-														}
-
+														isBookmarked ? handleRemoveBookmark(widget.bookId) : handleAddBookmark(widget.bookId);
+														setState(() {
+															isBookmarked = !isBookmarked;
+														});
 														// getCurrentBookInfo();
 													},
-													icon: Icon(
-														isBookmarked
-															? Icons.bookmark_add
-															: Icons.bookmark_add_outlined,
-														color: Colors.white,
-														size: 42.0)),
-
+													icon: isBookmarked
+														? const Icon(Icons.bookmark_add, color: Colors.white, size: 42.0)
+														: const Icon(Icons.bookmark_add_outlined, color: Colors.white, size: 42.0)
+												),
 												// Remove Icon for deleting
 												widget.bookType == 'user'
 													? IconButton(
 													onPressed: () {
 														String userId = getCurrentUserId();
 														widget.onBookDelete(userId, widget.bookId);
+
+
 
 														// go back to the home page
 														Navigator.of(context).pop();

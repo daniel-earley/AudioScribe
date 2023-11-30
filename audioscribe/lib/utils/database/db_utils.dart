@@ -35,7 +35,9 @@ class DbUtils {
             'textFileLocation TEXT, '
             'audioFileLocation TEXT, '
             'imageFileLocation TEXT, '
-            'bookType TEXT'
+            'bookType TEXT, '
+            'isFavourite INT DEFAULT 0, '
+            'isBookmark INT DEFAULT 0 '
           ')'
         );
         db.execute(

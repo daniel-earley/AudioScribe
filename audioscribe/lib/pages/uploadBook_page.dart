@@ -1,9 +1,13 @@
+import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/pages/main_page.dart';
 import 'package:audioscribe/services/txt_summary_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
+
+import '../utils/database/book_model.dart';
 
 class UploadBookPage extends StatefulWidget {
 	final String text;
@@ -39,8 +43,17 @@ class _UploadBookPageState extends State<UploadBookPage> {
 			await createAudioBook(widget.text, _titleController.text);
 
 			// Store the book on firestore
-			await addBookToFirestore(bookId, _titleController.text,
-				_authorController.text, contentSummary, audioBookPath, 'UPLOAD');
+			await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary, audioBookPath, 'UPLOAD');
+
+			// create new book object
+			Book book = Book(bookId: bookId, title: _titleController.text, author: _authorController.text);
+
+			// set the book status to upload
+			book.bookType = 'UPLOAD';
+			book.imageFileLocation = 'lib/assets/books/Default/textFile.png';
+
+			// store the book in sqlite
+			await BookModel().insertBook(book);
 
 			// Clear the text fields
 			_titleController.clear();
