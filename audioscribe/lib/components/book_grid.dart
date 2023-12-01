@@ -1,4 +1,3 @@
-import 'package:audioscribe/pages/book_details.dart';
 import 'package:flutter/material.dart';
 
 class BookGridView extends StatefulWidget {
@@ -22,7 +21,7 @@ class _BookGridViewState extends State<BookGridView> {
             crossAxisCount: 2,
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
-            childAspectRatio: 0.6),
+            childAspectRatio: 1.0),
         itemCount: widget.books.length,
         itemBuilder: (context, index) {
           final book = widget.books[index];

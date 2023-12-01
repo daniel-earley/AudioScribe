@@ -1,14 +1,12 @@
 import 'dart:async';
 
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
-import 'package:audioscribe/pages/book_details.dart';
-import 'package:audioscribe/pages/home_page.dart';
-import 'package:audioscribe/pages/main_page.dart';
+import 'package:audioscribe/services/audio_player_service.dart';
 import 'package:audioscribe/utils/interface/animated_fab.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
-import 'package:audioscribe/services/audio_player_service.dart';
 import 'package:flutter/material.dart';
 
 class AudioPlayerPage extends StatefulWidget {
@@ -51,6 +49,10 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Now Playing ${widget.bookTitle}'),
+        backgroundColor: AppColors.primaryAppColor,
+      ),
       backgroundColor: const Color(0xFF303030),
       body: _buildAudioPlayerPage(),
       floatingActionButton: AnimatedFAB(
@@ -106,49 +108,6 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
                     horizontal: 10.0, vertical: 10.0),
                 child: Column(
                   children: [
-                    // Header section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // back arrow
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Colors.white, size: 35.0),
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pop(); // Close the current page
-                          },
-                        ),
-
-                        // title
-                        const Text('Now Playing',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w400)),
-
-                        // bookmark
-                        IconButton(
-                          icon: Icon(
-                              isBookBookmarked
-                                  ? Icons.bookmark
-                                  : Icons.bookmark_outline,
-                              color: Colors.white,
-                              size: 42.0),
-                          onPressed: () {
-                            if (isBookBookmarked) {
-                              // print('Removing bookmark for ${widget.bookId}');
-                              handleRemoveBookmark(widget.bookId);
-                            } else {
-                              // print('Adding bookmark for ${widget.bookId}');
-                              handleAddBookmark(widget.bookId);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-
                     // Image
                     ImageContainer(imagePath: widget.imagePath),
 

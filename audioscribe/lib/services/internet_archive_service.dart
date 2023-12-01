@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 
@@ -47,12 +48,12 @@ class ArchiveApiProvider {
 		return audioUrls;
 	}
 
-	Future<List<Map<String, dynamic>>> fetchTopDownloads() async {
+	Future<List<LibrivoxBook>> fetchTopDownloads() async {
 		final response = await client.get(Uri.parse(_mostDownloaded));
 		Map resJson = json.decode(response.body);
 
-		List<Map<String, dynamic>> allbooks = (resJson['response']['docs'] as List)
-			.map((item) => item as Map<String, dynamic>)
+		List<LibrivoxBook> allbooks = (resJson['response']['docs'] as List)
+			.map((item) => LibrivoxBook.fromJson(item))
 			.toList();
 
 		return allbooks;

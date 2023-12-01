@@ -1,12 +1,18 @@
-import 'package:audioscribe/components/book_grid.dart';
-import 'package:audioscribe/components/home_page_book_row.dart';
+import 'package:audioscribe/app_constants.dart';
+import 'package:audioscribe/components/BookCard.dart';
 import 'package:audioscribe/components/home_page_separator.dart';
 import 'package:audioscribe/components/search_bar.dart';
 import 'package:audioscribe/data_classes/book.dart';
+import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/models/book_data.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/details_page.dart';
+import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
+import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/file_ops/book_storage_manager.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -25,13 +31,52 @@ class _HomePageState extends State<HomePage> {
 	final List<Map<String, dynamic>> recommendationBooks = bookData;
 
 	// list of fetched books
-	List<Map<String, dynamic>> books = [];
+	List<LibrivoxBook> books = [];
 
 	@override
 	void initState() {
 		super.initState();
 		fetchUserBooks();
-		fetchApiBooks();
+		fetchApiBooks().then((allBooks) async {
+			// print("book fetch completed");
+			BookModel model = BookModel();
+			List<LibrivoxBook> processedBooks = [];
+			// print('downloading books');
+			for (var book in allBooks) {
+				// check if book exists in db
+				var bookExists = await model.getBooksByTitle(book.title);
+				if (bookExists.isNotEmpty) {
+					print('book ${book.title} already exists in DB');
+					// is book exists then return
+					continue;
+				} else {
+					print('downloading book: ${book.title}, ${book.id}');
+					var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book.identifier}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
+					LibrivoxBook processedBook = LibrivoxBook(
+						id: book.id,
+						author: book.author,
+						title: book.title,
+						identifier: book.identifier,
+						description: book.description,
+						date: book.date,
+						downloads: book.downloads,
+						numberReviews: book.numberReviews,
+						rating: book.rating,
+						runtime: book.runtime,
+						size: book.size,
+						imageFileLocation: imageLocation!
+					);
+					processedBooks.add(processedBook);
+
+					// SQLite storage
+					await model.insertAPIBook(processedBook);
+
+					// Firestore storage
+					await addBookToFirestore(processedBook.id, processedBook.title, processedBook.author, processedBook.description, '', processedBook.bookType);
+				}
+			}
+			print("finished downloading books");
+		});
 	}
 
 	@override
@@ -54,30 +99,22 @@ class _HomePageState extends State<HomePage> {
 						child: Column(
 							children: [
 								// Search bar
-								const AppSearchBar(hintText: "search"),
+								AppSearchBar(
+									hintText: "search",
+									allItems: books.map((book) {
+										return {
+											'item': book.title,
+											'image': book.imageFileLocation
+										};
+									}).toList()),
 
 								// Separator
 								const Separator(text: "Your uploads"),
-
-								// Book Row 1
-								BookRow(
-									books: userBooks,
-									bookType: 'user',
-									onBookSelected: _onBookSelected),
-
-								// Separator
-								const Separator(text: "See what's new"),
-
-								// Book Row 2
-								BookRow(
-									books: recommendationBooks,
-									bookType: 'recommendation',
-									onBookSelected: _onBookSelected),
+								_buildBookRow(),
 
 								// Separator
 								const Separator(text: "See our collection"),
-
-                                _buildBooklist()
+								_buildBooklist(),
 							],
 						),
 					)),
@@ -97,26 +134,29 @@ class _HomePageState extends State<HomePage> {
 	}
 
 	/// run when any book is selected on the screen
-	void _onBookSelected(int index, String title, String author, String image, String summary, String bookType, String audioBookPath, {List<Map<String, String>>? audioFiles}) {
-		// print('$index, $title, $author, $image, $summary');
-		Navigator.of(context).push(MaterialPageRoute(
-			builder: (context) => BookDetailPage(
-				bookId: index,
+	void _onBookSelected(int id, String title, String author, String image, String summary, String bookType, String audioBookPath, String? identifier) {
+		// print('$id, $title, $author, $image, $summary');
+		Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+			BookDetailPage(
+				bookId: id,
 				bookTitle: title,
 				authorName: author,
 				imagePath: image,
 				description: summary,
 				bookType: bookType,
 				audioBookPath: audioBookPath,
-				audioFiles: audioFiles,
+				identifier: identifier,
 				onBookmarkChange: () {
 					// fetchUserBooks();
 				},
 				onBookDelete: (String userId, int bookId) async {
 					// for deleting book
-					print('Deleting book with id ${bookId} for user ${userId}');
+					print('Deleting book with id $bookId for user $userId');
 					// delete book
 					await deleteUserBook(userId, bookId);
+
+					// delete book from sqlite
+					await BookModel().deleteBookWithId(bookId);
 
 					// refresh book state
 					await fetchUserBooks();
@@ -125,14 +165,27 @@ class _HomePageState extends State<HomePage> {
 		));
 	}
 
+	void bookSelected(LibrivoxBook book, String? audioBookPath) {
+		Navigator.of(context).push(
+			CustomRoute.routeTransitionBottom(
+				DetailsPage(book: book, audioBookPath: audioBookPath, onChange: () async {
+					await fetchUserBooks();
+				})
+			)
+		);
+	}
+
 	/// get all the books that the user has uploaded or bookmarked
 	Future<void> fetchUserBooks() async {
 		String userId = getCurrentUserId();
 
-		List<Map<String, dynamic>> books = await getBooksForUser(userId);
+		// fetch books from firestore that are uploaded
+		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
 
-		// print('books: $books');
+		// List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
+		// print('${bookss.map((item) => '${item.bookType}')}');
 
+		// transform for proper usage
 		List<Map<String, dynamic>> transformedBooks = books.map((book) {
 			return {
 				'id': book['id'],
@@ -140,7 +193,7 @@ class _HomePageState extends State<HomePage> {
 				'author': book['author'] ?? 'Unknown author',
 				'image': 'lib/assets/books/Default/textFile.png',
 				'summary': book['summary'] ?? 'No summary available',
-				'bookType': 'user', // this function specifically fetches top row books 'userBooks'
+				'bookType': 'UPLOAD',
 				'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
 			};
 		}).toList();
@@ -150,82 +203,162 @@ class _HomePageState extends State<HomePage> {
 		});
 	}
 
-	Future<void> fetchApiBooks() async {
+	/// fetches book from internet archive
+	Future<List<LibrivoxBook>> fetchApiBooks() async {
 		print('fetching books...');
-		ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-		var allbooks = await archiveApiProvider.fetchTopDownloads();
-		setState(() {
-		  	books = allbooks;
-		});
-		print('fetched books');
+		var apiBooksDb = await BookModel().getBooksByType('API');
+
+		if (apiBooksDb.isNotEmpty) {
+			// print("fetching from DB, ${apiBooksDb.map((item) => '${item.id}, ${item.imageFileLocation}')}");
+			// if API books exist then return them
+			setState(() {
+				books = apiBooksDb;
+			});
+			return apiBooksDb;
+		} else {
+			print("fetching from API");
+			// if API books do not exist fetch from url
+			ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
+			var allBooks = await archiveApiProvider.fetchTopDownloads();
+			setState(() {
+				books = allBooks;
+			});
+			return allBooks;
+		}
+	}
+
+	/// build a book row for uploaded books
+	Widget _buildBookRow() {
+		var screenWidth = MediaQuery.of(context).size.width;
+
+		var bookWidth = screenWidth / 3;
+		var bookHeight = bookWidth / 0.8;
+
+		if (userBooks.isEmpty) {
+			return Align(
+				alignment: Alignment.centerLeft,
+				child: Container(
+					padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 0.0),
+					height: bookHeight + 50,
+					child: GestureDetector(
+						onTap: () {
+							// go to upload screen on device
+							uploadBook().then((data) {
+								// if a file is selected then navigate to upload book page
+								if (data.isNotEmpty) {
+									Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+										UploadBookPage(text: data, onUpload: () {
+											fetchUserBooks();
+										},
+										))
+									);
+								}
+							});
+						},
+						child: Container(
+							width: bookWidth + 20,
+							decoration: const BoxDecoration(
+								color: AppColors.secondaryAppColor,
+								borderRadius: BorderRadius.all(Radius.circular(10.0))),
+							child: const Icon(Icons.add_box_rounded, color: AppColors.primaryAppColorBrighter, size: 42.0),
+						),
+					),
+				),
+			);
+		} else {
+			return Container(
+				padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+				height: bookHeight + 100,
+				child: ListView.builder(
+					scrollDirection: Axis.horizontal,
+					itemCount: userBooks.length,
+					itemBuilder: (context, index) {
+						return GestureDetector(
+							onTap: () async {
+								var book = userBooks[index];
+
+								// get book mark status
+								bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+								bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
+
+								// print('audioBookPath ${book['audioBookPath']}');
+								LibrivoxBook selectedBook = LibrivoxBook(
+									id: book['id'],
+									title: book['title'],
+									author: book['author'],
+									imageFileLocation: book['image'],
+									bookType: book['bookType'],
+									date: DateTime.now().toLocal().toString(),
+									identifier: '',
+									runtime: '',
+									description: book['summary'],
+									rating: 0.0,
+									numberReviews: 0,
+									downloads: 0,
+									size: 0,
+									isBookmark: isBookmark == true ? 1: 0,
+									isFavourite: isFavourite == true ? 1: 0
+								);
+
+								bookSelected(selectedBook, book['audioBookPath']);
+
+								// _onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath'], '');
+							},
+							child: Container(
+								width: bookWidth + 50,
+								padding: const EdgeInsets.all(6.0),
+								child: Column(
+									crossAxisAlignment: CrossAxisAlignment.start,
+									children: [
+										AspectRatio(
+											aspectRatio: 0.7,
+											child: BookCard(
+												bookTitle: userBooks[index]['title'],
+												bookAuthor: userBooks[index]['author'],
+												bookImage: userBooks[index]['image']),
+										)
+									],
+								)),
+						);
+					}),
+			);
+		}
 	}
 
 	/// build a grid pattern for books fetched from librivox
 	Widget _buildBooklist() {
-		return SizedBox(
-			height: 600, // Set a fixed height or calculate dynamically
-			child: GridView.builder(
-				padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-				gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-					crossAxisCount: 2,
-					crossAxisSpacing: 15,
-					mainAxisSpacing: 15,
-					childAspectRatio: 0.6
-				),
-				itemCount: books.length,
-				itemBuilder: (context, index) {
-					var book = books[index];
-					var bookCoverImg = "https://archive.org/services/get-item-image.php?identifier=${book['identifier']}";
-					return GestureDetector(
-						onTap: () async {
-							ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-							List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
-							_onBookSelected(index, book['title'], book['creator'] ?? 'LibriVox', bookCoverImg, book['description'], 'app', '', audioFiles: audioFilesList);
-						},
-						child: Container(
-							padding: const EdgeInsets.all(6.0),
-							child: Column(
-								children: [
-									AspectRatio(
-										aspectRatio: 0.7,
-										child: Container(
-											decoration: BoxDecoration(
-												color: Colors.white,
-												borderRadius: BorderRadius.circular(4.0),
-												boxShadow: [
-													BoxShadow(
-														color: Colors.black.withOpacity(0.2),
-														blurRadius: 3,
-														offset: const Offset(0, 2),
-													)
-												],
-												image: DecorationImage(
-													image: NetworkImage(bookCoverImg),
-													fit: BoxFit.fill
-												)
-											),
-										)
+		return GridView.builder(
+			shrinkWrap: true,
+			physics: const NeverScrollableScrollPhysics(),
+			padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+			gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+				crossAxisCount: 2,
+				crossAxisSpacing: 15,
+				mainAxisSpacing: 15,
+				childAspectRatio: 0.7),
+			itemCount: books.length,
+			itemBuilder: (context, index) {
+				var book = books[index];
+				return GestureDetector(
+					onTap: () async {
+						bookSelected(book, null);
+						// _onBookSelected(book.id, book.title, book.author, book.imageFileLocation, book.description, 'app', '', book.identifier);
+					},
+					child: Container(
+						padding: const EdgeInsets.all(6.0),
+						child: Column(
+							children: [
+								AspectRatio(
+									aspectRatio: 0.7,
+									child: BookCard(
+										bookTitle: book.title,
+										bookAuthor: book.author,
+										bookImage: book.imageFileLocation
 									),
-
-									Center(
-										child: Text(
-											book['title'],
-											textAlign: TextAlign.center,
-											style: const TextStyle(
-												color: Colors.white,
-												fontSize: 15.0,
-												fontWeight: FontWeight.w500
-											),
-											maxLines: 2,
-											overflow: TextOverflow.ellipsis,
-										)
-									)
-								],
-							),
-						)
-					);
-				}
-			),
-		);
+								)
+							],
+						),
+					));
+			});
 	}
 }

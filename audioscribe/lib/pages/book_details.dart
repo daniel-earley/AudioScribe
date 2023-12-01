@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/PrimaryAppButton.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/book.dart';
@@ -5,8 +6,10 @@ import 'package:audioscribe/data_classes/bookmark.dart';
 import 'package:audioscribe/data_classes/favourite.dart';
 import 'package:audioscribe/pages/audio_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
+import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/file_ops/book_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../data_classes/user.dart' as userClient;
 import 'package:audioscribe/utils/database/user_model.dart';
+import 'dart:io';
 
 class BookDetailPage extends StatefulWidget {
 	final int bookId;
@@ -26,7 +30,8 @@ class BookDetailPage extends StatefulWidget {
 	final String audioBookPath;
 	final VoidCallback onBookmarkChange;
 	final Future<void> Function(String, int) onBookDelete;
-	List<Map<String, String>>? audioFiles;
+	String? identifier;
+	// List<Map<String, String>>? audioFiles;
 
 	BookDetailPage(
 		{Key? key,
@@ -39,7 +44,7 @@ class BookDetailPage extends StatefulWidget {
 			required this.audioBookPath,
 			required this.onBookmarkChange,
 			required this.onBookDelete,
-			this.audioFiles
+			this.identifier
 		}) : super(key: key);
 
 	@override
@@ -78,7 +83,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 			backgroundColor: const Color(0xFF303030),
 			appBar: AppBar(
 				title: Text(widget.bookTitle),
-				backgroundColor: Color(0xFF524178),
+				backgroundColor: AppColors.primaryAppColor,
 			),
 			body: _buildBookDetails(context)
 		);
@@ -87,41 +92,27 @@ class _BookDetailPageState extends State<BookDetailPage> {
 	/// handles adding bookmark for user
 	void handleAddBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.addBookmark(bookId);
-		if (isBookBookmarked) {
-			setState(() {
-				isBookmarked = true;
-			});
-			widget.onBookmarkChange();
-			if (mounted) {
-				SnackbarUtil.showSnackbarMessage(
-					context, '${widget.bookTitle} has been bookmarked', Colors.white);
-			}
-		}
+		widget.onBookmarkChange();
 	}
 
 	/// handles removing bookmark for users
 	void handleRemoveBookmark(int bookId) async {
 		bool isBookBookmarked = await bookmarkManager.removeBookmark(bookId);
-		if (!isBookBookmarked) {
-			setState(() {
-				isBookmarked = false;
-			});
-			widget.onBookmarkChange();
-			if (mounted) {
-				SnackbarUtil.showSnackbarMessage(
-					context, 'Bookmark removed', Colors.white);
-			}
-		}
+		widget.onBookmarkChange();
 	}
 
 	/// handle adding book as a favourite
 	void handleAddBookFavourite(int bookId) async {
 		bool isBookFavourited = await favouriteManager.favouriteBook(bookId);
+		// TODO: TEMPORARY SINCE BOOKMARK AND FAVOURITE ACCOMPLISH THE SAME THING ON CALLBACK
+		widget.onBookmarkChange();
 	}
 
 	/// handle removing book as a favourite
 	void handleRemoveBookFavourite(int bookId) async {
 		bool isBookFavourited = await favouriteManager.unFavouriteBook(bookId);
+		// TODO: TEMPORARY SINCE BOOKMARK AND FAVOURITE ACCOMPLISH THE SAME THING ON CALLBACK
+		widget.onBookmarkChange();
 	}
 
 	/// check if currently selected book is bookmarked or not
@@ -131,68 +122,72 @@ class _BookDetailPageState extends State<BookDetailPage> {
 		UserModel userModel = UserModel();
 
 		// query to see if this book exists for them
-		var books = await userModel.checkBookIsBookmarked(userId, widget.bookId);
+		bool bookmarkStatus = await getUserBookmarkStatus(userId, widget.bookId);
 
 		// check if book is favourited
 		bool favouriteStatus = await getUserFavouriteBook(userId, widget.bookId);
 
 		// set bookmark state depending on the book mark status
 		setState(() {
-		  	isBookmarked = books.isNotEmpty;
+		  	isBookmarked = bookmarkStatus;
 			isFavourited = favouriteStatus;
 		});
 	}
 
 	// displays list of chapters
-	Widget _buildChapterDetails(List<Map<String, String>> audioFiles) {
-		return audioFiles.isNotEmpty
-		? Column(
-			crossAxisAlignment: CrossAxisAlignment.stretch,
-			children: audioFiles
-				.asMap()
-				.entries
-				.map((entry) => Padding(
-					padding: EdgeInsets.symmetric(vertical: 2.0),
-					child: GestureDetector(
-						onTap: () {
-							var chapter = entry.value['chapter']!;
-							var audioFile = entry.value['file'];
-							print('$chapter, $audioFile');
-						},
-						child: Container(
-							decoration: const BoxDecoration(
-								// borderRadius: BorderRadius.all(Radius.circular(0.0)),
-								// border: Border(
-								// 	top: BorderSide(width: 1.0, color: Colors.grey), // Top border
-								// 	bottom: BorderSide(width: 1.0, color: Colors.grey), // Bottom border
-								// ),
-								color: Color(0xFF242424)
-							),
-							child: Row(
-								children: [
-									const Padding(
-										padding: EdgeInsets.all(4.0),
-										child: Icon(Icons.play_circle_fill, color: Colors.white),
-									),
-									Flexible(
-										child: Padding(
-											padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
-											child: Text(
-												entry.value['chapter']!,
-												style: const TextStyle(color: Colors.white, fontSize: 18.0),
-												overflow: TextOverflow.fade,
-											),
-										)
-									),
-								],
-							)
-						),
-					),
-				)
-			).toList(),
-		)
-		: Container();
-	}
+	// Widget _buildChapterDetails() {
+	//
+	// 	ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
+	// 	List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book.identifier);
+	// 	return audioFiles.isNotEmpty
+	// 	? Column(
+	// 		crossAxisAlignment: CrossAxisAlignment.stretch,
+	// 		children: audioFiles
+	// 			.asMap()
+	// 			.entries
+	// 			.map((entry) => Padding(
+	// 				padding: const EdgeInsets.symmetric(vertical: 2.0),
+	// 				child: GestureDetector(
+	// 					onTap: () async {
+	// 						var chapter = entry.value['chapter']!;
+	// 						var audioFile = entry.value['file'];
+	//
+	// 						// String imageName = getImageName(widget.imagePath);
+	//
+	// 						// download and save images locally on SQLite
+	// 						// String? imageFilePath = await downloadAndSaveImage(widget.imagePath, '${imageName}_img.png');
+	//
+	// 						print('$chapter, $audioFile, ${widget.imagePath}');
+	// 					},
+	// 					child: Container(
+	// 						decoration: const BoxDecoration(
+	// 							color: Color(0xFF242424)
+	// 						),
+	// 						child: Row(
+	// 							children: [
+	// 								const Padding(
+	// 									padding: EdgeInsets.all(4.0),
+	// 									child: Icon(Icons.play_circle_fill, color: Colors.white),
+	// 								),
+	// 								Flexible(
+	// 									child: Padding(
+	// 										padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+	// 										child: Text(
+	// 											entry.value['chapter']!,
+	// 											style: const TextStyle(color: Colors.white, fontSize: 18.0),
+	// 											overflow: TextOverflow.fade,
+	// 										),
+	// 									)
+	// 								),
+	// 							],
+	// 						)
+	// 					),
+	// 				),
+	// 			)
+	// 		).toList(),
+	// 	)
+	// 	: Container();
+	// }
 
 	Widget _buildBookDetails(BuildContext context) {
 		return Stack(
@@ -208,9 +203,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									Padding(
 										padding: const EdgeInsets.symmetric(vertical: 10.0),
 										child: Center(
-											child: widget.bookType == 'app'
-												? Image.network(widget.imagePath, fit: BoxFit.fill, width: 200, height: 300,)
-												: ImageContainer(imagePath: widget.imagePath)
+											child: ImageContainer(imagePath: widget.imagePath)
 										),
 									),
 
@@ -266,21 +259,15 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												IconButton(
 													onPressed: () {
 														// if bookmarked item them run remove function
-														if (isBookmarked) {
-															handleRemoveBookmark(widget.bookId);
-														} else {
-															handleAddBookmark(widget.bookId);
-														}
-
-														// getCurrentBookInfo();
+														isBookmarked ? handleRemoveBookmark(widget.bookId) : handleAddBookmark(widget.bookId);
+														setState(() {
+															isBookmarked = !isBookmarked;
+														});
 													},
-													icon: Icon(
-														isBookmarked
-															? Icons.bookmark_add
-															: Icons.bookmark_add_outlined,
-														color: Colors.white,
-														size: 42.0)),
-
+													icon: isBookmarked
+														? const Icon(Icons.bookmark_add, color: Colors.white, size: 42.0)
+														: const Icon(Icons.bookmark_add_outlined, color: Colors.white, size: 42.0)
+												),
 												// Remove Icon for deleting
 												widget.bookType == 'user'
 													? IconButton(
@@ -394,9 +381,9 @@ class _BookDetailPageState extends State<BookDetailPage> {
 									// chapter list
 
 									widget.bookType == 'app' ?
-									Column(
+									const Column(
 										children: [
-											const Padding(
+											Padding(
 												padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
 												child: Align(
 													alignment: Alignment.centerLeft,
@@ -411,7 +398,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
 												),
 											),
 
-											_buildChapterDetails(widget.audioFiles!)
+											// _buildChapterDetails(widget.audioFiles!)
 										],
 									)
 									: Container()

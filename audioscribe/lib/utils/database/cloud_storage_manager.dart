@@ -26,7 +26,7 @@ Future<List<Map<String, dynamic>>> fetchBookmarkedBooks() async {
 }
 
 /// Get list of stored items for a user
-Future<List<Map<String, dynamic>>> getBooksForUser(String userId) async {
+Future<List<Map<String, dynamic>>> getBooksForUser(String userId, String bookType) async {
 	try {
 		// Reference to firestore
 		FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -36,6 +36,7 @@ Future<List<Map<String, dynamic>>> getBooksForUser(String userId) async {
 			.collection('users')
 			.doc(userId)
 			.collection('books')
+			.where('bookType', isEqualTo: bookType)
 			.get();
 
 		// map the results to a list of maps
@@ -125,9 +126,32 @@ Future<bool> getUserFavouriteBook(String userId, int bookId) async {
 	}
 }
 
+/// Get current book bookmark status
+Future<bool> getUserBookmarkStatus(String userId, int bookId) async {
+	try {
+		FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+		DocumentSnapshot documentSnapshot = await firestore
+			.collection('users')
+			.doc(userId)
+			.collection('books')
+			.doc(bookId.toString())
+			.get();
+
+		if (documentSnapshot.exists) {
+			Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+			return data['isBookmark'] ?? false;
+		} else {
+			return false;
+		}
+	} catch (e) {
+		print('An error occurred getting favourited book info $e');
+		return false;
+	}
+}
+
 /// Adds a book to the firestore database
-Future<void> addBookToFirestore(int bookId, String title, String author,
-	String summary, String audioBookPath) async {
+Future<void> addBookToFirestore(int bookId, String title, String author, String summary, String audioBookPath, String bookType) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
@@ -135,33 +159,29 @@ Future<void> addBookToFirestore(int bookId, String title, String author,
 		.doc(userId) // add user Id
 		.collection('books') // add books subcollection
 		.doc(bookId.toString()) // add book Id
-		.set({
-		'title': title,
-		'author': author,
-		'summary': summary,
-		'audioBookPath': audioBookPath
-	});
+		.set(
+			{
+				'title': title,
+				'author': author,
+				'summary': summary,
+				'audioBookPath': audioBookPath,
+				'bookType': bookType
+			}
+		);
 }
 
 /// Adds book mark for a certain book with the userId and book information
-Future<void> addBookmarkFirestore(
-	String bookId, String bookName, String author, String summary) async {
+Future<void> addBookmarkFirestore(int bookId) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
 		.collection('users') // creates 'users' coll if not exist
 		.doc(userId) // creates doc id 'userId' if not exist
-		.collection('bookmarks')
-		.doc(bookId)
-		.set({
-		'uid': userId,
-		'bookName': bookName,
-		'author': author,
-		'summary': summary
-	});
+		.collection('books')
+		.doc(bookId.toString())
+		.update({ 'isBookmark': true });
 
-	print(
-		'cloud_storage_manager (7) Adding book $bookId to Firestore User ID: $userId');
+	print('book $bookId has been bookmarked');
 }
 
 /// Favourite a book
@@ -177,17 +197,17 @@ Future<void> favouriteBookFirestore(String userId, int bookId) async {
 }
 
 /// Removes a book mark for a  certain book with book id
-Future<void> removeBookmarkFirestore(String bookId) async {
+Future<void> removeBookmarkFirestore(int bookId) async {
 	String userId = FirebaseAuth.instance.currentUser!.uid;
 
 	await FirebaseFirestore.instance
 		.collection('users')
 		.doc(userId)
-		.collection('bookmarks')
-		.doc(bookId)
-		.delete();
+		.collection('books')
+		.doc(bookId.toString())
+		.update({ 'isBookmark': false });
 
-	print('cloud_storage_manager (29) Removing book $bookId from firestore for User ID: $userId');
+	print('book $bookId has been removed from bookmark');
 }
 
 /// Remove book as favourite

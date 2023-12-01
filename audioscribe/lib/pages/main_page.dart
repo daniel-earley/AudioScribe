@@ -1,5 +1,7 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
@@ -160,19 +162,62 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('AudioScribe'),
+        backgroundColor: AppColors.primaryAppColor,
+        actions: [
+          Padding(padding: EdgeInsets.only(right: 10.0),
+            child:
+            PopupMenuButton<String>(
+              onSelected: (String value) {
+                if (value == 'logout') {
+                  // perform logout
+                  signOut();
+                } else if (value == 'setting') {
+                  // navigate to settings page
+                  Navigator.of(context).push(CustomRoute.routeTransitionBottom(const SettingsPage()));
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                    value: 'setting',
+                    child: Row(
+                        children: [
+                          Icon(Icons.settings, color: Colors.white),
+                          SizedBox(width: 10.0),
+                          Text('Settings', style: TextStyle(color: Colors.white))
+                        ]
+                    )
+                ),
+                const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.white),
+                          SizedBox(width: 10.0),
+                          Text('Logout', style: TextStyle(color: Colors.white))
+                        ]
+                    )
+                ),
+              ],
+              icon: const Icon(Icons.account_circle, size: 42.0, color: Colors.white),
+            )
+          )
+        ],
+      ),
       backgroundColor: const Color(0xFF303030),
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                AppHeader(
-                  headerText: currentPageHeaderTitle(),
-                  onTap: () => _onItemTapped(2),
-                  currentScreen: _selectedIndex,
-                  isSwitched: _switchOn,
-                  onToggle: _toggleSwitch,
-                ),
+                // AppHeader(
+                //   headerText: currentPageHeaderTitle(),
+                //   onTap: () => _onItemTapped(2),
+                //   currentScreen: _selectedIndex,
+                //   isSwitched: _switchOn,
+                //   onToggle: _toggleSwitch,
+                // ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),

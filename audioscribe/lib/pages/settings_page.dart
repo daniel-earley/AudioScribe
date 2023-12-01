@@ -1,3 +1,4 @@
+import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/settings_text_field.dart';
 import 'package:audioscribe/data_classes/user.dart' as userClient;
@@ -31,6 +32,10 @@ class _SettingsPageState extends State<SettingsPage> {
 	@override
 	Widget build(BuildContext context) {
 		return Scaffold(
+			appBar: AppBar(
+				title: const Text("Settings"),
+				backgroundColor: AppColors.primaryAppColor,
+			),
 			backgroundColor: const Color(0xFF303030),
 			body: _buildSettingsPage(context)
 		);

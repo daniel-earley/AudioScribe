@@ -1,3 +1,5 @@
+import 'package:audioscribe/data_classes/librivox_book.dart';
+
 class Book {
   late int bookId;
   late String title;
@@ -6,7 +8,29 @@ class Book {
   late String audioFileLocation;
   late String imageFileLocation;
 
-  Book({required this.bookId, required this.title, required this.author, this.textFileLocation = '', this.audioFileLocation = '', this.imageFileLocation = ''});
+  // to differentiate between api book
+  late String bookType;
+
+  Book({required this.bookId, required this.title, required this.author, this.textFileLocation = '', this.audioFileLocation = '', this.imageFileLocation = '', this.bookType = ''});
+
+  LibrivoxBook toLibrivoxBook() {
+    return LibrivoxBook(
+        id: bookId,
+        title: title,
+        author: author,
+        imageFileLocation: imageFileLocation,
+        date: '',
+        identifier: '',
+        runtime: '',
+        description: textFileLocation,
+        audioFileLocation: audioFileLocation,
+        rating: 0.0,
+        numberReviews: 0,
+        downloads: 0,
+        size: 0,
+        bookType: bookType
+    );
+  }
 
   Map<String, Object?> toMap() {
     return {
@@ -15,7 +39,8 @@ class Book {
       'author': author,
       'textFileLocation': textFileLocation,
       'audioFileLocation': audioFileLocation,
-      'imageFileLocation': imageFileLocation
+      'imageFileLocation': imageFileLocation,
+      'bookType': bookType
     };
   }
 
@@ -26,6 +51,7 @@ class Book {
     textFileLocation = map['textFileLocation'] as String? ?? '';
     audioFileLocation = map['audioFileLocation'] as String? ?? '';
     imageFileLocation = map['imageFileLocation'] as String? ?? '';
+    bookType = map['bookType'] as String? ?? '';
   }
 
 
