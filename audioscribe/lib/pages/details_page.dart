@@ -37,7 +37,7 @@ class _DetailsPageState extends State<DetailsPage> {
 	@override
 	void initState() {
 		super.initState();
-		print('status: $isBookBookmarked, ${widget.book.isBookmark}, widget.book.description');
+		print('status: $isBookBookmarked, ${widget.book.isBookmark}, ${widget.book.bookType}');
 	}
 
 	@override
@@ -67,6 +67,7 @@ class _DetailsPageState extends State<DetailsPage> {
 			errorSnackbar("Failed to change bookmark status");
 			print('Failed to change bookmark status.');
 		}
+		widget.onChange!();
 	}
 
 	/// handle favourite click
@@ -83,8 +84,8 @@ class _DetailsPageState extends State<DetailsPage> {
 		} else {
 			errorSnackbar("Failed to change favourite status");
 			print("Failed to change favourite status");
-
 		}
+		widget.onChange!();
 	}
 
 	/// handles deleting an uploaded item
@@ -181,7 +182,6 @@ class _DetailsPageState extends State<DetailsPage> {
 														setState(() {
 														  	isBookBookmarked = isBookmarked;
 														});
-														widget.onChange!();
 													}
 												)
 											));
@@ -202,7 +202,6 @@ class _DetailsPageState extends State<DetailsPage> {
 									// Chapters //
 									const SizedBox(height: 10.0),
 									buildChapterList(widget.book.identifier)
-
 								],
 							),
 						),
@@ -217,7 +216,7 @@ class _DetailsPageState extends State<DetailsPage> {
 		return Row(
 			children: [
 				// delete icon
-				widget.book.bookType == 'user' ?
+				widget.book.bookType == 'UPLOAD' ?
 				IconButton(
 					onPressed: handleDelete,
 					icon: const Icon(Icons.delete_forever_outlined, color: Colors.white, size: 42.0)

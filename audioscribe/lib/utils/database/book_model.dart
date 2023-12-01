@@ -50,15 +50,17 @@ class BookModel {
 	}
 
 	/// Get user collection book (defined by UPLOAD type, favourited or bookmarked)
-	Future<List<Map<String, dynamic>>> getCollectionBooks() async {
+	Future<List<LibrivoxBook>> getCollectionBooks() async {
 		final db = await DbUtils.init();
 		final List<Map<String, dynamic>> bookMaps = await db.query(
 			DbUtils.bookDb,
-			where: "bookType = ? OR isFavourite = ? OR isBookmark = ?",
-			whereArgs: ['UPLOAD', 1, 1]
+			where: "isFavourite = ? OR isBookmark = ?",
+			whereArgs: [1, 1]
 		);
 
-		return bookMaps;
+		List<LibrivoxBook> books = bookMaps.map((map) => LibrivoxBook.fromMap(map)).toList();
+
+		return books;
 	}
 
 	/// GET book information by book type
@@ -75,6 +77,19 @@ class BookModel {
 		return books;
 	}
 
+	/// GET book information by book type
+	Future<List<Book>> getBookByType(String bookType) async {
+		final db = await DbUtils.init();
+		final List<Map<String, dynamic>> bookMaps = await db.query(
+			DbUtils.bookDb,
+			where: 'bookType = ?', // This is your WHERE clause
+			whereArgs: [bookType], // Replace with the actual bookType value
+		);
+
+		List<Book> books = bookMaps.map((bookMap) => Book.fromMap(bookMap)).toList();
+
+		return books;
+	}
 
 	/// GET favourited book
 	Future<List<LibrivoxBook>> getFavouritedBooks(int isFavourited) async {

@@ -39,28 +39,31 @@ class _UploadBookPageState extends State<UploadBookPage> {
 			String contentSummary = await TxtSummarizerService.summarizeTextGPT(widget.text);
 
 			// generate the audio book for current context
-			String audioBookPath =
-			await createAudioBook(widget.text, _titleController.text);
+			String audioBookPath = await createAudioBook(widget.text, _titleController.text);
 
 			// Store the book on firestore
 			await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary, audioBookPath, 'UPLOAD');
 
 			// create new book object
-			Book book = Book(bookId: bookId, title: _titleController.text, author: _authorController.text);
+			Book book = Book(bookId: bookId, title: _titleController.text, author: _authorController.text, audioFileLocation: audioBookPath, bookType: 'UPLOAD');
 
-			// set the book status to upload
+			// update book information to match LibrivoxBook
 			book.bookType = 'UPLOAD';
+			book.textFileLocation = contentSummary;
+			book.audioFileLocation = audioBookPath;
 			book.imageFileLocation = 'lib/assets/books/Default/textFile.png';
 
+			// print('${book.bookType}, ${book.textFileLocation}, ${book.audioFileLocation}, ${book.imageFileLocation}');
+
 			// store the book in sqlite
-			await BookModel().insertBook(book);
+			await BookModel().insertAPIBook(book.toLibrivoxBook());
 
 			// Clear the text fields
 			_titleController.clear();
 			_authorController.clear();
 			_summaryController.clear();
 		}
-		_navigateToMainPage(context);
+		if (mounted) _navigateToMainPage(context);
 		widget.onUpload!();
 	}
 

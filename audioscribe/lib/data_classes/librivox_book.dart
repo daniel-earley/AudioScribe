@@ -18,6 +18,7 @@ class LibrivoxBook {
 	String bookType;
 	int isFavourite;
 	int isBookmark;
+	String audioFileLocation;
 
 	LibrivoxBook({
 		required this.id,
@@ -35,6 +36,7 @@ class LibrivoxBook {
 		this.bookType = 'API',
 		this.isFavourite = 0,
 		this.isBookmark = 0,
+		this.audioFileLocation = ''
 	});
 
 	Book toBook({int audioFileIndex = 0}) {
@@ -64,7 +66,8 @@ class LibrivoxBook {
 			'imageFileLocation': imageFileLocation,
 			'bookType': bookType,
 			'isFavourite': isFavourite,
-			'isBookmark': isBookmark
+			'isBookmark': isBookmark,
+			'audioFileLocation': audioFileLocation,
 		};
 	}
 
@@ -82,8 +85,10 @@ class LibrivoxBook {
 			downloads: map['downloads'] ?? 0,
 			size: map['size'] ?? 0,
 			imageFileLocation: map['imageFileLocation'] ?? '',
+			bookType: map['bookType'] ?? '',
 			isFavourite: map['isFavourite'] ?? 0,
-			isBookmark: map['isBookmark'] ?? 0
+			isBookmark: map['isBookmark'] ?? 0,
+			audioFileLocation: map['audioFileLocation'] ?? '',
 		);
 	}
 
@@ -111,6 +116,9 @@ class LibrivoxBook {
 			imageFileLocation: imageUrl
 		);
 	}
+
+
+
 
 
 }

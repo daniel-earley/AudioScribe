@@ -18,14 +18,17 @@ class Book {
         id: bookId,
         title: title,
         author: author,
+        imageFileLocation: imageFileLocation,
         date: '',
         identifier: '',
         runtime: '',
         description: textFileLocation,
+        audioFileLocation: audioFileLocation,
         rating: 0.0,
         numberReviews: 0,
         downloads: 0,
-        size: 0
+        size: 0,
+        bookType: bookType
     );
   }
 

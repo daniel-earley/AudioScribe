@@ -2,8 +2,10 @@ import 'package:audioscribe/components/BookCard.dart';
 import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/book_grid.dart';
 import 'package:audioscribe/components/search_bar.dart';
+import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/data_classes/librivox_book.dart';
 import 'package:audioscribe/pages/book_details.dart';
+import 'package:audioscribe/pages/details_page.dart';
 import 'package:audioscribe/services/internet_archive_service.dart';
 import 'package:audioscribe/utils/database/book_model.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
@@ -105,6 +107,16 @@ class _CollectionPageState extends State<CollectionPage> {
 			)));
 	}
 
+	void bookSelected(LibrivoxBook book, String? audioBookPath) {
+		Navigator.of(context).push(
+			CustomRoute.routeTransitionBottom(
+				DetailsPage(book: book, audioBookPath: audioBookPath, onChange: () async {
+					fetchUserBooks();
+				})
+			)
+		);
+	}
+
 	/// function to fetch users books
 	Future<void> fetchUserBooks() async {
 		try {
@@ -112,11 +124,16 @@ class _CollectionPageState extends State<CollectionPage> {
 			BookModel bookModel = BookModel();
 
 			// get books that are bookmarked or favourited, uploaded, (or currently listening to?)
-			List<Map<String, dynamic>> uploadedBooks = await bookModel.getCollectionBooks();
-			print('uploaded books: ${uploadedBooks.length} ${uploadedBooks.map((item) => '${item['title']}')}');
+			List<LibrivoxBook> uploadedBooks = await bookModel.getBooksByType('UPLOAD');
+
+			// get books that are liked by the user (bookmarked or favourited)
+			List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
+
+			// combine books
+			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...likedBooks].map((book) => book.toMap()).toList();
 
 			setState(() {
-			  	books = uploadedBooks;
+			  	books = combinedBooks;
 			});
 		} catch (e) {
 			print("Error fetching user books: $e");
@@ -139,18 +156,29 @@ class _CollectionPageState extends State<CollectionPage> {
 				var book = books[index];
 				return GestureDetector(
 					onTap: () async {
-						ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
-						List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(book['identifier']);
-						_onBookSelected(
-							book['id'],
-							book['title'],
-							book['author'],
-							book['imageFileLocation'],
-							book['description'],
-							'app',
-							'',
-							audioFiles: audioFilesList
+						bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+						bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
+
+						LibrivoxBook selectedBook = LibrivoxBook(
+							id: book['id'],
+							title: book['title'],
+							author: book['author'],
+							imageFileLocation: book['imageFileLocation'] ?? book['image'],
+							date: DateTime.now().toLocal().toString(),
+							identifier: book['identifier'] ?? '',
+							runtime: book['runtime'] ?? '',
+							description: book['description'] ?? book['summary'],
+							rating: book['rating'] ?? 0.0,
+							numberReviews: book['numberReviews'] ?? 0,
+							downloads: book['downloads'] ?? 0,
+							size: book['size'] ?? 0,
+							bookType: book['bookType'],
+							isBookmark: isBookmark == true ? 1: 0,
+							isFavourite: isFavourite == true ? 1: 0
 						);
+
+
+						bookSelected(selectedBook, book['audioFileLocation'] ?? '');
 					},
 					child: Container(
 						padding: const EdgeInsets.all(6.0),
@@ -161,7 +189,8 @@ class _CollectionPageState extends State<CollectionPage> {
 									child: BookCard(
 										bookTitle: book['title'],
 										bookAuthor: book['author'],
-										bookImage: book['imageFileLocation']),
+										bookImage: book['imageFileLocation']
+									),
 								)
 							],
 						),

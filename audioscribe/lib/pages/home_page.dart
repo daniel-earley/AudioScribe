@@ -182,8 +182,8 @@ class _HomePageState extends State<HomePage> {
 		// fetch books from firestore that are uploaded
 		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
 
-		List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
-		print('${bookss.map((item) => '${item.bookType}')}');
+		// List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
+		// print('${bookss.map((item) => '${item.bookType}')}');
 
 		// transform for proper usage
 		List<Map<String, dynamic>> transformedBooks = books.map((book) {
@@ -193,8 +193,7 @@ class _HomePageState extends State<HomePage> {
 				'author': book['author'] ?? 'Unknown author',
 				'image': 'lib/assets/books/Default/textFile.png',
 				'summary': book['summary'] ?? 'No summary available',
-				'bookType':
-				'user', // this function specifically fetches top row books 'userBooks'
+				'bookType': 'UPLOAD',
 				'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
 			};
 		}).toList();
