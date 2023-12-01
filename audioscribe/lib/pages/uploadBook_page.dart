@@ -28,9 +28,13 @@ class _UploadBookPageState extends State<UploadBookPage> {
 	final _titleController = TextEditingController();
 	final _authorController = TextEditingController();
 	final _summaryController = TextEditingController();
+	bool _isLoading = false;
 
 	Future<void> _submitBook() async {
 		if (_formKey.currentState!.validate()) {
+			setState(() {
+			  	_isLoading = true;
+			});
 			// If the form is valid, add the book to Firestore
 			int bookId = DateTime.now().millisecondsSinceEpoch;
 
@@ -62,13 +66,13 @@ class _UploadBookPageState extends State<UploadBookPage> {
 			_titleController.clear();
 			_authorController.clear();
 			_summaryController.clear();
-		}
-		if (mounted) _navigateToMainPage(context);
-		widget.onUpload!();
-	}
 
-	void _navigateToMainPage(BuildContext context) {
-		Navigator.of(context).pop();
+			setState(() {
+			  	_isLoading = false;
+			});
+		}
+		if (mounted) Navigator.of(context).pop();
+		widget.onUpload!();
 	}
 
 	@override
@@ -123,11 +127,13 @@ class _UploadBookPageState extends State<UploadBookPage> {
 							},
 						),
 						ElevatedButton(
-							onPressed: _submitBook,
-							child: Text('Submit'),
+							onPressed: _isLoading ? null : _submitBook,
 							style: ButtonStyle(
-								backgroundColor: MaterialStateProperty.all(Color(0xFF524178)),
+								backgroundColor: MaterialStateProperty.all(const Color(0xFF524178)),
 							),
+							child: _isLoading
+							? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+							: const Text('Submit'),
 						),
 					],
 				),
