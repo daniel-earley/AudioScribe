@@ -6,9 +6,10 @@ import 'package:permission_handler/permission_handler.dart';
 
 // 1. open and read text file -> read_json.dart has a read text file now
 // 2. use flutterTts.synthesizeToFile to create an audio file from input text
-// Need to properly credit this dude: https://stackoverflow.com/a/69879595
+
 FlutterTts flutterTts = FlutterTts();
 
+// Iftikhar, A (Nov. 8, 2021) Answer to Is there any way to save flutter_tts file to firebase storage?[Source Code]. https://stackoverflow.com/a/69879595
 Future createAudioBook(String text, String name) async {
   // Setup flutter tts
   await flutterTts.setLanguage("en-US");
@@ -19,19 +20,11 @@ Future createAudioBook(String text, String name) async {
     {"name": "en-us-x-tpf-local", "locale": "en-US"},
   );
 
-  // Request Perms - don't need yet
-  // if (Platform.isAndroid) {
-  //   var status = await Permission.storage.status;
-  //   if (!status.isGranted) {
-  //     await Permission.storage.request();
-  //   }
-  // }
-
   // Get the external storage directory
   Directory? externalDirectory = await getExternalStorageDirectory();
   String? externalPath = externalDirectory?.path;
 
-  // Create a directory called "AudioScribeAudioBooks" inside the external directory
+  // Create a directory called "AudioScribeAudioBooks"
   String audioBookDirectoryPath = "$externalPath/AudioScribeAudioBooks";
   Directory audioBookDirectory = Directory(audioBookDirectoryPath);
 
