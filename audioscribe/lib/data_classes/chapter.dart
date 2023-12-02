@@ -7,11 +7,8 @@ class Chapter {
 
 Map<int, Chapter> chapters = {};
 // Thanks to Chatgpt for helping with Regex
-RegExp chapterRegex = RegExp(r"Chapter (\d+)(:?\s*(.*?))?\b");
+RegExp chapterRegex = RegExp(r"Chapter (\d+)(.*?)(?=\r?\n|$)");
 
-// Need to add the following things
-// 1. If no chapter titles found - set to chapter <number>
-// 2. If no chapters found - either ignore it (so just return null) or set the whole thing to 1 chapter
 parseChapters(String text) {
   Iterable<RegExpMatch> matches = chapterRegex.allMatches(text);
 
@@ -19,11 +16,11 @@ parseChapters(String text) {
     var match = matches.elementAt(i);
     int chapterNumber = int.parse(match.group(1)!);
 
-    // Use the provided title or default to "Chapter <number>" if no title is given
-    String? chapterTitle = match.group(3)?.trim();
-    if (chapterTitle == null || chapterTitle.isEmpty) {
-      chapterTitle = "Chapter $chapterNumber";
-    }
+    // Check for a title after the Chapter <number>
+    // match.group(2)!.trim() should grab everything after Chapter <n> and remove whitespace
+    String titlePart = match.group(2)!.trim();
+    String chapterTitle =
+        titlePart.isEmpty ? "Chapter $chapterNumber" : titlePart;
 
     int start = match.end;
     int end =
