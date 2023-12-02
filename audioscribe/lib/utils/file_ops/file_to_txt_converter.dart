@@ -5,7 +5,8 @@ import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'dart:async';
 import 'dart:io';
 
-Future<void> convertFileToTxt(String inputFilePath, String outputDirectory) async {
+Future<void> convertFileToTxt(
+    String inputFilePath, String outputDirectory) async {
   final json = jsonDecode(await getApiKey('fileToText'));
   final config = Configuration.fromJson(json);
   final wordsApi = WordsApi(config);
@@ -13,6 +14,7 @@ Future<void> convertFileToTxt(String inputFilePath, String outputDirectory) asyn
   final doc = (await File(inputFilePath).readAsBytes()).buffer.asByteData();
   final request = ConvertDocumentRequest(doc, 'txt');
   final convert = await wordsApi.convertDocument(request);
-  final convertedFile = File('$outputDirectory/${inputFilePath.split('/').last.split('.').first}.txt');
+  final convertedFile = File(
+      '$outputDirectory/${inputFilePath.split('/').last.split('.').first}.txt');
   convertedFile.writeAsBytes(convert.buffer.asInt8List());
 }
