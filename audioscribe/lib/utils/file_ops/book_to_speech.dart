@@ -44,7 +44,10 @@ Future createAudioBook(String text, String name) async {
       print("File created: $fileNameWithPath");
 
       // Save metadata
-      Map<String, dynamic> audioBookJson = {"title": name};
+      Map<String, dynamic> audioBookJson = {
+        "title": name,
+        "audioFilePath": fileNameWithPath
+      };
 
       // Convert the JSON object to a string
       String jsonString = jsonEncode(audioBookJson);
@@ -76,7 +79,7 @@ createChapters(
   chapters.forEach((number, chapter) async {
     String chapterNumber = "Chapter $number";
     String chapterFileName =
-        "$path/${chapterNumber}_${chapter.title}$fileExtension"
+        "$path/${chapterNumber}_${chapter.title.trim()}$fileExtension"
             .replaceAll(' ', '_');
 
     // Need this to finish before metadata is created
