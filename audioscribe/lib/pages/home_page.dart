@@ -97,12 +97,34 @@ class _HomePageState extends State<HomePage> {
 				'title': book.title,
 				'author': book.author,
 				'image': book.imageFileLocation,
-				'bookType': book.bookType
+				'bookType': book.bookType,
+				'identifier': book.identifier,
+				'runtime': book.runtime,
+				'description': book.description,
+				'rating': book.rating,
+				'numberReviews': 0,
+				'downloads': 0,
+				'size': 0,
+				'isBookmark': book.isBookmark,
+				'isFavourite': book.isFavourite,
+				'audioBookPath': book.audioFileLocation
 			}).toList(),
 		].map((book) => {
+			'id': book['id'],
 			'item': book['title'],
 			'image': book['image'],
-			'bookType': book['bookType']
+			'author': book['author'],
+			'bookType': book['bookType'],
+			'identifier': book['identifier'],
+			'runtime': book['runtime'],
+			'summary': book['description'] ?? book['summary'],
+			'rating': book['rating'],
+			'numberReviews': 0,
+			'downloads': 0,
+			'size': 0,
+			'isBookmark': book['isBookmark'],
+			'isFavourite': book['isFavourite'],
+			'audioBookPath': book['audioBookPath'] ?? book['audioFileLocation']
 		}).toList();
 
 		return Stack(

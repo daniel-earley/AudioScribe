@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/image_container.dart';
+import 'package:audioscribe/data_classes/librivox_book.dart';
+import 'package:audioscribe/pages/details_page.dart';
+import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:flutter/material.dart';
 
 class AppSearchBar extends StatefulWidget {
@@ -19,7 +23,7 @@ class AppSearchBar extends StatefulWidget {
 }
 
 class _AppSearchBarState extends State<AppSearchBar> {
-	GlobalKey _searchBarKey = GlobalKey();
+	final GlobalKey _searchBarKey = GlobalKey();
 	final FocusNode _focusNode = FocusNode();
 	final TextEditingController _controller = TextEditingController();
 	List<Map<String, dynamic>> filteredItems = [];
@@ -55,6 +59,14 @@ class _AppSearchBarState extends State<AppSearchBar> {
 		});
 	}
 
+	void bookSelected(LibrivoxBook book, String? audioBookPath) {
+		Navigator.of(context).push(
+			CustomRoute.routeTransitionBottom(
+				DetailsPage(book: book, audioBookPath: audioBookPath, onChange: () {})
+			)
+		);
+	}
+
 	void _showOverlay(BuildContext context) {
 		final RenderBox renderBox = _searchBarKey.currentContext?.findRenderObject() as RenderBox;
 		final size = renderBox.size;
@@ -79,14 +91,41 @@ class _AppSearchBarState extends State<AppSearchBar> {
 								itemCount: filteredItems.length,
 								itemBuilder: (context, index) {
 									Map<String, dynamic> book = filteredItems[index];
+									print('book $book.');
 
-									File imageFile = File(filteredItems[index]['image']);
+									// File imageFile = File(filteredItems[index]['image']);
 									return Padding(
 										padding: const EdgeInsets.all(10.0),
 										child: GestureDetector(
-											onTap: () {
-												print('${filteredItems.length} $index');
-												print('clicked item: ${filteredItems[index]['image']} ${filteredItems[index]['item']}');
+											onTap: () async {
+												var book = filteredItems[index];
+
+												print('book $book');
+
+												// get book mark status
+												bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+												bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
+
+												LibrivoxBook selectedBook = LibrivoxBook(
+													id: book['id'],
+													title: book['item'],
+													author: book['author'],
+													imageFileLocation: book['image'],
+													bookType: book['bookType'],
+													date: DateTime.now().toLocal().toString(),
+													identifier: '',
+													runtime: '',
+													description: book['summary'],
+													rating: 0.0,
+													numberReviews: 0,
+													downloads: 0,
+													size: 0,
+													isBookmark: isBookmark == true ? 1: 0,
+													isFavourite: isFavourite == true ? 1: 0
+												);
+
+												// print("audio book path: ${book['audioBookPath']}");
+												bookSelected(selectedBook, book['audioBookPath']);
 											},
 											child: Row(
 												crossAxisAlignment: CrossAxisAlignment.center,

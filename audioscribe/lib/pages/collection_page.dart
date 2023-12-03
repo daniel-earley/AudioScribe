@@ -32,6 +32,8 @@ class _CollectionPageState extends State<CollectionPage> {
 	}
 
 	Widget _buildCollectionPage(BuildContext context) {
+
+
 		return Stack(
 			children: [
 				SafeArea(
@@ -41,10 +43,23 @@ class _CollectionPageState extends State<CollectionPage> {
 								// Search bar
 								AppSearchBar(hintText: "search",
 									allItems: books.map((book) {
+									print('print $book');
 									return {
+										'id': book['id'],
 										'item': book['title'],
 										'image': book['imageFileLocation'],
-										'book': book['bookType']
+										'author': book['author'],
+										'bookType': book['bookType'],
+										'identifier': book['identifier'],
+										'runtime': book['runtime'],
+										'summary': book['description'] ?? book['summary'],
+										'rating': book['rating'],
+										'numberReviews': 0,
+										'downloads': 0,
+										'size': 0,
+										'isBookmark': book['isBookmark'],
+										'isFavourite': book['isFavourite'],
+										'audioBookPath': book['audioBookPath'] ?? book['audioFileLocation']
 									};
 								}).toList()
 								),
