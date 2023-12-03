@@ -153,7 +153,7 @@ class _DetailsPageState extends State<DetailsPage> {
 								children: [
 									// book image //
 									Center(
-										child: ImageContainer(imagePath: widget.book.imageFileLocation)
+										child: ImageContainer(imagePath: widget.book.imageFileLocation, bookType: widget.book.bookType, size: 72.0)
 									),
 
 									// book title //

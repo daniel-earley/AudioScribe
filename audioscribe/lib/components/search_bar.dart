@@ -94,7 +94,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
 													SizedBox(
 														 width: 50,
 														 height: 70,
-														 child: ImageContainer(imagePath: filteredItems[index]['image']),
+														 child: ImageContainer(imagePath: filteredItems[index]['image'],bookType: filteredItems[index]['bookType'],),
 													),
 													Flexible(
 														child: Padding(

@@ -38,24 +38,11 @@ class BookCard extends StatelessWidget {
 				},
 			);
 		} else if (isAssetImage) {
-			print('CURRENTLY SELECTED BOOK: $bookTitle $bookType');
 			imageWidget = Icon(
 				bookType == 'AUDIO' ? Icons.music_note : Icons.notes,
 				size: 42.0,
 				color: AppColors.primaryAppColorBrighter,
 			);
-			// ? const Icon(Icons.music_note, size: 42.0, )
-			// : const Icon(Icons.notes, size: 42.0);
-			// imageWidget = Image.asset(
-			// 	bookImage,
-			// 	fit: BoxFit.fill,
-			// 	errorBuilder:
-			// 		(BuildContext context, Object error, StackTrace? stackTrace) {
-			// 		print('error loading asset image: $bookImage');
-			// 		// Handle network image loading error
-			// 		return const Icon(Icons.error);
-			// 	},
-			// );
 		} else {
 			File imageFile = File(bookImage);
 			imageWidget = Image.file(

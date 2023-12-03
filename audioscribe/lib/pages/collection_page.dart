@@ -39,11 +39,12 @@ class _CollectionPageState extends State<CollectionPage> {
 						child: Column(
 							children: [
 								// Search bar
-								AppSearchBar(hintText: "search", allItems: books.map((book) {
-									print(book['imageFileLocation']);
+								AppSearchBar(hintText: "search",
+									allItems: books.map((book) {
 									return {
 										'item': book['title'],
-										'image': book['imageFileLocation']
+										'image': book['imageFileLocation'],
+										'book': book['bookType']
 									};
 								}).toList()
 								),
@@ -152,7 +153,8 @@ class _CollectionPageState extends State<CollectionPage> {
 									child: BookCard(
 										bookTitle: book['title'],
 										bookAuthor: book['author'],
-										bookImage: book['imageFileLocation']
+										bookImage: book['imageFileLocation'],
+										bookType: book['bookType']
 									),
 								)
 							],
