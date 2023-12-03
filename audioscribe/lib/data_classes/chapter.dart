@@ -21,6 +21,7 @@ parseChapters(String text) {
     String titlePart = match.group(2)!.trim();
     String chapterTitle =
         titlePart.isEmpty ? "Chapter $chapterNumber" : titlePart;
+    chapterTitle = chapterTitle.replaceFirst(": ", "");
 
     int start = match.end;
     int end =
