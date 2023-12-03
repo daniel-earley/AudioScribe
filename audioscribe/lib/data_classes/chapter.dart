@@ -33,3 +33,10 @@ parseChapters(String text) {
   }
   return chapters;
 }
+
+bool checkChapters(String text) {
+  // True if there are chapters, false if none are found
+  Iterable<RegExpMatch> matches = chapterRegex.allMatches(text);
+
+  return matches.isNotEmpty;
+}
