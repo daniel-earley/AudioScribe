@@ -27,8 +27,9 @@ parseChapters(String text) {
         i == matches.length - 1 ? text.length : matches.elementAt(i + 1).start;
 
     // Audiobooks usually state the chapter before reading the content, newline for a short pause before reading the rest
-    String chapterContent =
-        chapterTitle + "\n" + text.substring(start, end).trim();
+    String chapterContent = titlePart.isEmpty
+        ? "$chapterTitle\n${text.substring(start, end).trim()}"
+        : "Chapter $chapterNumber: $chapterTitle\n${text.substring(start, end).trim()}";
 
     chapters[chapterNumber] =
         Chapter(title: chapterTitle, contents: chapterContent);
