@@ -20,273 +20,280 @@ import 'package:flutter/material.dart';
 import '../utils/file_ops/file_to_txt_converter.dart';
 
 class MainPage extends StatefulWidget {
-  @override
-  _MainPageState createState() => _MainPageState();
+	@override
+	_MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0;
-  int homePageKey = 0;
+	int _selectedIndex = 0;
+	int homePageKey = 0;
 
-  void refreshHomePage() {
-    setState(() {
-      homePageKey++;
-    });
-  }
+	void refreshHomePage() {
+		setState(() {
+			homePageKey++;
+		});
+	}
 
-  // list of widgets
-  List<Widget> get _widgetOptions => [
-    HomePage(key: ValueKey('HomePage$homePageKey')),
-    CollectionPage(key: ValueKey('CollectionPage')),
-    SettingsPage(key: ValueKey('SettingsPage'))
-  ];
+	// list of widgets
+	List<Widget> get _widgetOptions => [
+		HomePage(key: ValueKey('HomePage$homePageKey')),
+		CollectionPage(key: ValueKey('CollectionPage')),
+		SettingsPage(key: ValueKey('SettingsPage'))
+	];
 
-  /// Used to navigate to different screens/pages
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+	/// Used to navigate to different screens/pages
+	void _onItemTapped(int index) {
+		setState(() {
+			_selectedIndex = index;
+		});
+	}
 
-  // sign user out
-  void signOut() async {
-    await FirebaseAuth.instance.signOut();
-  }
+	// sign user out
+	void signOut() async {
+		await FirebaseAuth.instance.signOut();
+	}
 
-  String currentPageHeaderTitle() {
-    String? currentUser =
-        FirebaseAuth.instance.currentUser?.email?.split('@')[0];
-    switch (_selectedIndex) {
-      case 0:
-        return '${currentUser?[0].toUpperCase()}${currentUser?.substring(1).toLowerCase()}';
-      case 1:
-        return 'Your collection';
-      case 2:
-        return 'Settings';
-      default:
-        return 'AudioScribe';
-    }
-  }
+	String currentPageHeaderTitle() {
+		String? currentUser =
+		FirebaseAuth.instance.currentUser?.email?.split('@')[0];
+		switch (_selectedIndex) {
+			case 0:
+				return '${currentUser?[0].toUpperCase()}${currentUser?.substring(1).toLowerCase()}';
+			case 1:
+				return 'Your collection';
+			case 2:
+				return 'Settings';
+			default:
+				return 'AudioScribe';
+		}
+	}
 
-  Future showModalOptions() {
-    return showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext context) {
-          return Container(
-            decoration: const BoxDecoration(
-                color: Color(0xFF242424),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15.0),
-                  topRight: Radius.circular(15.0),
-                )),
-            child: SizedBox(
-                height: 200,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // upload button
-                      PopUpCircularButton(
-                          buttonIcon: const Icon(Icons.file_upload,
-                              color: Colors.white, size: 35.0),
-                          onTap: _uploadBook,
-                          label: 'Upload'),
+	Future showModalOptions() {
+		return showModalBottomSheet(
+			context: context,
+			backgroundColor: Colors.transparent,
+			builder: (BuildContext context) {
+				return Container(
+					decoration: const BoxDecoration(
+						color: Color(0xFF242424),
+						borderRadius: BorderRadius.only(
+							topLeft: Radius.circular(15.0),
+							topRight: Radius.circular(15.0),
+						)),
+					child: SizedBox(
+						height: 200,
+						child: Row(
+							mainAxisAlignment: MainAxisAlignment.center,
+							mainAxisSize: MainAxisSize.min,
+							children: [
+								// upload button
+								PopUpCircularButton(
+									buttonIcon: const Icon(Icons.file_upload,
+										color: Colors.white, size: 35.0),
+									onTap: _uploadBook,
+									label: 'Upload'),
 
-                      // horizontal spacing
-                      const SizedBox(width: 60.0),
+								// horizontal spacing
+								const SizedBox(width: 60.0),
 
-                      // camera button
-                      PopUpCircularButton(
-                          buttonIcon: const Icon(Icons.camera,
-                              color: Colors.white, size: 35.0),
-                          onTap: () => _navigateToCameraScreen(context),
-                          label: 'Camera'),
-                    ])),
-          );
-        });
-  }
+								// camera button
+								PopUpCircularButton(
+									buttonIcon: const Icon(Icons.camera,
+										color: Colors.white, size: 35.0),
+									onTap: () => _navigateToCameraScreen(context),
+									label: 'Camera'),
+							])),
+				);
+			});
+	}
 
-  Future<void> _uploadBook() async {
-    // Use FilePicker to let the user select a text file
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['txt', 'pdf'],
-    );
+	Future<void> _uploadBook() async {
+		// Use FilePicker to let the user select a text file
+		FilePickerResult? result = await FilePicker.platform.pickFiles(
+			type: FileType.custom,
+			allowedExtensions: ['txt', 'pdf', 'mp3'],
+		);
 
-    if (result != null) {
-      // Get the selected file
-      PlatformFile file = result.files.first;
-      String fileContent = '';
-      if (path.extension(file.path!) == ".txt") {
-        fileContent = await File(file.path!).readAsString();
-      } else {
-        // PDF book found
-        // Create a directory called "AudioScribeTextBooks" inside the external directory
-        Directory? externalDirectory = await getExternalStorageDirectory();
-        String? externalPath = externalDirectory?.path;
-        String BookDirectoryPath = "$externalPath/AudioScribeTextBooks";
-        Directory BookDirectory = Directory(BookDirectoryPath);
+		if (result != null) {
+			// Get the selected file
+			PlatformFile file = result.files.first;
+			String fileContent = '';
 
-        if (!await BookDirectory.exists()) {
-          await BookDirectory.create(
-              recursive:
-                  true); // This will create the directory if it doesn't exist
-        }
-        String fileName = path.basenameWithoutExtension(file.name);
-        await convertFileToTxt(file.path!, '$BookDirectoryPath');
-        fileContent =
-            await File('$BookDirectoryPath/$fileName.txt').readAsString();
-      }
+			// handle text files
+			if (path.extension(file.path!) == ".txt") {
+				fileContent = await File(file.path!).readAsString();
 
-      // Go to upload page
-      _navigateToUploadBookPage(context, fileContent);
-    } else {
-      // User canceled the picker
-      print("No file selected");
-    }
-  }
+			// handle pdf files
+			} else if (path.extension(file.path!) == '.pdf') {
+				// PDF book found
+				// Create a directory called "AudioScribeTextBooks" inside the external directory
+				Directory? externalDirectory = await getExternalStorageDirectory();
+				String? externalPath = externalDirectory?.path;
+				String BookDirectoryPath = "$externalPath/AudioScribeTextBooks";
+				Directory BookDirectory = Directory(BookDirectoryPath);
 
-  void _navigateToCameraScreen(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => CameraScreen(),
-    ));
-  }
+				if (!await BookDirectory.exists()) {
+					await BookDirectory.create(
+						recursive:
+						true); // This will create the directory if it doesn't exist
+				}
+				String fileName = path.basenameWithoutExtension(file.name);
+				await convertFileToTxt(file.path!, BookDirectoryPath);
+				fileContent = await File('$BookDirectoryPath/$fileName.txt').readAsString();
 
-  void _navigateToUploadBookPage(BuildContext context, String text) {
-    Navigator.push( 
-      context,
-      MaterialPageRoute(builder: (context) => UploadBookPage(text: text, onUpload: () {
-        print("new book got uploaded");
-        refreshHomePage();
-      })))
-        .then((value) {
-          print("back to main page");
-          setState(() {
-            _selectedIndex = 0;
-          });
-      }
-    );
-  }
+			// handle mp3 files
+			} else if (path.extension(file.path!) == '.mp3') {
+				fileContent = file.path!;
+			}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AudioScribe'),
-        backgroundColor: AppColors.primaryAppColor,
-        actions: [
-          Padding(padding: const EdgeInsets.only(right: 10.0),
-            child:
-            PopupMenuButton<String>(
-              onSelected: (String value) {
-                if (value == 'logout') {
-                  // perform logout
-                  signOut();
-                } else if (value == 'setting') {
-                  // navigate to settings page
-                  Navigator.of(context).push(CustomRoute.routeTransitionBottom(const SettingsPage()));
-                }
-              },
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                const PopupMenuItem<String>(
-                    value: 'setting',
-                    child: Row(
-                        children: [
-                          Icon(Icons.settings, color: Colors.white),
-                          SizedBox(width: 10.0),
-                          Text('Settings', style: TextStyle(color: Colors.white))
-                        ]
-                    )
-                ),
-                const PopupMenuItem<String>(
-                    value: 'logout',
-                    child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.white),
-                          SizedBox(width: 10.0),
-                          Text('Logout', style: TextStyle(color: Colors.white))
-                        ]
-                    )
-                ),
-              ],
-              icon: const Icon(Icons.account_circle, size: 42.0, color: Colors.white),
-            )
-          )
-        ],
-      ),
-      backgroundColor: const Color(0xFF303030),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                // AppHeader(
-                //   headerText: currentPageHeaderTitle(),
-                //   onTap: () => _onItemTapped(2),
-                //   currentScreen: _selectedIndex,
-                //   isSwitched: _switchOn,
-                //   onToggle: _toggleSwitch,
-                // ),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: _widgetOptions.elementAt(_selectedIndex),
-                    // IndexedStack(
-                    // 	index: _selectedIndex,
-                    // 	children: _widgetOptions,
-                    // )
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-      floatingActionButton: _buildBottomActionButton(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _buildBottomBar(context),
-    );
-  }
+			// Go to upload page
+			if (mounted) _navigateToUploadBookPage(context, fileContent);
+		} else {
+			// User canceled the picker
+			print("No file selected");
+		}
+	}
 
-  Widget _buildBottomActionButton(BuildContext context) {
-    return FloatingActionButton(
-      backgroundColor: const Color(0xFF524178),
-      onPressed: showModalOptions,
-      child: const Icon(Icons.add, size: 35.0),
-    );
-  }
+	void _navigateToCameraScreen(BuildContext context) {
+		Navigator.of(context).push(MaterialPageRoute(
+			builder: (context) => CameraScreen(),
+		));
+	}
 
-  Widget _buildBottomBar(BuildContext context) {
-    return BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        height: 40.0,
-        color: Colors.black54,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Spacer(),
-            IconButton(
-                onPressed: () => _onItemTapped(0),
-                icon: Icon(Icons.home,
-                    size: 30.0,
-                    color: _selectedIndex == 0
-                        ? const Color(0xFF9260FC)
-                        : Colors.white)),
-            const Spacer(),
-            const Spacer(),
-            const SizedBox(width: 48),
-            IconButton(
-              onPressed: () => _onItemTapped(1),
-              icon: Icon(Icons.bookmark,
-                  size: 30.0,
-                  color: _selectedIndex == 1
-                      ? const Color(0xFF9260FC)
-                      : Colors.white),
-            ),
-            const Spacer(),
-          ],
-        ));
-  }
+	void _navigateToUploadBookPage(BuildContext context, String text) {
+		Navigator.push(
+			context,
+			MaterialPageRoute(builder: (context) => UploadBookPage(text: text, onUpload: () {
+				print("new book got uploaded");
+				refreshHomePage();
+			})))
+			.then((value) {
+			print("back to main page");
+			setState(() {
+				_selectedIndex = 0;
+			});
+		}
+		);
+	}
+
+	@override
+	Widget build(BuildContext context) {
+		return Scaffold(
+			appBar: AppBar(
+				title: const Text('AudioScribe'),
+				backgroundColor: AppColors.primaryAppColor,
+				actions: [
+					Padding(padding: const EdgeInsets.only(right: 10.0),
+						child:
+						PopupMenuButton<String>(
+							onSelected: (String value) {
+								if (value == 'logout') {
+									// perform logout
+									signOut();
+								} else if (value == 'setting') {
+									// navigate to settings page
+									Navigator.of(context).push(CustomRoute.routeTransitionBottom(const SettingsPage()));
+								}
+							},
+							itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+								const PopupMenuItem<String>(
+									value: 'setting',
+									child: Row(
+										children: [
+											Icon(Icons.settings, color: Colors.white),
+											SizedBox(width: 10.0),
+											Text('Settings', style: TextStyle(color: Colors.white))
+										]
+									)
+								),
+								const PopupMenuItem<String>(
+									value: 'logout',
+									child: Row(
+										children: [
+											Icon(Icons.logout, color: Colors.white),
+											SizedBox(width: 10.0),
+											Text('Logout', style: TextStyle(color: Colors.white))
+										]
+									)
+								),
+							],
+							icon: const Icon(Icons.account_circle, size: 42.0, color: Colors.white),
+						)
+					)
+				],
+			),
+			backgroundColor: const Color(0xFF303030),
+			body: Stack(
+				children: [
+					SafeArea(
+						child: Column(
+							children: [
+								// AppHeader(
+								//   headerText: currentPageHeaderTitle(),
+								//   onTap: () => _onItemTapped(2),
+								//   currentScreen: _selectedIndex,
+								//   isSwitched: _switchOn,
+								//   onToggle: _toggleSwitch,
+								// ),
+								Expanded(
+									child: AnimatedSwitcher(
+										duration: const Duration(milliseconds: 200),
+										child: _widgetOptions.elementAt(_selectedIndex),
+										// IndexedStack(
+										// 	index: _selectedIndex,
+										// 	children: _widgetOptions,
+										// )
+									),
+								)
+							],
+						),
+					)
+				],
+			),
+			floatingActionButton: _buildBottomActionButton(context),
+			floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+			bottomNavigationBar: _buildBottomBar(context),
+		);
+	}
+
+	Widget _buildBottomActionButton(BuildContext context) {
+		return FloatingActionButton(
+			backgroundColor: const Color(0xFF524178),
+			onPressed: showModalOptions,
+			child: const Icon(Icons.add, size: 35.0),
+		);
+	}
+
+	Widget _buildBottomBar(BuildContext context) {
+		return BottomAppBar(
+			shape: const CircularNotchedRectangle(),
+			notchMargin: 6.0,
+			height: 40.0,
+			color: Colors.black54,
+			child: Row(
+				mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+				children: [
+					const Spacer(),
+					IconButton(
+						onPressed: () => _onItemTapped(0),
+						icon: Icon(Icons.home,
+							size: 30.0,
+							color: _selectedIndex == 0
+								? const Color(0xFF9260FC)
+								: Colors.white)),
+					const Spacer(),
+					const Spacer(),
+					const SizedBox(width: 48),
+					IconButton(
+						onPressed: () => _onItemTapped(1),
+						icon: Icon(Icons.bookmark,
+							size: 30.0,
+							color: _selectedIndex == 1
+								? const Color(0xFF9260FC)
+								: Colors.white),
+					),
+					const Spacer(),
+				],
+			));
+	}
 }

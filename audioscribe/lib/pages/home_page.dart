@@ -180,7 +180,10 @@ class _HomePageState extends State<HomePage> {
 		String userId = getCurrentUserId();
 
 		// fetch books from firestore that are uploaded
-		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
+		List<Map<String, dynamic>> booksUpload = await getBooksForUser(userId, 'UPLOAD');
+		List<Map<String, dynamic>> booksAudio  = await getBooksForUser(userId, 'AUDIO');
+
+		List<Map<String, dynamic>> books = [...booksUpload, ...booksAudio];
 
 		// List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
 		// print('${bookss.map((item) => '${item.bookType}')}');
@@ -193,7 +196,7 @@ class _HomePageState extends State<HomePage> {
 				'author': book['author'] ?? 'Unknown author',
 				'image': 'lib/assets/books/Default/textFile.png',
 				'summary': book['summary'] ?? 'No summary available',
-				'bookType': 'UPLOAD',
+				'bookType': book['bookType'],
 				'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
 			};
 		}).toList();
@@ -277,6 +280,8 @@ class _HomePageState extends State<HomePage> {
 							onTap: () async {
 								var book = userBooks[index];
 
+								print('CURRENT BOOK TYPE ${book['bookType']}');
+
 								// get book mark status
 								bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
 								bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
@@ -315,7 +320,9 @@ class _HomePageState extends State<HomePage> {
 											child: BookCard(
 												bookTitle: userBooks[index]['title'],
 												bookAuthor: userBooks[index]['author'],
-												bookImage: userBooks[index]['image']),
+												bookImage: userBooks[index]['image'],
+												bookType: userBooks[index]['bookType']
+											),
 										)
 									],
 								)),

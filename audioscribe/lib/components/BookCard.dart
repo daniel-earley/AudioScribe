@@ -1,17 +1,20 @@
 import 'dart:io';
 
+import 'package:audioscribe/app_constants.dart';
 import 'package:flutter/material.dart';
 
 class BookCard extends StatelessWidget {
 	final String bookTitle;
 	final String bookImage;
 	final String bookAuthor;
+	String? bookType;
 
 	BookCard({
 		super.key,
 		required this.bookTitle,
 		required this.bookAuthor,
 		required this.bookImage,
+		this.bookType,
 	});
 
 	@override
@@ -35,16 +38,24 @@ class BookCard extends StatelessWidget {
 				},
 			);
 		} else if (isAssetImage) {
-			imageWidget = Image.asset(
-				bookImage,
-				fit: BoxFit.fill,
-				errorBuilder:
-					(BuildContext context, Object error, StackTrace? stackTrace) {
-					print('error loading asset image: $bookImage');
-					// Handle network image loading error
-					return const Icon(Icons.error);
-				},
+			print('CURRENTLY SELECTED BOOK: $bookTitle $bookType');
+			imageWidget = Icon(
+				bookType == 'AUDIO' ? Icons.music_note : Icons.notes,
+				size: 42.0,
+				color: AppColors.primaryAppColorBrighter,
 			);
+			// ? const Icon(Icons.music_note, size: 42.0, )
+			// : const Icon(Icons.notes, size: 42.0);
+			// imageWidget = Image.asset(
+			// 	bookImage,
+			// 	fit: BoxFit.fill,
+			// 	errorBuilder:
+			// 		(BuildContext context, Object error, StackTrace? stackTrace) {
+			// 		print('error loading asset image: $bookImage');
+			// 		// Handle network image loading error
+			// 		return const Icon(Icons.error);
+			// 	},
+			// );
 		} else {
 			File imageFile = File(bookImage);
 			imageWidget = Image.file(
@@ -61,7 +72,7 @@ class BookCard extends StatelessWidget {
 
 		return Container(
 			decoration: BoxDecoration(
-				borderRadius: BorderRadius.circular(10.0), color: Colors.white),
+				borderRadius: BorderRadius.circular(10.0), color: AppColors.secondaryAppColor),
 			clipBehavior: Clip.antiAlias,
 			child: GridTile(
 				footer: Container(
@@ -81,7 +92,7 @@ class BookCard extends StatelessWidget {
 							),
 
 							// Spacing
-							SizedBox(height: 10.0),
+							const SizedBox(height: 10.0),
 
 							// Book Title
 							Text(
@@ -94,6 +105,7 @@ class BookCard extends StatelessWidget {
 							)
 						],
 					)),
-				child: imageWidget));
+				child: imageWidget)
+		);
 	}
 }

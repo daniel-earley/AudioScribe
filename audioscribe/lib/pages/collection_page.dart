@@ -87,12 +87,13 @@ class _CollectionPageState extends State<CollectionPage> {
 
 			// get books that are bookmarked or favourited, uploaded, (or currently listening to?)
 			List<LibrivoxBook> uploadedBooks = await bookModel.getBooksByType('UPLOAD');
+			List<LibrivoxBook> audioBooks = await bookModel.getBooksByType("AUDIO");
 
 			// get books that are liked by the user (bookmarked or favourited)
 			List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
 
 			// combine books
-			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...likedBooks].map((book) => book.toMap()).toList();
+			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...audioBooks, ...likedBooks].map((book) => book.toMap()).toList();
 
 			setState(() {
 			  	books = combinedBooks;
