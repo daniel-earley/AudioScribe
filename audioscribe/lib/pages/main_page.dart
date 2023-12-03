@@ -26,19 +26,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  bool _switchOn = true;
+  int homePageKey = 0;
 
-  void _toggleSwitch(bool newValue) {
+  void refreshHomePage() {
     setState(() {
-      _switchOn = newValue;
+      homePageKey++;
     });
   }
 
   // list of widgets
-  final List<Widget> _widgetOptions = [
-    const HomePage(key: ValueKey('HomePage')),
-    const CollectionPage(key: ValueKey('CollectionPage')),
-    const SettingsPage(key: ValueKey('SettingsPage'))
+  List<Widget> get _widgetOptions => [
+    HomePage(key: ValueKey('HomePage$homePageKey')),
+    CollectionPage(key: ValueKey('CollectionPage')),
+    SettingsPage(key: ValueKey('SettingsPage'))
   ];
 
   /// Used to navigate to different screens/pages
@@ -154,9 +154,19 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _navigateToUploadBookPage(BuildContext context, String text) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => UploadBookPage(text: text),
-    ));
+    Navigator.push( 
+      context,
+      MaterialPageRoute(builder: (context) => UploadBookPage(text: text, onUpload: () {
+        print("new book got uploaded");
+        refreshHomePage();
+      })))
+        .then((value) {
+          print("back to main page");
+          setState(() {
+            _selectedIndex = 0;
+          });
+      }
+    );
   }
 
   @override
@@ -166,7 +176,7 @@ class _MainPageState extends State<MainPage> {
         title: const Text('AudioScribe'),
         backgroundColor: AppColors.primaryAppColor,
         actions: [
-          Padding(padding: EdgeInsets.only(right: 10.0),
+          Padding(padding: const EdgeInsets.only(right: 10.0),
             child:
             PopupMenuButton<String>(
               onSelected: (String value) {

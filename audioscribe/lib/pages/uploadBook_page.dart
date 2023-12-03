@@ -1,5 +1,6 @@
 import 'package:audioscribe/data_classes/book.dart';
 import 'package:audioscribe/data_classes/librivox_book.dart';
+import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/main_page.dart';
 import 'package:audioscribe/services/txt_summary_service.dart';
 import 'package:flutter/material.dart';
@@ -77,8 +78,12 @@ class _UploadBookPageState extends State<UploadBookPage> {
         _isLoading = false;
       });
     }
-    if (mounted) Navigator.of(context).pop();
-    widget.onUpload!();
+    if (mounted) {
+      // Navigator.of(context).pop();
+      // Navigator.pop(context, true);
+      Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
+      if (widget.onUpload != null) widget.onUpload!();
+    }
   }
 
   @override
