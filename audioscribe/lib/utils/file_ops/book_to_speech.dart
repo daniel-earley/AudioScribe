@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:audioscribe/utils/file_ops/file_to_txt_converter.dart';
+import 'package:audioscribe/utils/file_ops/make_directory.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -22,53 +23,87 @@ Future createAudioBook(String text, String name) async {
     {"name": "en-us-x-tpf-local", "locale": "en-US"},
   );
 
-  // Get the external storage directory
-  Directory? externalDirectory = await getExternalStorageDirectory();
-  String? externalPath = externalDirectory?.path;
-
-  // Create a directory called "AudioScribeAudioBooks/<book title>" with no spaces
   String audioBookDirectoryPath =
-      "$externalPath/AudioScribeAudioBooks/$name".replaceAll(' ', '_');
-  Directory audioBookDirectory = Directory(audioBookDirectoryPath);
-
-  if (!await audioBookDirectory.exists()) {
-    await audioBookDirectory.create(
-        recursive: true); // This will create the directory if it doesn't exist
-  }
+      await createNewDirectory("AudioScribeAudioBooks", name);
 
   // Create filename with full path
   String fileExtension = Platform.isAndroid ? ".wav" : ".caf";
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Check for chapters
+  if (checkChapters(text)) {
+    // Chapters are found
+    createChapters(text, name, audioBookDirectoryPath, fileExtension);
+  } else {
+    // No chapters are found
+    String fileNameWithPath =
+        "$audioBookDirectoryPath/$name$fileExtension".replaceAll(' ', '_');
+
+    // Save tts to file
+    int result = await flutterTts.synthesizeToFile(text, fileNameWithPath);
+    if (result == 1) {
+      print("File created: $fileNameWithPath");
+
+      // Save metadata
+      Map<String, dynamic> audioBookJson = {"title": name};
+
+      // Convert the JSON object to a string
+      String jsonString = jsonEncode(audioBookJson);
+
+      // Save the JSON string to a file in the same directory
+      String jsonFileName = "$audioBookDirectoryPath/${name}_metadata.json";
+      File(jsonFileName).writeAsString(jsonString);
+
+      print("Metadata file created: $jsonFileName");
+
+      return fileNameWithPath;
+    } else {
+      print("Error: File not created.");
+      return null;
+    }
+  }
+
+  return audioBookDirectoryPath;
+}
+
+createChapters(
+    String text, String title, String path, String fileExtension) async {
   // Separate chapters
   Map<int, Chapter> chapters = await parseChapters(text);
   List<Map<String, dynamic>> chapterMetadata = [];
+  List<Future> waitingTasks = []; // A list of type future can be waited for
 
   // Synthesize each string to it's own file
   chapters.forEach((number, chapter) async {
     String chapterNumber = "Chapter $number";
     String chapterFileName =
-        "$audioBookDirectoryPath/${chapterNumber}_${chapter.title}$fileExtension"
+        "$path/${chapterNumber}_${chapter.title}$fileExtension"
             .replaceAll(' ', '_');
-    int result =
-        await flutterTts.synthesizeToFile(chapter.contents, chapterFileName);
 
-    if (result == 1) {
-      print("$chapterNumber file created: $chapterFileName");
+    // Need this to finish before metadata is created
+    var task = flutterTts
+        .synthesizeToFile(chapter.contents, chapterFileName)
+        .then((result) {
+      if (result == 1) {
+        print("$chapterNumber file created: $chapterFileName");
 
-      chapterMetadata.add({
-        "chapterNumber": chapterNumber,
-        "chapterTitle": chapter.title,
-        "audioFilePath": chapterFileName
-      });
-    } else {
-      print("Error: $chapterNumber file not created.");
-    }
+        chapterMetadata.add({
+          "chapterNumber": chapterNumber,
+          "chapterTitle": chapter.title,
+          "audioFilePath": chapterFileName
+        });
+      } else {
+        print("Error: $chapterNumber file not created.");
+      }
+    });
+    waitingTasks.add(task);
   });
+
+  // Need the files and metadata to finish being created before creating the json file
+  await Future.wait(waitingTasks);
 
   // Create the JSON object
   Map<String, dynamic> audioBookJson = {
-    "title": name,
+    "title": title,
     "chapters": chapterMetadata
   };
 
@@ -76,14 +111,11 @@ Future createAudioBook(String text, String name) async {
   String jsonString = jsonEncode(audioBookJson);
 
   // Save the JSON string to a file in the same directory
-  String jsonFileName = "$audioBookDirectoryPath/${name}_metadata.json";
+  String jsonFileName = "$path/${title}_metadata.json";
   File(jsonFileName).writeAsString(jsonString);
 
   print("Metadata file created: $jsonFileName");
 
   // Save tts to file
   chapters.clear();
-  // Return the path to the audiobook files
-  return audioBookDirectoryPath;
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
