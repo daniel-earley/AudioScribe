@@ -46,11 +46,11 @@ class _HomePageState extends State<HomePage> {
 				// check if book exists in db
 				var bookExists = await model.getBooksByTitle(book.title);
 				if (bookExists.isNotEmpty) {
-					print('book ${book.title} already exists in DB');
+					// print('book ${book.title} already exists in DB');
 					// is book exists then return
 					continue;
 				} else {
-					print('downloading book: ${book.title}, ${book.id}');
+					// print('downloading book: ${book.title}, ${book.id}');
 					var imageLocation = await downloadAndSaveImage("https://archive.org/services/get-item-image.php?identifier=${book.identifier}", '${getImageName("https://archive.org/services/get-item-image.php?identifier=${book.identifier}")}_img.png');
 					LibrivoxBook processedBook = LibrivoxBook(
 						id: book.id,
@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
 					await addBookToFirestore(processedBook.id, processedBook.title, processedBook.author, processedBook.description, '', processedBook.bookType);
 				}
 			}
-			print("finished downloading books");
+			// print("finished downloading books");
 		});
 	}
 
