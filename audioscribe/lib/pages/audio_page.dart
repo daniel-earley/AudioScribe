@@ -5,6 +5,7 @@ import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
 import 'package:audioscribe/services/audio_player_service.dart';
+import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:audioscribe/utils/interface/animated_fab.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:flutter/material.dart';
@@ -164,12 +165,17 @@ class _AudioControlsState extends State<AudioControls> {
   String get _durationText => _duration?.toString().split('.').first ?? '';
   String get _positionText => _position?.toString().split('.').first ?? '';
 
+  late Map<String, dynamic> metadata;
+  late List<dynamic> chapters;
+  int chapterNumber = 0;
+
   @override
   void initState() {
     super.initState();
     audioManager = AudioManager();
 
-    audioManager.setSource(widget.audioBookPath);
+    // Open Metadata.json
+    loadMetadata();
 
     _initStreams();
   }
@@ -195,14 +201,54 @@ class _AudioControlsState extends State<AudioControls> {
       (p) => setState(() => _position = p),
     );
 
+    // When audio finishes playing
     _playerCompleteSubscription = audioManager.onPlayerComplete.listen((event) {
-      setState(() {
-        _playerState = PlayerState.stopped;
-        _position = Duration.zero;
-        audioManager.setSource(widget.audioBookPath);
-        isPlaying = !isPlaying;
-      });
+      if (metadata.containsKey("chapters")) {
+        // Chapters found
+        if (chapterNumber + 1 < chapters.length) {
+          setState(() {
+            _position = Duration.zero;
+            chapterNumber++;
+            audioManager.setSource(chapters[chapterNumber]["audioFilePath"]);
+            audioManager.play();
+          });
+        } else {
+          setState(() {
+            _playerState = PlayerState.stopped;
+            _position = Duration.zero;
+            chapterNumber = 0;
+            audioManager.setSource(chapters[chapterNumber]["audioFilePath"]);
+            isPlaying = !isPlaying;
+          });
+        }
+      } else {
+        setState(() {
+          _playerState = PlayerState.stopped;
+          _position = Duration.zero;
+          audioManager.setSource(metadata["audioFilePath"]);
+          isPlaying = !isPlaying;
+        });
+      }
     });
+  }
+
+  Future<void> loadMetadata() async {
+    try {
+      metadata = await readJsonFile("${widget.audioBookPath}/metadata.json")
+          as Map<String, dynamic>;
+
+      // Check for chapters
+      if (metadata.containsKey("chapters")) {
+        // Found chapters
+        chapters = metadata["chapters"];
+        audioManager.setSource(chapters[chapterNumber]["audioFilePath"]);
+      } else {
+        audioManager.setSource(metadata["audioFilePath"]);
+      }
+    } catch (e) {
+      // Handle any errors here
+      print('Error loading JSON data: $e');
+    }
   }
 
   @override
