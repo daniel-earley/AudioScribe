@@ -27,9 +27,6 @@ class _HomePageState extends State<HomePage> {
 	// list of users book
 	List<Map<String, dynamic>> userBooks = [];
 
-	// list of recommendation books
-	final List<Map<String, dynamic>> recommendationBooks = bookData;
-
 	// list of fetched books
 	List<LibrivoxBook> books = [];
 
@@ -77,6 +74,7 @@ class _HomePageState extends State<HomePage> {
 			}
 			// print("finished downloading books");
 		});
+
 	}
 
 	@override
@@ -91,6 +89,44 @@ class _HomePageState extends State<HomePage> {
 		// fallback for device back button
 		setState(() {});
 
+		/// combine both results for search bar
+		List<Map<String, dynamic>> combinedBooksMapped = [
+			...userBooks,
+			...books.map((book) => {
+				'id': book.id,
+				'title': book.title,
+				'author': book.author,
+				'image': book.imageFileLocation,
+				'bookType': book.bookType,
+				'identifier': book.identifier,
+				'runtime': book.runtime,
+				'description': book.description,
+				'rating': book.rating,
+				'numberReviews': 0,
+				'downloads': 0,
+				'size': 0,
+				'isBookmark': book.isBookmark,
+				'isFavourite': book.isFavourite,
+				'audioBookPath': book.audioFileLocation
+			}).toList(),
+		].map((book) => {
+			'id': book['id'],
+			'item': book['title'],
+			'image': book['image'],
+			'author': book['author'],
+			'bookType': book['bookType'],
+			'identifier': book['identifier'],
+			'runtime': book['runtime'],
+			'summary': book['description'] ?? book['summary'],
+			'rating': book['rating'],
+			'numberReviews': 0,
+			'downloads': 0,
+			'size': 0,
+			'isBookmark': book['isBookmark'],
+			'isFavourite': book['isFavourite'],
+			'audioBookPath': book['audioBookPath'] ?? book['audioFileLocation']
+		}).toList();
+
 		return Stack(
 			children: [
 				SafeArea(
@@ -101,12 +137,8 @@ class _HomePageState extends State<HomePage> {
 								// Search bar
 								AppSearchBar(
 									hintText: "search",
-									allItems: books.map((book) {
-										return {
-											'item': book.title,
-											'image': book.imageFileLocation
-										};
-									}).toList()),
+									allItems: combinedBooksMapped,
+								),
 
 								// Separator
 								const Separator(text: "Your uploads"),
@@ -180,7 +212,10 @@ class _HomePageState extends State<HomePage> {
 		String userId = getCurrentUserId();
 
 		// fetch books from firestore that are uploaded
-		List<Map<String, dynamic>> books = await getBooksForUser(userId, 'UPLOAD');
+		List<Map<String, dynamic>> booksUpload = await getBooksForUser(userId, 'UPLOAD');
+		List<Map<String, dynamic>> booksAudio  = await getBooksForUser(userId, 'AUDIO');
+
+		List<Map<String, dynamic>> books = [...booksUpload, ...booksAudio];
 
 		// List<LibrivoxBook> bookss = await BookModel().getBooksByType('UPLOAD');
 		// print('${bookss.map((item) => '${item.bookType}')}');
@@ -193,7 +228,7 @@ class _HomePageState extends State<HomePage> {
 				'author': book['author'] ?? 'Unknown author',
 				'image': 'lib/assets/books/Default/textFile.png',
 				'summary': book['summary'] ?? 'No summary available',
-				'bookType': 'UPLOAD',
+				'bookType': book['bookType'],
 				'audioBookPath': book['audioBookPath'] ?? 'No Path Found'
 			};
 		}).toList();
@@ -234,95 +269,99 @@ class _HomePageState extends State<HomePage> {
 		var bookWidth = screenWidth / 3;
 		var bookHeight = bookWidth / 0.8;
 
-		if (userBooks.isEmpty) {
-			return Align(
-				alignment: Alignment.centerLeft,
-				child: Container(
-					padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 0.0),
-					height: bookHeight + 50,
-					child: GestureDetector(
-						onTap: () {
-							// go to upload screen on device
-							uploadBook().then((data) {
-								// if a file is selected then navigate to upload book page
-								if (data.isNotEmpty) {
-									Navigator.of(context).push(CustomRoute.routeTransitionBottom(
-										UploadBookPage(text: data, onUpload: () {
-											fetchUserBooks();
-										},
-										))
-									);
-								}
-							});
-						},
-						child: Container(
-							width: bookWidth + 20,
-							decoration: const BoxDecoration(
-								color: AppColors.secondaryAppColor,
-								borderRadius: BorderRadius.all(Radius.circular(10.0))),
-							child: const Icon(Icons.add_box_rounded, color: AppColors.primaryAppColorBrighter, size: 42.0),
-						),
+		Widget uploadContainer = Align(
+			alignment: Alignment.centerLeft,
+			child: Container(
+				padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 0.0),
+				height: bookHeight + 50,
+				child: GestureDetector(
+					onTap: () {
+						// go to upload screen on device
+						uploadBook().then((data) {
+							// if a file is selected then navigate to upload book page
+							if (data.isNotEmpty) {
+								Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+									UploadBookPage(text: data, onUpload: () {
+										fetchUserBooks();
+									},
+									))
+								);
+							}
+						});
+					},
+					child: Container(
+						width: bookWidth + 20,
+						decoration: const BoxDecoration(
+							color: AppColors.secondaryAppColor,
+							borderRadius: BorderRadius.all(Radius.circular(10.0))),
+						child: const Icon(Icons.add_box_rounded, color: AppColors.primaryAppColorBrighter, size: 42.0),
 					),
 				),
-			);
-		} else {
-			return Container(
-				padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-				height: bookHeight + 100,
-				child: ListView.builder(
-					scrollDirection: Axis.horizontal,
-					itemCount: userBooks.length,
-					itemBuilder: (context, index) {
-						return GestureDetector(
-							onTap: () async {
-								var book = userBooks[index];
+			),
+		);
 
-								// get book mark status
-								bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
-								bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
+		Widget bookList = Container(
+			padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+			height: bookHeight + 100,
+			child: ListView.builder(
+				scrollDirection: Axis.horizontal,
+				itemCount: userBooks.length,
+				itemBuilder: (context, index) {
+					return GestureDetector(
+						onTap: () async {
+							var book = userBooks[index];
 
-								// print('audioBookPath ${book['audioBookPath']}');
-								LibrivoxBook selectedBook = LibrivoxBook(
-									id: book['id'],
-									title: book['title'],
-									author: book['author'],
-									imageFileLocation: book['image'],
-									bookType: book['bookType'],
-									date: DateTime.now().toLocal().toString(),
-									identifier: '',
-									runtime: '',
-									description: book['summary'],
-									rating: 0.0,
-									numberReviews: 0,
-									downloads: 0,
-									size: 0,
-									isBookmark: isBookmark == true ? 1: 0,
-									isFavourite: isFavourite == true ? 1: 0
-								);
+							print('CURRENT BOOK TYPE ${book['bookType']}');
 
-								bookSelected(selectedBook, book['audioBookPath']);
+							// get book mark status
+							bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+							bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
 
-								// _onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath'], '');
-							},
-							child: Container(
-								width: bookWidth + 50,
-								padding: const EdgeInsets.all(6.0),
-								child: Column(
-									crossAxisAlignment: CrossAxisAlignment.start,
-									children: [
-										AspectRatio(
-											aspectRatio: 0.7,
-											child: BookCard(
-												bookTitle: userBooks[index]['title'],
-												bookAuthor: userBooks[index]['author'],
-												bookImage: userBooks[index]['image']),
-										)
-									],
-								)),
-						);
-					}),
-			);
-		}
+							// print('audioBookPath ${book['audioBookPath']}');
+							LibrivoxBook selectedBook = LibrivoxBook(
+								id: book['id'],
+								title: book['title'],
+								author: book['author'],
+								imageFileLocation: book['image'],
+								bookType: book['bookType'],
+								date: DateTime.now().toLocal().toString(),
+								identifier: '',
+								runtime: '',
+								description: book['summary'],
+								rating: 0.0,
+								numberReviews: 0,
+								downloads: 0,
+								size: 0,
+								isBookmark: isBookmark == true ? 1: 0,
+								isFavourite: isFavourite == true ? 1: 0
+							);
+
+							bookSelected(selectedBook, book['audioBookPath']);
+
+							// _onBookSelected(book['id'], book['title'], book['author'], book['image'], book['summary'], book['bookType'], book['audioBookPath'], '');
+						},
+						child: Container(
+							width: bookWidth + 50,
+							padding: const EdgeInsets.all(6.0),
+							child: Column(
+								crossAxisAlignment: CrossAxisAlignment.start,
+								children: [
+									AspectRatio(
+										aspectRatio: 0.7,
+										child: BookCard(
+											bookTitle: userBooks[index]['title'],
+											bookAuthor: userBooks[index]['author'],
+											bookImage: userBooks[index]['image'],
+											bookType: userBooks[index]['bookType']
+										),
+									)
+								],
+							)),
+					);
+				}),
+		);
+
+		return userBooks.isEmpty ? uploadContainer : bookList;
 	}
 
 	/// build a grid pattern for books fetched from librivox

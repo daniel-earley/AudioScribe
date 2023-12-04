@@ -32,6 +32,8 @@ class _CollectionPageState extends State<CollectionPage> {
 	}
 
 	Widget _buildCollectionPage(BuildContext context) {
+
+
 		return Stack(
 			children: [
 				SafeArea(
@@ -39,11 +41,25 @@ class _CollectionPageState extends State<CollectionPage> {
 						child: Column(
 							children: [
 								// Search bar
-								AppSearchBar(hintText: "search", allItems: books.map((book) {
-									print(book['imageFileLocation']);
+								AppSearchBar(hintText: "search",
+									allItems: books.map((book) {
+									print('print $book');
 									return {
+										'id': book['id'],
 										'item': book['title'],
-										'image': book['imageFileLocation']
+										'image': book['imageFileLocation'],
+										'author': book['author'],
+										'bookType': book['bookType'],
+										'identifier': book['identifier'],
+										'runtime': book['runtime'],
+										'summary': book['description'] ?? book['summary'],
+										'rating': book['rating'],
+										'numberReviews': 0,
+										'downloads': 0,
+										'size': 0,
+										'isBookmark': book['isBookmark'],
+										'isFavourite': book['isFavourite'],
+										'audioBookPath': book['audioBookPath'] ?? book['audioFileLocation']
 									};
 								}).toList()
 								),
@@ -87,12 +103,13 @@ class _CollectionPageState extends State<CollectionPage> {
 
 			// get books that are bookmarked or favourited, uploaded, (or currently listening to?)
 			List<LibrivoxBook> uploadedBooks = await bookModel.getBooksByType('UPLOAD');
+			List<LibrivoxBook> audioBooks = await bookModel.getBooksByType("AUDIO");
 
 			// get books that are liked by the user (bookmarked or favourited)
 			List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
 
 			// combine books
-			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...likedBooks].map((book) => book.toMap()).toList();
+			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...audioBooks, ...likedBooks].map((book) => book.toMap()).toList();
 
 			setState(() {
 			  	books = combinedBooks;
@@ -151,7 +168,8 @@ class _CollectionPageState extends State<CollectionPage> {
 									child: BookCard(
 										bookTitle: book['title'],
 										bookAuthor: book['author'],
-										bookImage: book['imageFileLocation']
+										bookImage: book['imageFileLocation'],
+										bookType: book['bookType']
 									),
 								)
 							],

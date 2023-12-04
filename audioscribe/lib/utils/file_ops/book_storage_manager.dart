@@ -46,16 +46,20 @@ Future<String> uploadBook() async {
 	// Use FilePicker to let the user select a text file
 	FilePickerResult? result = await FilePicker.platform.pickFiles(
 		type: FileType.custom,
-		allowedExtensions: ['txt', 'pdf'],
+		allowedExtensions: ['txt', 'pdf', '.mp3'],
 	);
 
 	if (result != null) {
 		// Get the selected file
 		PlatformFile file = result.files.first;
 		String fileContent = '';
+
+		// handle text files
 		if (p.extension(file.path!) == ".txt") {
 			fileContent = await File(file.path!).readAsString();
-		} else {
+
+		// handle pdf files
+		} else if (p.extension(file.path!) == '.pdf'){
 			// PDF book found
 			// Create a directory called "AudioScribeTextBooks" inside the external directory
 			Directory? externalDirectory = await getExternalStorageDirectory();
@@ -71,6 +75,11 @@ Future<String> uploadBook() async {
 			String fileName = p.basenameWithoutExtension(file.name);
 			await convertFileToTxt(file.path!, '$BookDirectoryPath');
 			fileContent = await File('$BookDirectoryPath/$fileName.txt').readAsString();
+		}
+
+		// handle mp3 files
+		else if (p.extension(file.path!) == '.mp3') {
+			fileContent = file.path!;
 		}
 
 		return fileContent;

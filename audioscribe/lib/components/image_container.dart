@@ -1,13 +1,18 @@
 import 'dart:io';
 
+import 'package:audioscribe/app_constants.dart';
 import 'package:flutter/material.dart';
 
 class ImageContainer extends StatelessWidget {
 	final String imagePath;
+	String? bookType;
+	double? size;
 
-	const ImageContainer({
+	ImageContainer({
 		Key? key,
-		required this.imagePath
+		required this.imagePath,
+		this.bookType,
+		this.size
 	}) : super(key: key);
 
 	@override
@@ -17,19 +22,33 @@ class ImageContainer extends StatelessWidget {
 
 		// Create the appropriate ImageProvider based on the image path
 		ImageProvider imageProvider;
+		Widget imageWidget;
 		if (isNetworkImage) {
-			imageProvider = NetworkImage(imagePath);
+			// imageProvider = NetworkImage(imagePath);
+			imageWidget = Image.network(
+				imagePath,
+				fit: BoxFit.fill,
+			);
 		} else if (isAssetImage) {
-			imageProvider = AssetImage(imagePath);
+			// imageProvider = AssetImage(imagePath);
+			imageWidget = Icon(
+				bookType == 'AUDIO' ? Icons.music_note : Icons.notes,
+				size: size ?? 32.0,
+				color: AppColors.primaryAppColorBrighter,
+			);
 		} else {
 			File imageFile = File(imagePath);
-			imageProvider = FileImage(imageFile);
+			// imageProvider = FileImage(imageFile);
+			imageWidget = Image.file(
+				imageFile,
+				fit: BoxFit.fill
+			);
 		}
 		return Container(
 			width: MediaQuery.of(context).size.width * 0.6,
 			height: MediaQuery.of(context).size.width * 0.8,
 			decoration: BoxDecoration(
-				color: Colors.white,
+				color: AppColors.secondaryAppColor,
 				borderRadius: BorderRadius.circular(4),
 				boxShadow: [
 					BoxShadow(
@@ -38,11 +57,12 @@ class ImageContainer extends StatelessWidget {
 						offset: const Offset(0, 2),
 					)
 				],
-				image: DecorationImage(
-					image: imageProvider,
-					fit: BoxFit.fill	 // Changed from BoxFit.fill to BoxFit.cover
-				),
+				// image: DecorationImage(
+				// 	image: imageProvider,
+				// 	fit: BoxFit.fill	 // Changed from BoxFit.fill to BoxFit.cover
+				// ),
 			),
+			child: imageWidget
 		);
 	}
 }
