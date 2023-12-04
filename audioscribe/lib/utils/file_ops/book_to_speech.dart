@@ -53,12 +53,12 @@ Future createAudioBook(String text, String name) async {
       String jsonString = jsonEncode(audioBookJson);
 
       // Save the JSON string to a file in the same directory
-      String jsonFileName = "$audioBookDirectoryPath/${name}_metadata.json";
+      String jsonFileName = "$audioBookDirectoryPath/metadata.json";
       File(jsonFileName).writeAsString(jsonString);
 
       print("Metadata file created: $jsonFileName");
 
-      return fileNameWithPath;
+      // return fileNameWithPath;
     } else {
       print("Error: File not created.");
       return null;
@@ -114,7 +114,7 @@ createChapters(
   String jsonString = jsonEncode(audioBookJson);
 
   // Save the JSON string to a file in the same directory
-  String jsonFileName = "$path/${title}_metadata.json";
+  String jsonFileName = "$path/metadata.json";
   File(jsonFileName).writeAsString(jsonString);
 
   print("Metadata file created: $jsonFileName");
