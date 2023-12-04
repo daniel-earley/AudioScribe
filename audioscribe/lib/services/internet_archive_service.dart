@@ -13,14 +13,14 @@ const _mostDownloaded = "https://archive.org/advancedsearch.php?$_commonParams&s
 const query="title:(secret tomb) AND collection:(librivoxaudio)";
 
 
-/*
-* Deval Panchal
-* Credits for code for this class was retrieved from (https://github.com/lohanidamodar/flutter_audiobooks_app)
-* With the help of this person open source audiobook app we were able to decipher its usage thanks
-* to the fetch links provided.
-* The code was modified to match the structure of our code, but the general idea for retrieving books
-* from a free service was from this person.
-* */
+
+/// Deval Panchal
+/// Credits for code for this class was retrieved from (https://github.com/lohanidamodar/flutter_audiobooks_app)
+/// With the help of this person open source audiobook app we were able to decipher its usage thanks
+/// to the fetch links provided.
+/// The code was modified to match the structure of our code, but the general idea for retrieving books
+/// from a free service was from this person.
+
 class ArchiveApiProvider {
 	Client client = Client();
 

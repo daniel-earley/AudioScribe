@@ -8,6 +8,12 @@ import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:flutter/material.dart';
 
+/// Deval Panchal
+/// This widget was initially more complex than expected, so with the help of ChatGPT (https://chat.openai.com/)
+/// we were able to make this code.
+/// The parts where ChatGPT was most useful was for using the overlay that would appear
+/// The UI for the search bar and the dropdown UI was "primal" flutter knowledge
+=
 class AppSearchBar extends StatefulWidget {
 	final String hintText;
 	final List<Map<String, dynamic>> allItems;
