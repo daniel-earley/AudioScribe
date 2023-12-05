@@ -121,7 +121,9 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
           print(fabItems);
         });
       } else {
-        fabItems = [];
+        fabItems = [
+			const Text('Home', style: TextStyle(color: Colors.white))
+		];
       }
     } catch (e) {
       // Handle any errors here
@@ -159,9 +161,20 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
                         fontSize: 16.0,
                         fontWeight: FontWeight.w400),
 
+					// Current chapter listening to
+					const SizedBox(height: 20.0),
+					widget.audioFileList!.isNotEmpty // case for api books or structure of audiofiles [{file: <file>, chapter: <chapter>}]
+					? Text(
+						'Currently listening to Chapter: ${currentChapter + 1} - ${widget.audioFileList![currentChapter]['chapter']!}',
+						textAlign: TextAlign.center,
+						style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w400)
+						)
+					: Container(),
+
 					widget.audioBookPath.isNotEmpty
 					? AudioControls(key: audioControlsKey, audioBookPath: widget.audioBookPath)
 					: AudioControls(
+						key: ValueKey(currentChapter),
 						audioBookPath: widget.audioFileList![currentChapter]['file']!,
 						currentChapter: currentChapter,
 						onChapterFinish: () {
