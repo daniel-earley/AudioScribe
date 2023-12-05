@@ -115,6 +115,7 @@ class _AnimatedFABState extends State<AnimatedFAB> {
 				child: GestureDetector(
 					onTap: () {
 						widget.onTapActions[index]();
+						_toggleList();
 					},
 					child: Padding(
 						padding: const EdgeInsets.symmetric(vertical: 2.0),

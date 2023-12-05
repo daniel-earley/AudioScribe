@@ -4,9 +4,11 @@ import 'package:audioscribe/app_constants.dart';
 import 'package:audioscribe/components/bookInfoText.dart';
 import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
+import 'package:audioscribe/pages/chapters_page.dart';
 import 'package:audioscribe/services/audio_player_service.dart';
 import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:audioscribe/utils/interface/animated_fab.dart';
+import 'package:audioscribe/utils/interface/custom_route.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -63,12 +65,29 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
       backgroundColor: const Color(0xFF303030),
       body: _buildAudioPlayerPage(),
       floatingActionButton: AnimatedFAB(
-              listItems: fabItems,
+              listItems: const [
+				  Text('Home', style: TextStyle(color: Colors.white)),
+				  Text('Chapters', style: TextStyle(color: Colors.white))
+			  ],
               onTapActions: [
-				  () => Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst)
+				  () => Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst),
+				  () => navigateToChaptersPage()
 			  ],
 	  )
     );
+  }
+
+  void navigateToChaptersPage() {
+	  Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+		  ChaptersPage(bookTitle: widget.bookTitle, chapterData: widget.audioFileList ?? chapters.map((item) => Map<String, dynamic>.from(item)).toList(), image: widget.imagePath, onChapterSelected: (int chapterIndex) {
+
+			  print("Chapter selected: $chapterIndex");
+			  setState(() {
+				  currentChapter = chapterIndex;
+			  });
+		  })
+	  ));
+
   }
 
   /// handles adding bookmark for book
@@ -117,6 +136,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
               .toList();
           print(fabItems);
         });
+		print('METADATA CHAPTERS: ${metadata["chapters"]}, ${chapters[currentChapter]['audioFilePath']}');
       } else {
         fabItems = [
 			const Text('Home', style: TextStyle(color: Colors.white))
@@ -169,10 +189,23 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 						textAlign: TextAlign.center,
 						style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w400)
 						)
-					: Container(),
+					: chapters.isNotEmpty
+					? Text(
+						'Currently listening to Chapter: ${currentChapter + 1} - ${chapters[currentChapter]['chapterTitle']}',
+						textAlign: TextAlign.center,
+						style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w400)
+					) : Container(),
 
 					widget.audioBookPath.isNotEmpty
-					? AudioControls(key: audioControlsKey, audioBookPath: widget.audioBookPath)
+					? AudioControls(
+						key: ValueKey(currentChapter), // was => audioControlsKey
+						audioBookPath: chapters[currentChapter]['audioFilePath'], // was => widget.audioBookPath
+						onChapterFinish: () {	// handles changing chapter on finish
+							setState(() {
+							  	currentChapter = currentChapter + 1;
+							});
+						},
+					)
 					: AudioControls(
 						key: ValueKey(currentChapter),
 						audioBookPath: widget.audioFileList![currentChapter]['file']!,
@@ -185,7 +218,9 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 						}
 					)
                   ],
-                ))),
+                )
+			)
+		),
       ],
     );
   }
