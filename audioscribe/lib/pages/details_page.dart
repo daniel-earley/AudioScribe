@@ -33,11 +33,13 @@ class _DetailsPageState extends State<DetailsPage> {
 	late bool isBookBookmarked = widget.book.isBookmark == 1 ? true : false;
 	late Bookmark bookmarkManager = Bookmark(bookTitle: widget.book.title, bookAuthor: widget.book.author);
 	late Favourite favouriteManager = Favourite(bookId: widget.book.id);
+	late List<Map<String, String>>? audioFiles = [];
 
 	@override
 	void initState() {
 		super.initState();
-		print('status: $isBookBookmarked, ${widget.book.isBookmark}, ${widget.book.bookType}');
+		fetchChapters(widget.book.identifier);
+		print('status: ${widget.audioBookPath}');
 	}
 
 	@override
@@ -135,7 +137,10 @@ class _DetailsPageState extends State<DetailsPage> {
 			// fetch audio files list
 			List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(identifier);
 
-			return audioFilesList;
+			setState(() {
+			  	audioFiles = audioFilesList;
+			});
+			// return audioFilesList;
 		} else {
 			return null;
 		}
@@ -158,34 +163,56 @@ class _DetailsPageState extends State<DetailsPage> {
 
 									// book title //
 									const SizedBox(height: 15.0),
-									Text(widget.book.title, style: const TextStyle(color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.w500)),
+									Text(widget.book.title, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 24.0, fontWeight: FontWeight.w500)),
 
 									// book author //
 									const SizedBox(height: 10.0),
-									Text(widget.book.author, style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w400)),
+									Text(widget.book.author, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.w400)),
 
 									// Listen button //
 									const SizedBox(height: 10.0),
 									PrimaryAppButton(buttonText: 'Listen', buttonSize: 0.85, onTap: () {
+										String audioPath = widget.audioBookPath != null ? widget.audioBookPath as String : '';
+										List<Map<String, String>>? audioFilesList = audioFiles!.isNotEmpty ? audioFiles : null;
+
+										Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+											AudioPlayerPage(
+												bookId: widget.book.id,
+												imagePath: widget.book.imageFileLocation,
+												bookTitle: widget.book.title,
+												bookAuthor: widget.book.author,
+												isBookmarked: widget.book.isBookmark == 1 ? true : false,
+												audioBookPath: audioPath,
+												audioFileList: audioFilesList,
+												onBookmarkChanged: (bool isBookmarked) {
+													setState(() {
+													  	isBookmarked = isBookmarked;
+													});
+												}
+											)
+										));
+
 										// get audio book path
-										if (widget.audioBookPath != null) {
-											String audioPath = widget.audioBookPath as String;
-											Navigator.of(context).push(CustomRoute.routeTransitionBottom(
-												AudioPlayerPage(
-													bookId: widget.book.id,
-													imagePath: widget.book.imageFileLocation,
-													bookTitle: widget.book.title,
-													bookAuthor: widget.book.author,
-													isBookmarked: widget.book.isBookmark == 1 ? true : false,
-													audioBookPath: audioPath,
-													onBookmarkChanged: (bool isBookmarked) {
-														setState(() {
-														  	isBookBookmarked = isBookmarked;
-														});
-													}
-												)
-											));
-										}
+										// if (widget.audioBookPath != null) {
+										// 	String audioPath = widget.audioBookPath as String;
+										// 	Navigator.of(context).push(CustomRoute.routeTransitionBottom(
+										// 		AudioPlayerPage(
+										// 			bookId: widget.book.id,
+										// 			imagePath: widget.book.imageFileLocation,
+										// 			bookTitle: widget.book.title,
+										// 			bookAuthor: widget.book.author,
+										// 			isBookmarked: widget.book.isBookmark == 1 ? true : false,
+										// 			audioBookPath: audioPath,
+										// 			onBookmarkChanged: (bool isBookmarked) {
+										// 				setState(() {
+										// 				  	isBookBookmarked = isBookmarked;
+										// 				});
+										// 			}
+										// 		)
+										// 	));
+										// } else {
+										// 	print('$audioFiles');
+										// }
 									}),
 
 									// Icons (bookmark, delete, favourite) //
@@ -201,7 +228,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
 									// Chapters //
 									const SizedBox(height: 10.0),
-									buildChapterList(widget.book.identifier)
+									buildChaptersList(audioFiles)
 								],
 							),
 						),
@@ -216,7 +243,7 @@ class _DetailsPageState extends State<DetailsPage> {
 		return Row(
 			children: [
 				// delete icon
-				widget.book.bookType == 'UPLOAD' ?
+				widget.book.bookType == 'UPLOAD' || widget.book.bookType == 'AUDIO' ?
 				IconButton(
 					onPressed: handleDelete,
 					icon: const Icon(Icons.delete_forever_outlined, color: Colors.white, size: 42.0)
@@ -262,62 +289,114 @@ class _DetailsPageState extends State<DetailsPage> {
 	}
 
 	// build chapter container
-	Widget buildChapterList(String identifier) {
-		return FutureBuilder(
-			future: fetchChapters(identifier),
-			builder: (context, snapshot) {
-				if (snapshot.connectionState == ConnectionState.waiting) {
-					return const CircularProgressIndicator();
-				} else if (snapshot.hasError) {
-					errorSnackbar("Error: ${snapshot.error}");
-					return Container();
-				} else if (snapshot.hasData) {
-					return Column(
-						children: [
-							// Chapter Title //
-							const Align(
-								alignment: Alignment.centerLeft,
-								child: Text('Chapters', style: TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.w500)),
-							),
-							const SizedBox(height: 10.0),
-							// Chapter list //
-							ListView.builder(
-								shrinkWrap: true,
-								itemCount: snapshot.data?.length,
-								itemBuilder: (context, index) {
-									var data = snapshot.data?[index];
-									return GestureDetector(
-										onTap: () => print('${data}'),
-										child: Padding(
-											padding: const EdgeInsets.all(2.0),
-											child: Container(
-												decoration: const BoxDecoration(
-													color: AppColors.secondaryAppColor
+	Widget buildChaptersList(List<Map<String, String>>? audioFiles) {
+		if (audioFiles == null) {
+			return const CircularProgressIndicator();
+		} else if (audioFiles.isEmpty) {
+			return Container();
+		} else {
+			return Column(
+				children: [
+					// Chapter Title //
+					const Align(
+						alignment: Alignment.centerLeft,
+						child: Text('Chapters', style: TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.w500))
+					),
+					const SizedBox(height: 10.0,),
+					// Chapter List //
+					ListView.builder(
+						shrinkWrap: true,
+						itemCount: audioFiles.length,
+						itemBuilder: (context, index) {
+							var data = audioFiles[index];
+							return GestureDetector(
+								onTap: () => print('$data'),
+								child: Padding(
+									padding: const EdgeInsets.all(2.0),
+									child: Container(
+										decoration: const BoxDecoration(
+											color: AppColors.secondaryAppColor
+										),
+										child: Row(
+											children: [
+												const Padding(
+													padding: EdgeInsets.all(4.0),
+													child: Icon(Icons.play_circle_fill, color: Colors.white)
 												),
-												child: Row(
-													children: [
-														const Padding(
-															padding: EdgeInsets.all(4.0),
-															child: Icon(Icons.play_circle_fill, color: Colors.white),
-														),
-														Flexible(
-															child: Padding(
-																padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
-																child: Text(data!['chapter']!, style: TextStyle(color: Colors.white, fontSize: 18.0)),
-															),
-														)
-													],
+												Flexible(
+													child: Padding(
+														padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+														child: Text(data['chapter']!, style: const TextStyle(color: Colors.white, fontSize: 18.0)),
+													)
 												)
-											),
+											],
 										)
-									);
-								}
-							)
-						],
-					);
-				}
-				return Container();
-			}
-		);
+									)
+								)
+							);
+						}
+					)
+				],
+			);
+		}
 	}
+
+	// Widget buildChapterList(String identifier) {
+	// 	return FutureBuilder(
+	// 		future: fetchChapters(identifier),
+	// 		builder: (context, snapshot) {
+	// 			if (snapshot.connectionState == ConnectionState.waiting) {
+	// 				return const CircularProgressIndicator();
+	// 			} else if (snapshot.hasError) {
+	// 				errorSnackbar("Error: ${snapshot.error}");
+	// 				return Container();
+	// 			} else if (snapshot.hasData) {
+	// 				return Column(
+	// 					children: [
+	// 						// Chapter Title //
+	// 						const Align(
+	// 							alignment: Alignment.centerLeft,
+	// 							child: Text('Chapters', style: TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.w500)),
+	// 						),
+	// 						const SizedBox(height: 10.0),
+	// 						// Chapter list //
+	// 						ListView.builder(
+	// 							shrinkWrap: true,
+	// 							itemCount: snapshot.data?.length,
+	// 							itemBuilder: (context, index) {
+	// 								var data = snapshot.data?[index];
+	// 								return GestureDetector(
+	// 									onTap: () => print('${data}'),
+	// 									child: Padding(
+	// 										padding: const EdgeInsets.all(2.0),
+	// 										child: Container(
+	// 											decoration: const BoxDecoration(
+	// 												color: AppColors.secondaryAppColor
+	// 											),
+	// 											child: Row(
+	// 												children: [
+	// 													const Padding(
+	// 														padding: EdgeInsets.all(4.0),
+	// 														child: Icon(Icons.play_circle_fill, color: Colors.white),
+	// 													),
+	// 													Flexible(
+	// 														child: Padding(
+	// 															padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 5.0),
+	// 															child: Text(data!['chapter']!, style: TextStyle(color: Colors.white, fontSize: 18.0)),
+	// 														),
+	// 													)
+	// 												],
+	// 											)
+	// 										),
+	// 									)
+	// 								);
+	// 							}
+	// 						)
+	// 					],
+	// 				);
+	// 			}
+	// 			return Container();
+	// 		}
+	// 	);
+	// }
 }

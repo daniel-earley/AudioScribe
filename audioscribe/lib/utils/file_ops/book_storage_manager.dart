@@ -46,7 +46,7 @@ Future<String> uploadBook() async {
 	// Use FilePicker to let the user select a text file
 	FilePickerResult? result = await FilePicker.platform.pickFiles(
 		type: FileType.custom,
-		allowedExtensions: ['txt', 'pdf', '.mp3'],
+		allowedExtensions: ['txt', 'pdf', 'mp3'],
 	);
 
 	if (result != null) {
