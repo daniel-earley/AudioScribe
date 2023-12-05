@@ -42,7 +42,9 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   int currentChapter = 0;
   GlobalKey<_AudioControlsState> audioControlsKey = GlobalKey();
   List<dynamic> chapters = [];
-  List<Widget> fabItems = [];
+  List<Widget> fabItems = [
+	  const Text('Home', style: TextStyle(color: Colors.white))
+  ];
 
   @override
   void initState() {
@@ -60,17 +62,12 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
       ),
       backgroundColor: const Color(0xFF303030),
       body: _buildAudioPlayerPage(),
-      floatingActionButton: fabItems.isNotEmpty
-          ? AnimatedFAB(
+      floatingActionButton: AnimatedFAB(
               listItems: fabItems,
-              onTapActions: chapters.isNotEmpty
-                  ? List.generate(chapters.length, (index) {
-                      return () =>
-                          audioControlsKey.currentState?.changeChapter(index);
-                    })
-                  : [],
-            )
-          : null,
+              onTapActions: [
+				  () => Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst)
+			  ],
+	  )
     );
   }
 
@@ -127,7 +124,9 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
       }
     } catch (e) {
       // Handle any errors here
-      print('Error loading JSON data: $e');
+      print('Error loading JSON chapter data: $e');
+	  print('audio files: ${widget.audioFileList}');
+
     }
   }
 
@@ -252,11 +251,12 @@ class _AudioControlsState extends State<AudioControls> {
 
   void _initStreams() {
     _durationSubscription = audioManager.onDurationChanged.listen((duration) {
-      setState(() => _duration = duration);
+      if (mounted) setState(() => _duration = duration);
     });
 
     _positionSubscription = audioManager.onPositionChanged.listen(
-      (p) => setState(() => _position = p),
+      (p) => setState(() => _position = p
+	  ),
     );
 
     // When audio finishes playing
@@ -401,4 +401,13 @@ class _AudioControlsState extends State<AudioControls> {
       _position = Duration.zero;
     });
   }
+
+	@override
+	void dispose() {
+	  _durationSubscription?.cancel();
+	  _positionSubscription?.cancel();
+	  _playerCompleteSubscription?.cancel();
+	  audioManager.dispose();
+	  super.dispose();
+	}
 }
