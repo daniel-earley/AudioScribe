@@ -57,7 +57,7 @@ class _UploadBookPageState extends State<UploadBookPage> {
 			}
 
 			// Store the book on firestore
-			await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary, audioBookPath, widget.text.endsWith('.mp3') ? 'AUDIO' : 'UPLOAD');
+			await addBookToFirestore(bookId, _titleController.text, _authorController.text, contentSummary, audioBookPath, widget.text.endsWith('.mp3') ? 'AUDIO' : 'UPLOAD', 0, 0);
 
 			// create new book object
 			Book book = Book(
