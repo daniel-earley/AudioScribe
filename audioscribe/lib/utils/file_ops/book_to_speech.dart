@@ -41,8 +41,6 @@ Future createAudioBook(String text, String name) async {
     // Save tts to file
     int result = await flutterTts.synthesizeToFile(text, fileNameWithPath);
     if (result == 1) {
-      print("File created: $fileNameWithPath");
-
       // Save metadata
       Map<String, dynamic> audioBookJson = {
         "title": name,
@@ -56,11 +54,8 @@ Future createAudioBook(String text, String name) async {
       String jsonFileName = "$audioBookDirectoryPath/metadata.json";
       File(jsonFileName).writeAsString(jsonString);
 
-      print("Metadata file created: $jsonFileName");
-
       // return fileNameWithPath;
     } else {
-      print("Error: File not created.");
       return null;
     }
   }
@@ -87,15 +82,11 @@ createChapters(
         .synthesizeToFile(chapter.contents, chapterFileName)
         .then((result) {
       if (result == 1) {
-        print("$chapterNumber file created: $chapterFileName");
-
         chapterMetadata.add({
           "chapterNumber": chapterNumber,
           "chapterTitle": chapter.title,
           "audioFilePath": chapterFileName
         });
-      } else {
-        print("Error: $chapterNumber file not created.");
       }
     });
     waitingTasks.add(task);
@@ -116,8 +107,6 @@ createChapters(
   // Save the JSON string to a file in the same directory
   String jsonFileName = "$path/metadata.json";
   File(jsonFileName).writeAsString(jsonString);
-
-  print("Metadata file created: $jsonFileName");
 
   // Save tts to file
   chapters.clear();
