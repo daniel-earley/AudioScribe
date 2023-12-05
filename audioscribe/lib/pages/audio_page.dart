@@ -37,10 +37,14 @@ class AudioPlayerPage extends StatefulWidget {
 class _AudioPlayerPage extends State<AudioPlayerPage> {
   late bool isBookBookmarked = widget.isBookmarked;
   late Bookmark bookmarkManager;
+  GlobalKey<_AudioControlsState> audioControlsKey = GlobalKey();
+  List<dynamic> chapters = [];
+  List<Widget> fabItems = [];
 
   @override
   void initState() {
     super.initState();
+    loadChapters();
     bookmarkManager = Bookmark(
       bookTitle: widget.bookTitle,
       bookAuthor: widget.bookAuthor,
@@ -56,17 +60,17 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
       ),
       backgroundColor: const Color(0xFF303030),
       body: _buildAudioPlayerPage(),
-      floatingActionButton: AnimatedFAB(
-        listItems: const [
-          Text('Home', style: TextStyle(color: Colors.white)),
-          Text('Second Item', style: TextStyle(color: Colors.white)),
-        ],
-        onTapActions: [
-          () => Navigator.popUntil(
-              context, (Route<dynamic> route) => route.isFirst),
-          () => print('Second Item Tapped'),
-        ],
-      ),
+      floatingActionButton: fabItems.isNotEmpty
+          ? AnimatedFAB(
+              listItems: fabItems,
+              onTapActions: chapters.isNotEmpty
+                  ? List.generate(chapters.length, (index) {
+                      return () =>
+                          audioControlsKey.currentState?.changeChapter(index);
+                    })
+                  : [],
+            )
+          : null,
     );
   }
 
@@ -97,6 +101,31 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
         SnackbarUtil.showSnackbarMessage(
             context, 'Bookmark removed', Colors.white);
       }
+    }
+  }
+
+  Future<void> loadChapters() async {
+    try {
+      var metadata = await readJsonFile("${widget.audioBookPath}/metadata.json")
+          as Map<String, dynamic>;
+
+      // Check for chapters
+      if (metadata.containsKey("chapters")) {
+        // Found chapters
+        setState(() {
+          chapters = metadata["chapters"];
+          fabItems = chapters
+              .map((chapter) => Text(chapter["chapterNumber"],
+                  style: TextStyle(color: Colors.white)))
+              .toList();
+          print(fabItems);
+        });
+      } else {
+        fabItems = [];
+      }
+    } catch (e) {
+      // Handle any errors here
+      print('Error loading JSON data: $e');
     }
   }
 
@@ -131,6 +160,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
                         fontWeight: FontWeight.w400),
 
                     AudioControls(
+                      key: audioControlsKey,
                       audioBookPath: widget.audioBookPath,
                     )
                   ],
@@ -142,7 +172,6 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 
 class AudioControls extends StatefulWidget {
   final String audioBookPath;
-
   const AudioControls({Key? key, required this.audioBookPath})
       : super(key: key);
 
@@ -314,5 +343,14 @@ class _AudioControlsState extends State<AudioControls> {
         ),
       ],
     );
+  }
+
+  changeChapter(int index) {
+    audioManager.setSource(chapters[index]["audioFilePath"]);
+    setState(() {
+      chapterNumber = index;
+      isPlaying = false;
+      _position = Duration.zero;
+    });
   }
 }
