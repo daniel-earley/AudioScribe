@@ -215,6 +215,9 @@ class _DetailsPageState extends State<DetailsPage> {
 	Widget buildIcons() {
 		return Row(
 			children: [
+				const Icon(Icons.star_border, color: Colors.white, size: 42.0),
+				Text(widget.book.rating.toString(), style: const TextStyle(color: Colors.white, fontSize: 32.0),),
+
 				// delete icon
 				widget.book.bookType == 'UPLOAD' ?
 				IconButton(
