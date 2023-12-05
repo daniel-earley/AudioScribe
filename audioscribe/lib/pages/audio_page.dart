@@ -162,7 +162,8 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 
 					// Current chapter listening to
 					const SizedBox(height: 20.0),
-					widget.audioFileList!.isNotEmpty // case for api books or structure of audiofiles [{file: <file>, chapter: <chapter>}]
+
+					widget.audioFileList != null && widget.audioFileList!.isNotEmpty // case for api books or structure of audiofiles [{file: <file>, chapter: <chapter>}]
 					? Text(
 						'Currently listening to Chapter: ${currentChapter + 1} - ${widget.audioFileList![currentChapter]['chapter']!}',
 						textAlign: TextAlign.center,
