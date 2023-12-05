@@ -104,15 +104,27 @@ class _CollectionPageState extends State<CollectionPage> {
 			// get books that are bookmarked or favourited, uploaded, (or currently listening to?)
 			List<LibrivoxBook> uploadedBooks = await bookModel.getBooksByType('UPLOAD');
 			List<LibrivoxBook> audioBooks = await bookModel.getBooksByType("AUDIO");
-
-			// get books that are liked by the user (bookmarked or favourited)
 			List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
 
-			// combine books
-			List<Map<String, dynamic>> combinedBooks = [...uploadedBooks, ...audioBooks, ...likedBooks].map((book) => book.toMap()).toList();
+			List<LibrivoxBook> allBooks = [...uploadedBooks, ...audioBooks, ...likedBooks];
+
+			var uniqueBooks = Set();
+			List<Map<String, dynamic>> distinctBooks = [];
+
+			for (var book in allBooks) {
+				if (uniqueBooks.add(book.id)) {
+					distinctBooks.add(book.toMap());
+				}
+			}
+
+			// // combine books
+			// Set<Map<String, dynamic>> combinedBooks = [...uploadedBooks.toSet(), ...audioBooks.toSet(), ...likedBooks.toSet()].map((book) => book.toMap()).toSet();
+			//
+			// print('${combinedBooks.toSet().toList().map((item) => item['id'])}');
 
 			setState(() {
-			  	books = combinedBooks;
+				// convert to set for distinct items and back to list
+			  	books = distinctBooks;
 			});
 		} catch (e) {
 			print("Error fetching user books: $e");
