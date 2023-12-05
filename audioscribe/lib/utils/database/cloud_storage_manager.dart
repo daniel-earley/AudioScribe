@@ -193,7 +193,7 @@ Future<void> updateBookRating(int bookId, double newRating) async {
         .collection('books')
         .doc(bookId.toString())
         .update({
-      'bookRating': (rating * numRatings + newRating),
+      'bookRating': (rating * numRatings + newRating)/(numRatings + 1),
       'numRatings': (numRatings + 1)
     });
   }
