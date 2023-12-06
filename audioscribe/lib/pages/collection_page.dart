@@ -43,7 +43,7 @@ class _CollectionPageState extends State<CollectionPage> {
 								// Search bar
 								AppSearchBar(hintText: "search",
 									allItems: books.map((book) {
-									print('print $book');
+									// print('print $book');
 									return {
 										'id': book['id'],
 										'item': book['title'],

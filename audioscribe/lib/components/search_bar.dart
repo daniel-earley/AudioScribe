@@ -119,7 +119,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
 													imageFileLocation: book['image'],
 													bookType: book['bookType'],
 													date: DateTime.now().toLocal().toString(),
-													identifier: '',
+													identifier: book['identifier'] ?? '',
 													runtime: '',
 													description: book['summary'],
 													rating: 0.0,

@@ -37,7 +37,6 @@ class _DetailsPageState extends State<DetailsPage> {
   void initState() {
     super.initState();
     fetchChapters(widget.book.identifier);
-    print('status: ${widget.audioBookPath}');
   }
 
   @override
@@ -145,13 +144,15 @@ class _DetailsPageState extends State<DetailsPage> {
 
   /// fetch data for chapters
   Future<List<Map<String, String>>?> fetchChapters(String identifier) async {
+    print('fetching chapters');
     // perform fetch
     if (identifier.isNotEmpty) {
       ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
 
       // fetch audio files list
-      List<Map<String, String>> audioFilesList =
-          await archiveApiProvider.fetchAudioFiles(identifier);
+      List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(identifier);
+
+      print("fetching audio files $audioFilesList");
 
       setState(() {
         audioFiles = audioFilesList;
@@ -203,7 +204,12 @@ class _DetailsPageState extends State<DetailsPage> {
                   buttonSize: 0.85,
                   onTap: () {
                     String audioPath = widget.audioBookPath != null ? widget.audioBookPath as String : '';
-                    List<Map<String, String>>? audioFilesList = audioFiles!.isNotEmpty ? audioFiles : null;
+                    List<Map<String, String>>? audioFilesList = [];
+
+                    if (audioFiles != null) {
+                      audioFilesList = audioFiles;
+                    }
+                    // List<Map<String, String>>? audioFilesList = audioFiles != null ? audioFiles!.isNotEmpty ? audioFiles : null : null;
 
                     Navigator.of(context).push(
                         CustomRoute.routeTransitionBottom(AudioPlayerPage(
@@ -219,7 +225,8 @@ class _DetailsPageState extends State<DetailsPage> {
                               setState(() {
                                 isBookmarked = isBookmarked;
                               });
-                            })));
+                            }))
+                    );
 
                     // get audio book path
                     // if (widget.audioBookPath != null) {

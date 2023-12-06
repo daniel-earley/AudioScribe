@@ -139,8 +139,7 @@ class _MainPageState extends State<MainPage> {
         //           true); // This will create the directory if it doesn't exist
         // }
 
-        String BookDirectoryPath =
-            await createNewDirectoryNoTitle("AudioScribeTextBooks");
+        String BookDirectoryPath = await createNewDirectoryNoTitle("AudioScribeTextBooks");
 
         String fileName = path.basenameWithoutExtension(file.name);
         await convertFileToTxt(file.path!, BookDirectoryPath);

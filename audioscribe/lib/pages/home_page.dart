@@ -376,7 +376,6 @@ class _HomePageState extends State<HomePage> {
 				return GestureDetector(
 					onTap: () async {
 						bookSelected(book, null);
-						// _onBookSelected(book.id, book.title, book.author, book.imageFileLocation, book.description, 'app', '', book.identifier);
 					},
 					child: Container(
 						padding: const EdgeInsets.all(6.0),
