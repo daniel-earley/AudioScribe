@@ -18,3 +18,16 @@ Future<String> createNewDirectory(String directoryName, String title) async {
 
   return directoryPath;
 }
+
+Future<String> createNewDirectoryNoTitle(String directoryName) async {
+  Directory? externalDirectory = await getExternalStorageDirectory();
+  String? externalPath = externalDirectory?.path;
+  String BookDirectoryPath = "$externalPath/$directoryName";
+  Directory BookDirectory = Directory(BookDirectoryPath);
+
+  if (!await BookDirectory.exists()) {
+    await BookDirectory.create(
+        recursive: true); // This will create the directory if it doesn't exist
+  }
+  return BookDirectoryPath;
+}
