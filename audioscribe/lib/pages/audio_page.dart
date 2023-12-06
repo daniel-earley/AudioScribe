@@ -6,6 +6,7 @@ import 'package:audioscribe/components/image_container.dart';
 import 'package:audioscribe/data_classes/bookmark.dart';
 import 'package:audioscribe/pages/chapters_page.dart';
 import 'package:audioscribe/services/audio_player_service.dart';
+import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:audioscribe/utils/interface/animated_fab.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
@@ -42,6 +43,9 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   late bool isBookBookmarked = widget.isBookmarked;
   late Bookmark bookmarkManager;
   int currentChapter = 0;
+
+  bool isContinue = false;
+
   GlobalKey<_AudioControlsState> audioControlsKey = GlobalKey();
   List<dynamic> chapters = [];
   List<Widget> fabItems = [
@@ -52,6 +56,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   void initState() {
     super.initState();
     loadChapters();
+	handleContinue();
     bookmarkManager = Bookmark(bookTitle: widget.bookTitle, bookAuthor: widget.bookAuthor);
   }
 
@@ -80,8 +85,6 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
   void navigateToChaptersPage() {
 	  Navigator.of(context).push(CustomRoute.routeTransitionBottom(
 		  ChaptersPage(bookTitle: widget.bookTitle, chapterData: widget.audioFileList ?? chapters.map((item) => Map<String, dynamic>.from(item)).toList(), image: widget.imagePath, onChapterSelected: (int chapterIndex) {
-
-			  print("Chapter selected: $chapterIndex");
 			  setState(() {
 				  currentChapter = chapterIndex;
 			  });
@@ -120,6 +123,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
     }
   }
 
+  /// load chapters data for UPLOADED files
   Future<void> loadChapters() async {
     try {
       var metadata = await readJsonFile("${widget.audioBookPath}/metadata.json")
@@ -134,9 +138,8 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
               .map((chapter) => Text(chapter["chapterNumber"],
                   style: const TextStyle(color: Colors.white)))
               .toList();
-          print(fabItems);
         });
-		print('METADATA CHAPTERS: ${metadata["chapters"]}, ${chapters[currentChapter]['audioFilePath']}');
+		print('METADATA CHAPTERS: ${chapters[currentChapter]['audioFilePath']}');
       } else {
         fabItems = [
 			const Text('Home', style: TextStyle(color: Colors.white))
@@ -145,10 +148,52 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
     } catch (e) {
       // Handle any errors here
       print('Error loading JSON chapter data: $e');
-	  print('audio files: ${widget.audioFileList}');
-
+	  // print('audio files: ${widget.audioFileList}');
     }
   }
+
+  /// ask user where last left off
+  void handleContinue() async {
+	  // get information for last left off first
+	  var bookInfo = await getUserBookById(getCurrentUserId(), widget.bookId);
+
+	  print('Book info, ${bookInfo!['position']} ${bookInfo['chapter']}');
+
+	  if (bookInfo['position'] != null && bookInfo['chapter'] != null) {
+		  if (context.mounted) {
+			  // Showing the dialog and awaiting the user's response
+			  bool confirm = await showDialog(
+				  context: context,
+				  builder: (BuildContext context) {
+					  return AlertDialog(
+						  title: Text("Continue at Chapter ${bookInfo['chapter'] + 1}?"),
+						  content: Text(
+							  "Do you want to continue where you last left off at chapter ${bookInfo['chapter'] + 1}?"),
+						  actions: [
+							  TextButton(
+								  onPressed: () => Navigator.of(context).pop(false), // Closes the dialog and returns false
+								  child: const Text('Cancel')),
+							  TextButton(
+								  onPressed: () => Navigator.of(context).pop(true), // Closes the dialog and returns true
+								  child: const Text("Yes"))
+						  ]);
+				  }) ?? false;
+
+			  // After the dialog is closed
+			  if (confirm) {
+				  setState(() {
+					  isContinue = true;
+					  currentChapter = bookInfo['chapter'];
+				  });
+
+				  print("$isContinue, $currentChapter");
+			  }
+		  }
+	  }
+
+  }
+
+
 
   Widget _buildAudioPlayerPage() {
     return Stack(
@@ -197,19 +242,35 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 					) : Container(),
 
 					widget.audioBookPath.isNotEmpty
-					? AudioControls(
+					? chapters.isNotEmpty ? AudioControls(
 						key: ValueKey(currentChapter), // was => audioControlsKey
+						bookId: widget.bookId,
 						audioBookPath: chapters[currentChapter]['audioFilePath'], // was => widget.audioBookPath
+						currentChapter: currentChapter,
+						isContinue: isContinue,
 						onChapterFinish: () {	// handles changing chapter on finish
 							setState(() {
 							  	currentChapter = currentChapter + 1;
 							});
 						},
-					)
-					: AudioControls(
+					) : AudioControls(
 						key: ValueKey(currentChapter),
+						bookId: widget.bookId,
+						audioBookPath: widget.audioBookPath,
+						currentChapter: currentChapter,
+						isContinue: isContinue,
+						onChapterFinish: () {
+							setState(() {
+								currentChapter = currentChapter + 1;
+							});
+							print("Finished chapter: ${currentChapter + 1}");
+						}
+					) : AudioControls(
+						key: ValueKey(currentChapter),
+						bookId: widget.bookId,
 						audioBookPath: widget.audioFileList![currentChapter]['file']!,
 						currentChapter: currentChapter,
+						isContinue: isContinue,
 						onChapterFinish: () {
 							setState(() {
 								currentChapter = currentChapter + 1;
@@ -217,7 +278,7 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 							print("Finished chapter: ${currentChapter + 1}");
 						}
 					)
-                  ],
+				  ],
                 )
 			)
 		),
@@ -228,15 +289,18 @@ class _AudioPlayerPage extends State<AudioPlayerPage> {
 
 class AudioControls extends StatefulWidget {
   final String audioBookPath;
-  // used for API books
   int? currentChapter;
+  int? bookId;
+  bool? isContinue;
   VoidCallback? onChapterFinish;
 
   AudioControls({
 	  super.key,
 	  required this.audioBookPath,
 	  this.currentChapter,
-	  this.onChapterFinish
+	  this.onChapterFinish,
+	  this.bookId,
+	  this.isContinue,
   });
 
   @override
@@ -273,10 +337,24 @@ class _AudioControlsState extends State<AudioControls> {
     _initStreams();
   }
 
-  void _togglePlayPause() {
+  @override
+  void didUpdateWidget(AudioControls oldWidget) {
+	  super.didUpdateWidget(oldWidget);
+
+	  print('CHAPTER CHANGE: ${widget.currentChapter}, ${oldWidget.currentChapter}');
+
+	  /// called when continue changes
+	  if (widget.isContinue != oldWidget.isContinue) {
+		  getAudioPlayerPosition();
+	  }
+  }
+
+  void _togglePlayPause() async {
     if (isPlaying) {
       audioManager.pause();
+	  await savePlayerState();
     } else {
+	  audioManager.seek(_position ?? Duration.zero);
       audioManager.play();
     }
 
@@ -286,6 +364,10 @@ class _AudioControlsState extends State<AudioControls> {
   }
 
   void _initStreams() {
+	// only run if the player wants to continue from last left off
+	if (widget.isContinue!) {
+		getAudioPlayerPosition();
+	}
     _durationSubscription = audioManager.onDurationChanged.listen((duration) {
       if (mounted) setState(() => _duration = duration);
     });
@@ -341,6 +423,41 @@ class _AudioControlsState extends State<AudioControls> {
     });
   }
 
+  /// fetch audio position
+  Future<void> getAudioPlayerPosition() async {
+	  try {
+		  if (widget.bookId != null) {
+			  // get position
+			  String playerPosition = await getAudioPosition(widget.bookId!);
+			  List<String> parts = playerPosition.split(":");
+
+			  // print("player position: $playerPosition, $parts");
+
+			  int hours = int.parse(parts[0]);
+			  int minutes = int.parse(parts[1]);
+
+			  List<String> secondsFraction = parts[2].split('.');
+			  int seconds = int.parse(secondsFraction[0]);
+			  int milliseconds = int.parse(secondsFraction[1].substring(0, 3));  // Take only the first 3 digits for milliseconds
+
+			  Duration pos = Duration(hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds);
+
+			  setState(() {
+				  _position = pos;
+				  audioManager.setSource(widget.audioBookPath);
+				  _duration = _duration;
+			  });
+		  }
+	  } catch (e) {
+		  setState(() {
+		    	_position = Duration.zero;
+				_duration = _duration;
+		  });
+		  if (mounted) SnackbarUtil.showSnackbarMessage(context, "Error get audio player saved position $e", Colors.red);
+	  }
+  }
+
+  /// loads data for uploaded books and API books settings their audio source to the respective mapping
   Future<void> loadMetadata() async {
     try {
       metadata = await readJsonFile("${widget.audioBookPath}/metadata.json")
@@ -429,6 +546,7 @@ class _AudioControlsState extends State<AudioControls> {
     );
   }
 
+  /// changes chapter based on index
   changeChapter(int index) {
     audioManager.setSource(chapters[index]["audioFilePath"]);
     setState(() {
@@ -438,12 +556,24 @@ class _AudioControlsState extends State<AudioControls> {
     });
   }
 
-	@override
-	void dispose() {
-	  _durationSubscription?.cancel();
-	  _positionSubscription?.cancel();
-	  _playerCompleteSubscription?.cancel();
-	  audioManager.dispose();
-	  super.dispose();
+  /// function to save the audio player position
+  Future<void> savePlayerState() async {
+	Duration? position = _position;
+	if (widget.bookId != null && widget.currentChapter != null) {
+		await updateAudioPosition(widget.bookId!, position, widget.currentChapter!);
+	} else {
+		SnackbarUtil.showSnackbarMessage(context, 'Error saving changes to the book position', Colors.red);
 	}
+  }
+
+  ///
+  @override
+  void dispose() {
+	savePlayerState();
+    _durationSubscription?.cancel();
+    _positionSubscription?.cancel();
+    _playerCompleteSubscription?.cancel();
+    audioManager.dispose();
+    super.dispose();
+  }
 }

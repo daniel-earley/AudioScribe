@@ -202,11 +202,8 @@ class _DetailsPageState extends State<DetailsPage> {
                   buttonText: 'Listen',
                   buttonSize: 0.85,
                   onTap: () {
-                    String audioPath = widget.audioBookPath != null
-                        ? widget.audioBookPath as String
-                        : '';
-                    List<Map<String, String>>? audioFilesList =
-                        audioFiles!.isNotEmpty ? audioFiles : null;
+                    String audioPath = widget.audioBookPath != null ? widget.audioBookPath as String : '';
+                    List<Map<String, String>>? audioFilesList = audioFiles!.isNotEmpty ? audioFiles : null;
 
                     Navigator.of(context).push(
                         CustomRoute.routeTransitionBottom(AudioPlayerPage(

@@ -199,6 +199,47 @@ Future<void> updateBookRating(int bookId, double newRating) async {
   }
 }
 
+/// Update the audio book position
+Future<void> updateAudioPosition(int bookId, Duration? position, int chapter) async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  try {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('books')
+        .doc(bookId.toString())
+        .update({ 'position': position.toString(), 'currentChapter': chapter });
+  } catch (e) {
+    print('$e');
+  }
+}
+
+/// Get position for audio book
+Future<String> getAudioPosition(int bookId) async {
+  try {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    DocumentSnapshot documentSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('books')
+        .doc(bookId.toString())
+        .get();
+
+    if (documentSnapshot.exists) {
+      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+      return data['position'] ?? '0:00:00.000';
+    } else {
+      return '0:00:00.000';
+    }
+  } catch (e) {
+    print('An error occurred getting audio book position $e');
+    return '0:00:00.000';
+  }
+}
+
+
 /// Get current book rating
 Future<double> getUserBookRating(int bookId) async {
 
