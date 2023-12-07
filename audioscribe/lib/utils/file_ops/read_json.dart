@@ -19,7 +19,7 @@ Future<String> getApiKey(String keyName) async {
   }
 
   if (apiKeys[keyName] is String) {
-    return apiKeys[keyName]; 
+    return apiKeys[keyName];
   } else {
     return jsonEncode(apiKeys[keyName]);
   }

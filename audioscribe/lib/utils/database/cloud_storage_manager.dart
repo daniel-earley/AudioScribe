@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../data_classes/book.dart';
 
 /// Get current user logged in
 String getCurrentUserId() {
@@ -154,7 +153,15 @@ Future<bool> getUserBookmarkStatus(String userId, int bookId) async {
 }
 
 /// Adds a book to the firestore database
-Future<void> addBookToFirestore(int bookId, String title, String author, String summary, String audioBookPath, String bookType, double bookRating, int numRatings) async {
+Future<void> addBookToFirestore(
+    int bookId,
+    String title,
+    String author,
+    String summary,
+    String audioBookPath,
+    String bookType,
+    double bookRating,
+    int numRatings) async {
   String userId = FirebaseAuth.instance.currentUser!.uid;
 
   await FirebaseFirestore.instance
@@ -193,14 +200,15 @@ Future<void> updateBookRating(int bookId, double newRating) async {
         .collection('books')
         .doc(bookId.toString())
         .update({
-      'bookRating': (rating * numRatings + newRating)/(numRatings + 1),
+      'bookRating': (rating * numRatings + newRating) / (numRatings + 1),
       'numRatings': (numRatings + 1)
     });
   }
 }
 
 /// Update the audio book position
-Future<void> updateAudioPosition(int bookId, Duration? position, int chapter) async {
+Future<void> updateAudioPosition(
+    int bookId, Duration? position, int chapter) async {
   String userId = FirebaseAuth.instance.currentUser!.uid;
   try {
     await FirebaseFirestore.instance
@@ -208,7 +216,7 @@ Future<void> updateAudioPosition(int bookId, Duration? position, int chapter) as
         .doc(userId)
         .collection('books')
         .doc(bookId.toString())
-        .update({ 'position': position.toString(), 'currentChapter': chapter });
+        .update({'position': position.toString(), 'currentChapter': chapter});
   } catch (e) {
     print('$e');
   }
@@ -228,7 +236,8 @@ Future<String> getAudioPosition(int bookId) async {
         .get();
 
     if (documentSnapshot.exists) {
-      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+      Map<String, dynamic> data =
+          documentSnapshot.data() as Map<String, dynamic>;
       return data['position'] ?? '0:00:00.000';
     } else {
       return '0:00:00.000';
@@ -239,10 +248,8 @@ Future<String> getAudioPosition(int bookId) async {
   }
 }
 
-
 /// Get current book rating
 Future<double> getUserBookRating(int bookId) async {
-
   String userId = FirebaseAuth.instance.currentUser!.uid;
   try {
     FirebaseFirestore firestore = FirebaseFirestore.instance;

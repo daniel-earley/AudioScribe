@@ -12,15 +12,12 @@ class DbUtils {
     var database = openDatabase(
       path.join(await getDatabasesPath(), 'audioscribe_database.db'),
       onCreate: (Database db, version) {
-        db.execute(
-          'CREATE TABLE $userDb('
+        db.execute('CREATE TABLE $userDb('
             'id TEXT PRIMARY KEY,'
             'username TEXT, '
             'loggedIn INTEGER'
-          ')'
-        );
-        db.execute(
-          'CREATE TABLE $bookDb('
+            ')');
+        db.execute('CREATE TABLE $bookDb('
             'id INTEGER PRIMARY KEY, '
             'title TEXT, '
             'author TEXT, '
@@ -38,17 +35,14 @@ class DbUtils {
             'bookType TEXT, '
             'isFavourite INT DEFAULT 0, '
             'isBookmark INT DEFAULT 0 '
-          ')'
-        );
-        db.execute(
-          'CREATE TABLE $userBookDb('
+            ')');
+        db.execute('CREATE TABLE $userBookDb('
             'id INTEGER PRIMARY KEY, '
             'userId TEXT NOT NULL, '
             'bookId INTEGER NOT NULL, '
             'FOREIGN KEY (userId) REFERENCES $userDb(id) ON DELETE CASCADE '
             'FOREIGN KEY (bookId) REFERENCES $bookDb(id) ON DELETE CASCADE'
-          ')'
-        );
+            ')');
       },
       onUpgrade: (Database db, int oldVersion, int newVersion) async {
         if (oldVersion < 2) {

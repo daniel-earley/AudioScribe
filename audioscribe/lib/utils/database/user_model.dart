@@ -40,11 +40,8 @@ class UserModel {
     final db = await DbUtils.init();
 
     // Query the database for a user with the given ID
-    List<Map> maps = await db.query(
-      DbUtils.userDb,
-      where: 'id = ?',
-      whereArgs: [id]
-    );
+    List<Map> maps =
+        await db.query(DbUtils.userDb, where: 'id = ?', whereArgs: [id]);
 
     if (maps.isNotEmpty) {
       return User.fromMap(maps.first);
@@ -59,8 +56,8 @@ class UserModel {
     final List<User> users = [];
     final List userMap = await db.rawQuery(
         'SELECT ${DbUtils.userDb}.id, ${DbUtils.userDb}.username '
-            'FROM ${DbUtils.userDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.userDb}.id=${DbUtils.userBookDb}.userId '
-            'WHERE bookId = ${book.bookId}');
+        'FROM ${DbUtils.userDb} INNER JOIN ${DbUtils.userBookDb} ON ${DbUtils.userDb}.id=${DbUtils.userBookDb}.userId '
+        'WHERE bookId = ${book.bookId}');
     for (Map map in userMap) {
       users.add(User.fromMap(map));
     }
@@ -81,7 +78,8 @@ class UserModel {
   /// get all entries from the reference table userBookDb
   Future<List<Map<String, dynamic>>> getAllUserBookEntries() async {
     final db = await DbUtils.init();
-    final List<Map<String, dynamic>> result = await db.query(DbUtils.userBookDb);
+    final List<Map<String, dynamic>> result =
+        await db.query(DbUtils.userBookDb);
     return result;
   }
 
@@ -89,10 +87,9 @@ class UserModel {
   Future<List<Map<String, dynamic>>> getAllUserBooks(String userId) async {
     final db = await DbUtils.init();
     var bookTbl = DbUtils.bookDb;
-    var refTbl  = DbUtils.userBookDb;
+    var refTbl = DbUtils.userBookDb;
 
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      '''
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
       SELECT 
         B.userId,
         B.bookId,
@@ -104,64 +101,54 @@ class UserModel {
       FROM $bookTbl A
       INNER JOIN $refTbl B ON A.id = B.bookId
       WHERE B.userId = ?
-      ''',
-      [userId]
-    );
+      ''', [userId]);
 
     return result;
   }
 
   /// method to check if a book exists in as a bookmark for a user in the DB (checked in the frontend by using len() function)
-  Future<List<Map<String, dynamic>>> checkBookIsBookmarked(String userId, int bookId) async {
+  Future<List<Map<String, dynamic>>> checkBookIsBookmarked(
+      String userId, int bookId) async {
     final db = await DbUtils.init();
     var bookTbl = DbUtils.bookDb;
-    var refTbl  = DbUtils.userBookDb;
+    var refTbl = DbUtils.userBookDb;
 
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-        '''
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
       SELECT 
         B.userId,
         B.bookId
       FROM $bookTbl A
       INNER JOIN $refTbl B ON A.id = B.bookId
       WHERE B.userId = ? AND B.bookId = ?
-      ''',
-        [userId, bookId]
-    );
+      ''', [userId, bookId]);
 
     return result;
   }
 
   /// method to remove bookmark on a specified book by its given id
   Future deleteBookmark(String userId, int bookId) async {
-      final db = await DbUtils.init();
+    final db = await DbUtils.init();
 
-      // delete row in ref table
-      int result = await db.delete(
-        DbUtils.userBookDb,
-        where: 'userId = ? AND bookId = ?',
-        whereArgs: [userId, bookId]
-      );
+    // delete row in ref table
+    int result = await db.delete(DbUtils.userBookDb,
+        where: 'userId = ? AND bookId = ?', whereArgs: [userId, bookId]);
 
-      // returns num rows affected by operation
-      return result;
+    // returns num rows affected by operation
+    return result;
   }
-
-
 
   /// This will add the book list to the database.
   Future updateUserBookLibrary(User user) async {
     final db = await DbUtils.init();
     for (Book book in user.bookLibrary) {
       db.insert(
-        DbUtils.userBookDb,
-        {
-          'id': Random().nextInt(1000000),
-          'userId': user.userId,
-          'bookId': book.bookId
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore
-      );
+          DbUtils.userBookDb,
+          {
+            'id': Random().nextInt(1000000),
+            'userId': user.userId,
+            'bookId': book.bookId
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore);
     }
   }
 
@@ -179,49 +166,35 @@ class UserModel {
     );
   }
 
-
   /// Method for updating user logged in status
   Future<void> updateLoggedInStatus(String userId, bool loggedIn) async {
     final db = await DbUtils.init();
 
-    await db.update(
-      DbUtils.userDb,
-      {'loggedIn': loggedIn ? 1 : 0},
-      where: 'id = ?',
-      whereArgs: [userId]
-    );
+    await db.update(DbUtils.userDb, {'loggedIn': loggedIn ? 1 : 0},
+        where: 'id = ?', whereArgs: [userId]);
   }
 
   /// Delete an user from the database
   Future<int> deleteUserWithId(String id) async {
     final db = await DbUtils.init();
-    return db.delete(
-      DbUtils.userDb,
-      where: 'id = ?',
-      whereArgs: [id]
-    );
+    return db.delete(DbUtils.userDb, where: 'id = ?', whereArgs: [id]);
   }
 
   /// deletes all books from bookDb (for testing)
   Future<void> deleteAllBooks() async {
     final db = await DbUtils.init();
-    final List<Map> result = await db.rawQuery(
-        '''
+    final List<Map> result = await db.rawQuery('''
       DELETE
       FROM ${DbUtils.bookDb}
-      '''
-    );
+      ''');
   }
 
   /// deletes all book references (for testing)
   Future<void> deleteAllBooksRef() async {
     final db = await DbUtils.init();
-    final List<Map> result = await db.rawQuery(
-        '''
+    final List<Map> result = await db.rawQuery('''
       DELETE
       FROM ${DbUtils.userBookDb}
-      '''
-    );
+      ''');
   }
-
 }

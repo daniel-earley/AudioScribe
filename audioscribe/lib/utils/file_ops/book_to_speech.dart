@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:audioscribe/utils/file_ops/file_to_txt_converter.dart';
 import 'package:audioscribe/utils/file_ops/make_directory.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../data_classes/chapter.dart';
 
