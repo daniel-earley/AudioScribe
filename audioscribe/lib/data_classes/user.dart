@@ -6,14 +6,14 @@ class User {
   late List<Book> bookLibrary;
   late bool loggedIn;
 
-  User({required this.userId, required this.username, required this.bookLibrary, required this.loggedIn});
+  User(
+      {required this.userId,
+      required this.username,
+      required this.bookLibrary,
+      required this.loggedIn});
 
   Map<String, Object?> toMap() {
-    return {
-      'id': userId,
-      'username': username,
-      'loggedIn': loggedIn ? 1 : 0
-    };
+    return {'id': userId, 'username': username, 'loggedIn': loggedIn ? 1 : 0};
   }
 
   User.fromMap(Map map) {
@@ -27,5 +27,4 @@ class User {
   String toString() {
     return 'User{userId: $userId, username: $username, bookLibrary: $bookLibrary, loggedIn: $loggedIn}';
   }
-
 }

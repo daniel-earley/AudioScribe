@@ -11,7 +11,14 @@ class Book {
   // to differentiate between api book
   late String bookType;
 
-  Book({required this.bookId, required this.title, required this.author, this.textFileLocation = '', this.audioFileLocation = '', this.imageFileLocation = '', this.bookType = ''});
+  Book(
+      {required this.bookId,
+      required this.title,
+      required this.author,
+      this.textFileLocation = '',
+      this.audioFileLocation = '',
+      this.imageFileLocation = '',
+      this.bookType = ''});
 
   LibrivoxBook toLibrivoxBook() {
     return LibrivoxBook(
@@ -28,8 +35,7 @@ class Book {
         numberReviews: 0,
         downloads: 0,
         size: 0,
-        bookType: bookType
-    );
+        bookType: bookType);
   }
 
   Map<String, Object?> toMap() {
@@ -45,15 +51,16 @@ class Book {
   }
 
   Book.fromMap(Map map) {
-    bookId = map['id'] as int? ?? 0; // Default to 0 or another appropriate value if null.
-    title = map['title'] as String? ?? 'Unknown Title'; // Provide a default string if null.
+    bookId = map['id'] as int? ??
+        0; // Default to 0 or another appropriate value if null.
+    title = map['title'] as String? ??
+        'Unknown Title'; // Provide a default string if null.
     author = map['author'] as String? ?? 'Unknown Author';
     textFileLocation = map['textFileLocation'] as String? ?? '';
     audioFileLocation = map['audioFileLocation'] as String? ?? '';
     imageFileLocation = map['imageFileLocation'] as String? ?? '';
     bookType = map['bookType'] as String? ?? '';
   }
-
 
   @override
   String toString() {
