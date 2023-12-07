@@ -27,7 +27,9 @@ class _RatingDialogState extends State<RatingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Center(child: Text('Rate this post'),),
+      title: const Center(
+        child: Text('Rate this post'),
+      ),
       content: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
