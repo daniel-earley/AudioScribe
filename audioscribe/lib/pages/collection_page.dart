@@ -9,184 +9,181 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CollectionPage extends StatefulWidget {
-	const CollectionPage({Key? key}) : super(key: key);
+  const CollectionPage({Key? key}) : super(key: key);
 
-	@override
-	_CollectionPageState createState() => _CollectionPageState();
+  @override
+  _CollectionPageState createState() => _CollectionPageState();
 }
 
 class _CollectionPageState extends State<CollectionPage> {
-	List<Map<String, dynamic>> books = [];
+  List<Map<String, dynamic>> books = [];
 
-	@override
-	void initState() {
-		super.initState();
-		fetchUserBooks();
-	}
+  @override
+  void initState() {
+    super.initState();
+    fetchUserBooks();
+  }
 
-	@override
-	Widget build(BuildContext context) {
-		return Scaffold(
-			backgroundColor: const Color(0xFF303030),
-			body: _buildCollectionPage(context));
-	}
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: const Color(0xFF303030),
+        body: _buildCollectionPage(context));
+  }
 
-	Widget _buildCollectionPage(BuildContext context) {
+  Widget _buildCollectionPage(BuildContext context) {
+    return Stack(
+      children: [
+        SafeArea(
+            child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Search bar
+              AppSearchBar(
+                  hintText: "search",
+                  allItems: books.map((book) {
+                    // print('print $book');
+                    return {
+                      'id': book['id'],
+                      'item': book['title'],
+                      'image': book['imageFileLocation'],
+                      'author': book['author'],
+                      'bookType': book['bookType'],
+                      'identifier': book['identifier'],
+                      'runtime': book['runtime'],
+                      'summary': book['description'] ?? book['summary'],
+                      'rating': book['rating'],
+                      'numberReviews': 0,
+                      'downloads': 0,
+                      'size': 0,
+                      'isBookmark': book['isBookmark'],
+                      'isFavourite': book['isFavourite'],
+                      'audioBookPath':
+                          book['audioBookPath'] ?? book['audioFileLocation']
+                    };
+                  }).toList()),
 
+              // Book grid
+              _buildBooklist()
+            ],
+          ),
+        ))
+      ],
+    );
+  }
 
-		return Stack(
-			children: [
-				SafeArea(
-					child: SingleChildScrollView(
-						child: Column(
-							children: [
-								// Search bar
-								AppSearchBar(hintText: "search",
-									allItems: books.map((book) {
-									// print('print $book');
-									return {
-										'id': book['id'],
-										'item': book['title'],
-										'image': book['imageFileLocation'],
-										'author': book['author'],
-										'bookType': book['bookType'],
-										'identifier': book['identifier'],
-										'runtime': book['runtime'],
-										'summary': book['description'] ?? book['summary'],
-										'rating': book['rating'],
-										'numberReviews': 0,
-										'downloads': 0,
-										'size': 0,
-										'isBookmark': book['isBookmark'],
-										'isFavourite': book['isFavourite'],
-										'audioBookPath': book['audioBookPath'] ?? book['audioFileLocation']
-									};
-								}).toList()
-								),
+  /// get the current instance of the user that is logged In
+  String getCurrentUserId() {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      String uid = currentUser.uid;
+      return uid;
+    } else {
+      return 'No user is currently signed in';
+    }
+  }
 
-								// Book grid
-								_buildBooklist()
-							],
-						),
-					)
-				)
-			],
-		);
-	}
+  void bookSelected(LibrivoxBook book, String? audioBookPath) {
+    Navigator.of(context).push(CustomRoute.routeTransitionBottom(DetailsPage(
+        book: book,
+        audioBookPath: audioBookPath,
+        onChange: () async {
+          fetchUserBooks();
+        })));
+  }
 
-	/// get the current instance of the user that is logged In
-	String getCurrentUserId() {
-		User? currentUser = FirebaseAuth.instance.currentUser;
-		if (currentUser != null) {
-			String uid = currentUser.uid;
-			return uid;
-		} else {
-			return 'No user is currently signed in';
-		}
-	}
+  /// function to fetch users books
+  Future<void> fetchUserBooks() async {
+    try {
+      // get current user instance
+      BookModel bookModel = BookModel();
 
-	void bookSelected(LibrivoxBook book, String? audioBookPath) {
-		Navigator.of(context).push(
-			CustomRoute.routeTransitionBottom(
-				DetailsPage(book: book, audioBookPath: audioBookPath, onChange: () async {
-					fetchUserBooks();
-				})
-			)
-		);
-	}
+      // get books that are bookmarked or favourited, uploaded, (or currently listening to?)
+      List<LibrivoxBook> uploadedBooks =
+          await bookModel.getBooksByType('UPLOAD');
+      List<LibrivoxBook> audioBooks = await bookModel.getBooksByType("AUDIO");
+      List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
 
-	/// function to fetch users books
-	Future<void> fetchUserBooks() async {
-		try {
-			// get current user instance
-			BookModel bookModel = BookModel();
+      List<LibrivoxBook> allBooks = [
+        ...uploadedBooks,
+        ...audioBooks,
+        ...likedBooks
+      ];
 
-			// get books that are bookmarked or favourited, uploaded, (or currently listening to?)
-			List<LibrivoxBook> uploadedBooks = await bookModel.getBooksByType('UPLOAD');
-			List<LibrivoxBook> audioBooks = await bookModel.getBooksByType("AUDIO");
-			List<LibrivoxBook> likedBooks = await bookModel.getCollectionBooks();
+      var uniqueBooks = <dynamic>{};
+      List<Map<String, dynamic>> distinctBooks = [];
 
-			List<LibrivoxBook> allBooks = [...uploadedBooks, ...audioBooks, ...likedBooks];
+      for (var book in allBooks) {
+        if (uniqueBooks.add(book.id)) {
+          distinctBooks.add(book.toMap());
+        }
+      }
 
-			var uniqueBooks = Set();
-			List<Map<String, dynamic>> distinctBooks = [];
+      setState(() {
+        // convert to set for distinct items and back to list
+        books = distinctBooks;
+      });
+    } catch (e) {
+      print("Error fetching user books: $e");
+    }
+  }
 
-			for (var book in allBooks) {
-				if (uniqueBooks.add(book.id)) {
-					distinctBooks.add(book.toMap());
-				}
-			}
+  /// build book list for collection
+  Widget _buildBooklist() {
+    return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+            childAspectRatio: 0.7),
+        itemCount: books.length,
+        itemBuilder: (context, index) {
+          var book = books[index];
+          return GestureDetector(
+              onTap: () async {
+                bool isBookmark =
+                    await getUserBookmarkStatus(getCurrentUserId(), book['id']);
+                bool isFavourite =
+                    await getUserFavouriteBook(getCurrentUserId(), book['id']);
 
-			// // combine books
-			// Set<Map<String, dynamic>> combinedBooks = [...uploadedBooks.toSet(), ...audioBooks.toSet(), ...likedBooks.toSet()].map((book) => book.toMap()).toSet();
-			//
-			// print('${combinedBooks.toSet().toList().map((item) => item['id'])}');
+                LibrivoxBook selectedBook = LibrivoxBook(
+                    id: book['id'],
+                    title: book['title'],
+                    author: book['author'],
+                    imageFileLocation:
+                        book['imageFileLocation'] ?? book['image'],
+                    date: DateTime.now().toLocal().toString(),
+                    identifier: book['identifier'] ?? '',
+                    runtime: book['runtime'] ?? '',
+                    description: book['description'] ?? book['summary'],
+                    rating: book['rating'] ?? 0.0,
+                    numberReviews: book['numberReviews'] ?? 0,
+                    downloads: book['downloads'] ?? 0,
+                    size: book['size'] ?? 0,
+                    bookType: book['bookType'],
+                    isBookmark: isBookmark == true ? 1 : 0,
+                    isFavourite: isFavourite == true ? 1 : 0);
 
-			setState(() {
-				// convert to set for distinct items and back to list
-			  	books = distinctBooks;
-			});
-		} catch (e) {
-			print("Error fetching user books: $e");
-		}
-	}
-
-	/// build book list for collection
-	Widget _buildBooklist() {
-		return GridView.builder(
-			shrinkWrap: true,
-			physics: const NeverScrollableScrollPhysics(),
-			padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-			gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-				crossAxisCount: 2,
-				crossAxisSpacing: 15,
-				mainAxisSpacing: 15,
-				childAspectRatio: 0.7),
-			itemCount: books.length,
-			itemBuilder: (context, index) {
-				var book = books[index];
-				return GestureDetector(
-					onTap: () async {
-						bool isBookmark = await getUserBookmarkStatus(getCurrentUserId(), book['id']);
-						bool isFavourite = await getUserFavouriteBook(getCurrentUserId(), book['id']);
-
-						LibrivoxBook selectedBook = LibrivoxBook(
-							id: book['id'],
-							title: book['title'],
-							author: book['author'],
-							imageFileLocation: book['imageFileLocation'] ?? book['image'],
-							date: DateTime.now().toLocal().toString(),
-							identifier: book['identifier'] ?? '',
-							runtime: book['runtime'] ?? '',
-							description: book['description'] ?? book['summary'],
-							rating: book['rating'] ?? 0.0,
-							numberReviews: book['numberReviews'] ?? 0,
-							downloads: book['downloads'] ?? 0,
-							size: book['size'] ?? 0,
-							bookType: book['bookType'],
-							isBookmark: isBookmark == true ? 1: 0,
-							isFavourite: isFavourite == true ? 1: 0
-						);
-
-
-						bookSelected(selectedBook, book['audioFileLocation'] ?? '');
-					},
-					child: Container(
-						padding: const EdgeInsets.all(6.0),
-						child: Column(
-							children: [
-								AspectRatio(
-									aspectRatio: 0.7,
-									child: BookCard(
-										bookTitle: book['title'],
-										bookAuthor: book['author'],
-										bookImage: book['imageFileLocation'],
-										bookType: book['bookType']
-									),
-								)
-							],
-						),
-					));
-			});
-	}
+                bookSelected(selectedBook, book['audioFileLocation'] ?? '');
+              },
+              child: Container(
+                padding: const EdgeInsets.all(6.0),
+                child: Column(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 0.7,
+                      child: BookCard(
+                          bookTitle: book['title'],
+                          bookAuthor: book['author'],
+                          bookImage: book['imageFileLocation'],
+                          bookType: book['bookType']),
+                    )
+                  ],
+                ),
+              ));
+        });
+  }
 }

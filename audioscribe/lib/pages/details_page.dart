@@ -124,18 +124,19 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
-	void _rateBook() async {
-		int? rating = await showDialog(context: context, builder: (_) => const RatingDialog());
+  void _rateBook() async {
+    int? rating = await showDialog(
+        context: context, builder: (_) => const RatingDialog());
 
-		if (rating != null) {
-			await updateBookRating(widget.book.id, rating + 0.0);
-			widget.book.rating = await getUserBookRating(widget.book.id);
+    if (rating != null) {
+      await updateBookRating(widget.book.id, rating + 0.0);
+      widget.book.rating = await getUserBookRating(widget.book.id);
 
-			setState(() {
-				widget.book.numberReviews += 1;
-			});
-		}
-	}
+      setState(() {
+        widget.book.numberReviews += 1;
+      });
+    }
+  }
 
   /// snackbar for error occurrence used on various click events
   void errorSnackbar(String message) {
@@ -150,14 +151,14 @@ class _DetailsPageState extends State<DetailsPage> {
       ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
 
       // fetch audio files list
-      List<Map<String, String>> audioFilesList = await archiveApiProvider.fetchAudioFiles(identifier);
+      List<Map<String, String>> audioFilesList =
+          await archiveApiProvider.fetchAudioFiles(identifier);
 
       print("fetching audio files $audioFilesList");
 
       setState(() {
         audioFiles = audioFilesList;
       });
-      // return audioFilesList;
     } else {
       return null;
     }
@@ -203,7 +204,9 @@ class _DetailsPageState extends State<DetailsPage> {
                   buttonText: 'Listen',
                   buttonSize: 0.85,
                   onTap: () {
-                    String audioPath = widget.audioBookPath != null ? widget.audioBookPath as String : '';
+                    String audioPath = widget.audioBookPath != null
+                        ? widget.audioBookPath as String
+                        : '';
                     List<Map<String, String>>? audioFilesList = [];
 
                     if (audioFiles != null) {
@@ -212,7 +215,8 @@ class _DetailsPageState extends State<DetailsPage> {
                     // List<Map<String, String>>? audioFilesList = audioFiles != null ? audioFiles!.isNotEmpty ? audioFiles : null : null;
 
                     Navigator.of(context).push(
-                        CustomRoute.routeTransitionBottom(AudioPlayerPage(
+                      CustomRoute.routeTransitionBottom(
+                        AudioPlayerPage(
                             bookId: widget.book.id,
                             imagePath: widget.book.imageFileLocation,
                             bookTitle: widget.book.title,
@@ -225,37 +229,16 @@ class _DetailsPageState extends State<DetailsPage> {
                               setState(() {
                                 isBookmarked = isBookmarked;
                               });
-                            }))
+                            }),
+                      ),
                     );
-
-                    // get audio book path
-                    // if (widget.audioBookPath != null) {
-                    // 	String audioPath = widget.audioBookPath as String;
-                    // 	Navigator.of(context).push(CustomRoute.routeTransitionBottom(
-                    // 		AudioPlayerPage(
-                    // 			bookId: widget.book.id,
-                    // 			imagePath: widget.book.imageFileLocation,
-                    // 			bookTitle: widget.book.title,
-                    // 			bookAuthor: widget.book.author,
-                    // 			isBookmarked: widget.book.isBookmark == 1 ? true : false,
-                    // 			audioBookPath: audioPath,
-                    // 			onBookmarkChanged: (bool isBookmarked) {
-                    // 				setState(() {
-                    // 				  	isBookBookmarked = isBookmarked;
-                    // 				});
-                    // 			}
-                    // 		)
-                    // 	));
-                    // } else {
-                    // 	print('$audioFiles');
-                    // }
                   }),
 
               // Icons (bookmark, delete, favourite) //
               Padding(
-								padding: const EdgeInsets.all(8),
-								child: buildIcons(),
-							),
+                padding: const EdgeInsets.all(8),
+                child: buildIcons(),
+              ),
 
               // summary //
               const SizedBox(height: 10.0),
@@ -292,13 +275,15 @@ class _DetailsPageState extends State<DetailsPage> {
         ),
 
         TextButton(
-            onPressed: _rateBook,
-					style: const ButtonStyle(backgroundColor: MaterialStatePropertyAll<Color>(AppColors.primaryAppColor)),
-            child: const Text(
-              'Rate',
-              style: TextStyle(color: Colors.white, fontSize: 24.0),
-            ),
-				),
+          onPressed: _rateBook,
+          style: const ButtonStyle(
+              backgroundColor:
+                  MaterialStatePropertyAll<Color>(AppColors.primaryAppColor)),
+          child: const Text(
+            'Rate',
+            style: TextStyle(color: Colors.white, fontSize: 24.0),
+          ),
+        ),
 
         // delete icon
         widget.book.bookType == 'UPLOAD' || widget.book.bookType == 'AUDIO'

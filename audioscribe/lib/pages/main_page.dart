@@ -1,5 +1,4 @@
 import 'package:audioscribe/app_constants.dart';
-import 'package:audioscribe/pages/book_details.dart';
 import 'package:audioscribe/pages/uploadBook_page.dart';
 import 'package:audioscribe/utils/file_ops/make_directory.dart';
 import 'package:audioscribe/utils/interface/custom_route.dart';
@@ -7,20 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:audioscribe/components/app_header.dart';
 import 'package:audioscribe/components/popup_circular_button.dart';
 import 'package:audioscribe/pages/collection_page.dart';
 import 'package:audioscribe/pages/home_page.dart';
 import 'package:audioscribe/pages/settings_page.dart';
-import 'package:audioscribe/utils/file_ops/read_json.dart';
 import 'package:audioscribe/components/camera_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 import '../utils/file_ops/file_to_txt_converter.dart';
 
 class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -38,8 +35,8 @@ class _MainPageState extends State<MainPage> {
   // list of widgets
   List<Widget> get _widgetOptions => [
         HomePage(key: ValueKey('HomePage$homePageKey')),
-        CollectionPage(key: ValueKey('CollectionPage')),
-        SettingsPage(key: ValueKey('SettingsPage'))
+        const CollectionPage(key: ValueKey('CollectionPage')),
+        const SettingsPage(key: ValueKey('SettingsPage'))
       ];
 
   /// Used to navigate to different screens/pages
@@ -126,25 +123,13 @@ class _MainPageState extends State<MainPage> {
 
         // handle pdf files
       } else if (path.extension(file.path!) == '.pdf') {
-        // PDF book found
-        // // Create a directory called "AudioScribeTextBooks" inside the external directory
-        // Directory? externalDirectory = await getExternalStorageDirectory();
-        // String? externalPath = externalDirectory?.path;
-        // String BookDirectoryPath = "$externalPath/AudioScribeTextBooks";
-        // Directory BookDirectory = Directory(BookDirectoryPath);
-        //
-        // if (!await BookDirectory.exists()) {
-        //   await BookDirectory.create(
-        //       recursive:
-        //           true); // This will create the directory if it doesn't exist
-        // }
-
-        String BookDirectoryPath = await createNewDirectoryNoTitle("AudioScribeTextBooks");
+        String bookDirectoryPath =
+            await createNewDirectoryNoTitle("AudioScribeTextBooks");
 
         String fileName = path.basenameWithoutExtension(file.name);
-        await convertFileToTxt(file.path!, BookDirectoryPath);
+        await convertFileToTxt(file.path!, bookDirectoryPath);
         fileContent =
-            await File('$BookDirectoryPath/$fileName.txt').readAsString();
+            await File('$bookDirectoryPath/$fileName.txt').readAsString();
 
         // handle mp3 files
       } else if (path.extension(file.path!) == '.mp3') {
@@ -161,20 +146,22 @@ class _MainPageState extends State<MainPage> {
 
   void _navigateToCameraScreen(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => CameraScreen(),
+      builder: (context) => const CameraScreen(),
     ));
   }
 
   void _navigateToUploadBookPage(BuildContext context, String text) {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => UploadBookPage(
-                text: text,
-                onUpload: () {
-                  print("new book got uploaded");
-                  refreshHomePage();
-                }))).then((value) {
+      context,
+      MaterialPageRoute(
+        builder: (context) => UploadBookPage(
+            text: text,
+            onUpload: () {
+              print("new book got uploaded");
+              refreshHomePage();
+            }),
+      ),
+    ).then((value) {
       print("back to main page");
       setState(() {
         _selectedIndex = 0;
@@ -190,38 +177,44 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: AppColors.primaryAppColor,
         actions: [
           Padding(
-              padding: const EdgeInsets.only(right: 10.0),
-              child: PopupMenuButton<String>(
-                onSelected: (String value) {
-                  if (value == 'logout') {
-                    // perform logout
-                    signOut();
-                  } else if (value == 'setting') {
-                    // navigate to settings page
-                    Navigator.of(context).push(
-                        CustomRoute.routeTransitionBottom(
-                            const SettingsPage()));
-                  }
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                      value: 'setting',
-                      child: Row(children: [
-                        Icon(Icons.settings, color: Colors.white),
-                        SizedBox(width: 10.0),
-                        Text('Settings', style: TextStyle(color: Colors.white))
-                      ])),
-                  const PopupMenuItem<String>(
-                      value: 'logout',
-                      child: Row(children: [
-                        Icon(Icons.logout, color: Colors.white),
-                        SizedBox(width: 10.0),
-                        Text('Logout', style: TextStyle(color: Colors.white))
-                      ])),
-                ],
-                icon: const Icon(Icons.account_circle,
-                    size: 42.0, color: Colors.white),
-              ))
+            padding: const EdgeInsets.only(right: 10.0),
+            child: PopupMenuButton<String>(
+              onSelected: (String value) {
+                if (value == 'logout') {
+                  // perform logout
+                  signOut();
+                } else if (value == 'setting') {
+                  // navigate to settings page
+                  Navigator.of(context).push(
+                      CustomRoute.routeTransitionBottom(const SettingsPage()));
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'setting',
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings, color: Colors.white),
+                      SizedBox(width: 10.0),
+                      Text('Settings', style: TextStyle(color: Colors.white))
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.white),
+                      SizedBox(width: 10.0),
+                      Text('Logout', style: TextStyle(color: Colors.white))
+                    ],
+                  ),
+                ),
+              ],
+              icon: const Icon(Icons.account_circle,
+                  size: 42.0, color: Colors.white),
+            ),
+          )
         ],
       ),
       backgroundColor: const Color(0xFF303030),
@@ -230,21 +223,10 @@ class _MainPageState extends State<MainPage> {
           SafeArea(
             child: Column(
               children: [
-                // AppHeader(
-                //   headerText: currentPageHeaderTitle(),
-                //   onTap: () => _onItemTapped(2),
-                //   currentScreen: _selectedIndex,
-                //   isSwitched: _switchOn,
-                //   onToggle: _toggleSwitch,
-                // ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: _widgetOptions.elementAt(_selectedIndex),
-                    // IndexedStack(
-                    // 	index: _selectedIndex,
-                    // 	children: _widgetOptions,
-                    // )
                   ),
                 )
               ],
@@ -268,34 +250,35 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildBottomBar(BuildContext context) {
     return BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        height: 40.0,
-        color: Colors.black54,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Spacer(),
-            IconButton(
-                onPressed: () => _onItemTapped(0),
-                icon: Icon(Icons.home,
-                    size: 30.0,
-                    color: _selectedIndex == 0
-                        ? const Color(0xFF9260FC)
-                        : Colors.white)),
-            const Spacer(),
-            const Spacer(),
-            const SizedBox(width: 48),
-            IconButton(
-              onPressed: () => _onItemTapped(1),
-              icon: Icon(Icons.bookmark,
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 6.0,
+      height: 40.0,
+      color: Colors.black54,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          const Spacer(),
+          IconButton(
+              onPressed: () => _onItemTapped(0),
+              icon: Icon(Icons.home,
                   size: 30.0,
-                  color: _selectedIndex == 1
+                  color: _selectedIndex == 0
                       ? const Color(0xFF9260FC)
-                      : Colors.white),
-            ),
-            const Spacer(),
-          ],
-        ));
+                      : Colors.white)),
+          const Spacer(),
+          const Spacer(),
+          const SizedBox(width: 48),
+          IconButton(
+            onPressed: () => _onItemTapped(1),
+            icon: Icon(Icons.bookmark,
+                size: 30.0,
+                color: _selectedIndex == 1
+                    ? const Color(0xFF9260FC)
+                    : Colors.white),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
   }
 }

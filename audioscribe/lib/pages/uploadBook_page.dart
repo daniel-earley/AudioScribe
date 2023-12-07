@@ -1,10 +1,6 @@
 import 'package:audioscribe/data_classes/book.dart';
-import 'package:audioscribe/data_classes/librivox_book.dart';
-import 'package:audioscribe/pages/home_page.dart';
-import 'package:audioscribe/pages/main_page.dart';
 import 'package:audioscribe/services/txt_summary_service.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:audioscribe/utils/database/cloud_storage_manager.dart';
 import 'package:audioscribe/utils/file_ops/book_to_speech.dart';
 
@@ -14,7 +10,7 @@ class UploadBookPage extends StatefulWidget {
   final String text;
   final VoidCallback? onUpload;
 
-  UploadBookPage({Key? key, required this.text, this.onUpload})
+  const UploadBookPage({Key? key, required this.text, this.onUpload})
       : super(key: key);
 
   @override
@@ -81,8 +77,6 @@ class _UploadBookPageState extends State<UploadBookPage> {
       book.audioFileLocation = audioBookPath;
       book.imageFileLocation = 'lib/assets/books/Default/textFile.png';
 
-      // print('${book.bookType}, ${book.textFileLocation}, ${book.audioFileLocation}, ${book.imageFileLocation}');
-
       // store the book in sqlite
       await BookModel().insertAPIBook(book.toLibrivoxBook());
 
@@ -96,8 +90,6 @@ class _UploadBookPageState extends State<UploadBookPage> {
       });
     }
     if (mounted) {
-      // Navigator.of(context).pop();
-      // Navigator.pop(context, true);
       Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
       if (widget.onUpload != null) widget.onUpload!();
     }
@@ -109,7 +101,7 @@ class _UploadBookPageState extends State<UploadBookPage> {
       backgroundColor: const Color(0xFF303030),
       appBar: AppBar(
         backgroundColor: const Color(0xFF524178),
-        title: Text('Add Book'),
+        title: const Text('Add Book'),
       ),
       body: Form(
         key: _formKey,
