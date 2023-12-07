@@ -54,12 +54,12 @@ class AudioManager {
   }
 
   void forward() async {
-    position += Duration(seconds: 15);
+    position += const Duration(seconds: 15);
     await _audioPlayer.seek(position);
   }
 
   void reverse() async {
-    var newPos = position - Duration(seconds: 15);
+    var newPos = position - const Duration(seconds: 15);
     if (newPos < Duration.zero) {
       newPos = Duration.zero;
     }
