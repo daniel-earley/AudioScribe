@@ -1,6 +1,5 @@
 import 'package:audioscribe/components/text_field_auth_page.dart';
 import 'package:audioscribe/components/toggle_button.dart';
-import 'package:audioscribe/services/auth_service.dart';
 import 'package:audioscribe/services/notification_services.dart';
 import 'package:audioscribe/utils/interface/snack_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -443,46 +442,6 @@ class _LoginPageState extends State<LoginPage> {
                   )),
 
                   const SizedBox(height: 15.0),
-                  // Text 'Or'
-                  const Text("Or",
-                      style: TextStyle(color: Colors.white, fontSize: 18.0)),
-
-                  const SizedBox(height: 15.0),
-
-                  // Google Sign In
-                  IntrinsicWidth(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0, vertical: 3.0),
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF1F1F1F),
-                          borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                      child: GestureDetector(
-                        onTap: () {
-                          print("Logging in with google");
-                          AuthService().signInWithGoogle();
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset('lib/images/google.png',
-                                width: 24.0, height: 24.0),
-                            const SizedBox(width: 5.0),
-                            Text(
-                                currentAuthMode == AuthMode.LOGIN
-                                    ? "Continue with Google"
-                                    : "Sign up with Google",
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 15.0))
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20.0),
-
                   // forgot password
                   currentAuthMode == AuthMode.LOGIN
                       ? GestureDetector(
