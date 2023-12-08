@@ -25,29 +25,40 @@ Something to run to try out the current features.
 3. You can press on one of the books in the recommendation, then press on the bookmark symbol on the book to bookmark it
 4. Once every minute, a notification will pop out to recommend you to read a book.
 
+- The login page you can login or signup (use a the username: devalp2401@gmail.com and the password: pass123 if you wish)
+- The homepage lets you navigate your selected items and the system (API) items
+  - can upload items from the homepage from the bottom floating action button or if the uploads container is empty then the '+' symbol box in the uploads section
+  - search bar lets you navigate through items specific to the page your are on and can select on the items
+- The collections page lets you see your personalized collection (favourited, bookmarked, or uploaded items)
+- The details page (when you select an item), shows the book details in depth, including the summary, rating, whether its favourited or bookmarked
+  - can bookmark, favourite, and rate items on this page
+  - can listen to the selected item
+- The audiopage lets you listen to selected item
+  - can navigate to chapters if the audiobook uploaded has chapters or API books which have chapters
+  - basic functionalities include, play, pause, forward, rewind and exiting the audio while listening to it allows saving the audio player state allowing you to return to where you last left off
+
+
 ### Features
-**File Format**:
+**File Format**: (Implemented)
 - Original Scope: Allow users to import books in various file formats, ensuring versatility and compatibility (PDF, Epub, txt)
 - Currently supporting text and pdf files
+- Summative: Allowed support for txt, pdf, and mp3 files
 
-**OCR**: 
+**OCR**: (Implemented)
 - Original Scope: Our app will utilise OCR technology to extract text from documents in cases where the text may be difficult to read due to scanning or other factors.
 - Current implementation: when the camera is opened in emulator, instead of showing the default 3d environment, a picture is shown. 
   - When the capture button is pressed the user can choose to retake the photo or submit it to the ocr. 
 
-**AI Text to Speech**: 
+**AI Text to Speech** (Implemented**): 
 - Original Scope: Use an AI text to speech to generate high-quality, natural-sounding voices for reading the books.
-- Current implementation is not using AI tts but rather Flutter TTS for time sake 
+- Current implementation is not using AI tts but rather Flutter TTS for time sake
+- Summative: **implemented the text to speech portion but used the default text to speech 
 
-**Text Summary**: 
+**Text Summary** (Implemented): 
 - Original Scope: Allow users to get a summary of the text that has been read so far.
 
-**Offline Mode** (Working): 
+**Offline Mode** (Implemented): 
 - Original Scope: Implement ability for users to download audio versions of books for offline listening.
-
-**Accessibility**: 
-- Original Scope: Include text-to-speech for book descriptions or summaries.
-- Removed for the time being.
 
 **User Accounts** (Implemented): 
 - Original Scope: Users can create an account.
@@ -65,7 +76,7 @@ Something to run to try out the current features.
 **Library/Saved Books** (Implemented): 
 - Original Scope: Users can save books that they have uploaded to the app.
 
-**Favourites** (Not Implemented): 
+**Favourites** (Implemented): 
 - Original Scope: Users can favourite a book for quick access the next time they open the app.
 
 _Some UI design is reworked from the proposal_
