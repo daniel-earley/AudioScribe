@@ -145,7 +145,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
   /// fetch data for chapters
   Future<List<Map<String, String>>?> fetchChapters(String identifier) async {
-    print('fetching chapters');
+    // print('fetching chapters');
     // perform fetch
     if (identifier.isNotEmpty) {
       ArchiveApiProvider archiveApiProvider = ArchiveApiProvider();
@@ -154,7 +154,7 @@ class _DetailsPageState extends State<DetailsPage> {
       List<Map<String, String>> audioFilesList =
           await archiveApiProvider.fetchAudioFiles(identifier);
 
-      print("fetching audio files $audioFilesList");
+      // print("fetching audio files $audioFilesList");
 
       setState(() {
         audioFiles = audioFilesList;
@@ -253,9 +253,9 @@ class _DetailsPageState extends State<DetailsPage> {
               const SizedBox(height: 10.0),
               buildSummaryContainer(widget.book.description),
 
-              // Chapters //
-              const SizedBox(height: 10.0),
-              buildChaptersList(audioFiles)
+              // // Chapters //
+              // const SizedBox(height: 10.0),
+              // buildChaptersList(audioFiles)
             ],
           ),
         ),
