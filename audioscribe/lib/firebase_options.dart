@@ -44,37 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAeKVD1L6TUNsI5BstmE7ywinDiTkwHpxo',
-    appId: '1:243906736454:web:c2e8e63a5242f1c67ef547',
-    messagingSenderId: '243906736454',
-    projectId: 'audioscribe-project',
-    authDomain: 'audioscribe-project.firebaseapp.com',
-    storageBucket: 'audioscribe-project.appspot.com',
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    authDomain: '',
+    storageBucket: '',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCc23Fw5jgTD8gUpxK9dc45sbfotJn_J30',
-    appId: '1:243906736454:android:99f96ae516c2280c7ef547',
-    messagingSenderId: '243906736454',
-    projectId: 'audioscribe-project',
-    storageBucket: 'audioscribe-project.appspot.com',
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    storageBucket: '',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAdYlI3PWhxC7Ii3ppijKQONVR_YWIdVZE',
-    appId: '1:243906736454:ios:417068986ac7e8bc7ef547',
-    messagingSenderId: '243906736454',
-    projectId: 'audioscribe-project',
-    storageBucket: 'audioscribe-project.appspot.com',
-    iosBundleId: 'com.example.audioscribe',
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    storageBucket: '',
+    iosBundleId: '',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAdYlI3PWhxC7Ii3ppijKQONVR_YWIdVZE',
-    appId: '1:243906736454:ios:e8ce058f4a24a9b67ef547',
-    messagingSenderId: '243906736454',
-    projectId: 'audioscribe-project',
-    storageBucket: 'audioscribe-project.appspot.com',
-    iosBundleId: 'com.example.audioscribe.RunnerTests',
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    storageBucket: '',
+    iosBundleId: '',
   );
 }
